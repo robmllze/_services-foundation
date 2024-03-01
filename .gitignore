@@ -1,0 +1,7 @@
+**/___generators
+**/.dart_tool
+**/.DS_Store
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.metadata
+**/pubspec.lock
