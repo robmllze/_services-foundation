@@ -9,5 +9,5 @@
 
 export 'auth_service_broker/firebase_auth_service_broker.dart';
 export 'database_query_broker/firebase_firestore_query_broker.dart';
-export 'database_service_broker/firebase_firestore_service_broker.dart';
 export 'database_service_broker/cache_service_broker.dart';
+export 'database_service_broker/firebase_firestore_service_broker.dart';
