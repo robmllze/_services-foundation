@@ -1,12 +1,12 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev 
+// X|Y|Z & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
-// 
+//
 // Licensing details can be found in the LICENSE file in the root directory.
-// 
+//
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
@@ -14,28 +14,23 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-final class MessagingUtils {
+class EventService extends CollectionServiceInterface<ModelEvent> {
   //
   //
   //
 
-  MessagingUtils._();
+  EventService({
+    required super.serviceEnvironment,
+    required super.ref,
+    required super.limit,
+  });
 
   //
   //
   //
 
-  static ModelMessageDef? getMessageDefFromEvent(ModelEvent e) {
-    if (e.defType == EventDefType.MESSAGE) {
-      final def = e.def;
-      if (def != null) {
-        final defModel = ModelMessageDef.fromJson(def);
-        final message = defModel.message;
-        if (message != null && message.isNotEmpty) {
-          return defModel;
-        }
-      }
-    }
-    return null;
+  @override
+  dynamic fromJson(Map<String, dynamic> modelData) {
+    return ModelEvent.fromJson(modelData);
   }
 }

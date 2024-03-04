@@ -81,7 +81,9 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required String email,
     required String password,
   }) async {
-    await this.firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+    await this
+        .firebaseAuth
+        .signInWithEmailAndPassword(email: email, password: password);
     await this._postLogin();
   }
 
@@ -94,7 +96,9 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required String email,
     required String password,
   }) async {
-    await this.firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+    await this
+        .firebaseAuth
+        .createUserWithEmailAndPassword(email: email, password: password);
     await this._postLogin();
   }
 
@@ -103,7 +107,8 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
 
   Future<void> _postLogin() async {
-    final userBroker = _firebaseUserToUserBroker(this.firebaseAuth.currentUser!);
+    final userBroker =
+        _firebaseUserToUserBroker(this.firebaseAuth.currentUser!);
     await super.pCurrentUser.set(userBroker);
     await this._handleSpontaneousAuthStateChanges();
   }

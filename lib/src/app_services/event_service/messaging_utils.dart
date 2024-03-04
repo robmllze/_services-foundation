@@ -14,30 +14,27 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-final class UserPubUtils {
+final class MessagingUtils {
   //
   //
   //
 
-  UserPubUtils._();
+  MessagingUtils._();
 
   //
   //
   //
 
-  static Stream<ModelUserPub?>? userPubStream(
-    ServiceEnvironment serviceEnvironment, {
-    String? userPubId,
-  }) {
-    userPubId = userPubId ?? serviceEnvironment.authServiceBroker.pCurrentUser.value?.userPubId;
-    assert(userPubId != null);
-    if (userPubId != null) {
-      final userPubPath = Schema.userPubsRef(userPubId: userPubId);
-      final userPubDataStream = serviceEnvironment.databaseServiceBroker.streamModel(userPubPath);
-      final userPubModelStream = userPubDataStream.map((e) {
-        return e != null ? ModelUserPub.fromJson(e.toJson()) : null;
-      });
-      return userPubModelStream;
+  static ModelMessageDef? getMessageDefFromEvent(ModelEvent e) {
+    if (e.defType == EventDefType.MESSAGE) {
+      final def = e.def;
+      if (def != null) {
+        final defModel = ModelMessageDef.fromJson(def);
+        final message = defModel.message;
+        if (message != null && message.isNotEmpty) {
+          return defModel;
+        }
+      }
     }
     return null;
   }

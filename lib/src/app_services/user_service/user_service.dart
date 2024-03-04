@@ -1,12 +1,12 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev 
+// X|Y|Z & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
-// 
+//
 // Licensing details can be found in the LICENSE file in the root directory.
-// 
+//
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
@@ -14,12 +14,12 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class UserPubService extends DocumentServiceInterface<ModelUserPub> {
+class UserService extends DocumentServiceInterface<ModelUser> {
   //
   //
   //
 
-  UserPubService({
+  UserService({
     required super.serviceEnvironment,
     required super.id,
   });
@@ -29,14 +29,14 @@ class UserPubService extends DocumentServiceInterface<ModelUserPub> {
   //
 
   @override
-  DataRef databaseRef() => Schema.userPubsRef(userPubId: id);
+  DataRef databaseRef() => Schema.usersRef(userId: id);
 
   //
   //
   //
 
   @override
-  ModelUserPub fromJson(Map<String, dynamic> modelData) {
-    return ModelUserPub.fromJson(modelData);
+  ModelUser fromJson(Map<String, dynamic> modelData) {
+    return ModelUser.fromJson(modelData);
   }
 }

@@ -146,7 +146,8 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface<Model> {
     Future<void> Function(Iterable<GenericModel>)? onUpdate,
     int limit = 1000,
   }) {
-    final collectionRef = this.firebaseFirestore.collection(ref.collectionPath!).limit(limit);
+    final collectionRef =
+        this.firebaseFirestore.collection(ref.collectionPath!).limit(limit);
     return collectionRef.snapshots().asyncMap((querySnapshot) async {
       final modelsData = querySnapshot.docs.map((e) => e.data());
       final models = modelsData.map((e) => GenericModel(e)).toList();
