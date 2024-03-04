@@ -7,7 +7,6 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-export 'all_src.g.dart';
 export 'app_services/create_service_environment.dart';
 export 'app_services/event_service/event_service.dart';
 export 'app_services/event_service/event_utils.dart';
