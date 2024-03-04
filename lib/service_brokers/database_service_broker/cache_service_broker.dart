@@ -28,7 +28,9 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
   //
   //
 
-  CacheServiceBroker({required this.sharedPreferences});
+  CacheServiceBroker({
+    required this.sharedPreferences,
+  });
 
   //
   //
@@ -36,8 +38,8 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
 
   @override
   Future<void> setModel(Model model, DataRef ref) async {
-    final value = model.toJsonString();
-    await this.sharedPreferences.setString(ref.key, value);
+    final modelString = model.toJsonString();
+    await this.sharedPreferences.setString(ref.key, modelString);
   }
 
   //
@@ -46,8 +48,8 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
 
   @override
   Future<void> updateModel(Model model, DataRef ref) async {
-    final value = model.toJsonString();
-    await this.sharedPreferences.setString(ref.key, value);
+    final modelString = model.toJsonString();
+    await this.sharedPreferences.setString(ref.key, modelString);
   }
 
   //
@@ -56,9 +58,10 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
 
   @override
   Future<GenericModel?> getModel(DataRef ref) async {
-    final value = this.sharedPreferences.getString(ref.key);
-    if (value != null) {
-      return GenericModel(jsonDecode(value));
+    final modelString = this.sharedPreferences.getString(ref.key);
+    if (modelString != null) {
+      final modelData = jsonDecode(modelString);
+      return GenericModel(modelData);
     }
     return null;
   }
@@ -95,8 +98,8 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
       final dataRef = write.ref;
       final model = write.model;
       if (model != null) {
-        final value = model.toJsonString();
-        await this.sharedPreferences.setString(dataRef.key, value);
+        final modelString = model.toJsonString();
+        await this.sharedPreferences.setString(dataRef.key, modelString);
       } else if (write.delete) {
         await this.sharedPreferences.remove(dataRef.key);
       }
@@ -108,7 +111,7 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
   //
 
   @override
-  Stream<GenericModel?> streamModelData(
+  Stream<GenericModel?> streamModel(
     DataRef dataRef, [
     Future<void> Function(GenericModel?)? onUpdate,
   ]) {
@@ -120,7 +123,7 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
   //
 
   @override
-  Stream<Iterable<GenericModel>> streamModelDataCollection(
+  Stream<Iterable<GenericModel>> streamModelCollection(
     DataRef ref, {
     Future<void> Function(Iterable<GenericModel>)? onUpdate,
     int limit = 1000,
