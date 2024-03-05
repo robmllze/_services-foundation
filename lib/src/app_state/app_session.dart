@@ -31,7 +31,7 @@ abstract class AppSession {
   //
   //
 
-  bool _didStart = false;
+  //bool _didStart = false;
 
   //
   //
@@ -47,7 +47,7 @@ abstract class AppSession {
     //   !this.loggedIn,
     //   "The user is already logged in.",
     // );
-    this._didStart = true;
+    //this._didStart = true;
   }
 
   //
@@ -64,7 +64,7 @@ abstract class AppSession {
     //   this.loggedOut,
     //   "The user is already logged out.",
     // );
-    this._didStart = false;
+    //this._didStart = false;
   }
 
   //

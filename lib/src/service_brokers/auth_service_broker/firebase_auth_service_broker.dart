@@ -116,7 +116,9 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   Future<void> sendPasswordResetEmail({
     required String email,
   }) async {
-    await this.firebaseAuth.sendPasswordResetEmail(email: email);
+    await this.firebaseAuth.sendPasswordResetEmail(
+          email: email,
+        );
   }
 
   //

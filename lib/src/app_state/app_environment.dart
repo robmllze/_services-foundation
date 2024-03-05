@@ -28,6 +28,7 @@ abstract class AppEnvironment<TAppSession extends AppSession> {
 
   AppEnvironment(this.serviceEnvironment) {
     this.pAppSession = Pod<TAppSession>(this.createAppSession());
+    this._defineAuthStateChangesBehaviour();
   }
 
   //
@@ -36,14 +37,6 @@ abstract class AppEnvironment<TAppSession extends AppSession> {
 
   var _didAlreadyStartApp = false;
   bool get didAlreadyStartApp => this._didAlreadyStartApp;
-
-  //
-  //
-  //
-
-  void initApp() async {
-    this._defineAuthStateChangesBehaviour();
-  }
 
   //
   //
