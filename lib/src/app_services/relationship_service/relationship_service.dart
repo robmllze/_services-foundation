@@ -92,7 +92,7 @@ class RelationshipService
       futureServicesToAdd.add(
         eventsService.initService().then((_) {
           Here().debugLogStart(
-              "Added EventService for relationshipId: $relationshipId");
+              "Added EventService for relationshipId: $relationshipId",);
           return MapEntry(relationshipId, eventsService);
         }),
       );
@@ -119,7 +119,7 @@ class RelationshipService
   //
 
   Future<void> _onRemoveRelationships(
-      Set<String> relationshipIdsToRemove) async {
+      Set<String> relationshipIdsToRemove,) async {
     await this.pEventServicePool.update(
           (e) => e
             ..removeWhere(
@@ -128,7 +128,7 @@ class RelationshipService
                 if (remove) {
                   eventService.dispose();
                   Here().debugLogStop(
-                      "Removed EventService for relationshipId: $relationshipId");
+                      "Removed EventService for relationshipId: $relationshipId",);
                 }
                 return remove;
               },
