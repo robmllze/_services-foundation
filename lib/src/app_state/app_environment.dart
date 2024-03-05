@@ -34,12 +34,15 @@ abstract class AppEnvironment<TAppSession extends AppSession> {
   //
   //
 
+  var _didAlreadyStartApp = false;
+  bool get didAlreadyStartApp => this._didAlreadyStartApp;
+
   //
   //
   //
 
   void initApp() async {
-    this.defineAuthStateChangesBehaviour();
+    this._defineAuthStateChangesBehaviour();
   }
 
   //
@@ -52,5 +55,35 @@ abstract class AppEnvironment<TAppSession extends AppSession> {
   //
   //
 
-  void defineAuthStateChangesBehaviour();
+  void _defineAuthStateChangesBehaviour() {
+    this.serviceEnvironment.authServiceBroker
+      ..onLogin = (userInterface) {
+        if (this._didAlreadyStartApp) {
+          this.onLogin(userInterface);
+        } else {
+          this.onFreshLogin(userInterface);
+        }
+        this._didAlreadyStartApp = true;
+      }
+      ..onLogout = () {
+        if (this._didAlreadyStartApp) {
+          this.onLogout();
+        } else {
+          this.onFreshLogout();
+        }
+        this._didAlreadyStartApp = true;
+      };
+  }
+
+  //
+  //
+  //
+
+  void onFreshLogin(UserInterface currentUser);
+
+  void onLogin(UserInterface currentUser);
+
+  void onFreshLogout();
+
+  void onLogout();
 }
