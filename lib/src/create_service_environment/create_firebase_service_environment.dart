@@ -32,6 +32,5 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment(
     ),
     databaseQueryBroker: FirebaseFirestoreQueryBroker.instance,
   );
-  await serviceEnvironment.authServiceBroker.checkPersistency();
   return serviceEnvironment;
 }

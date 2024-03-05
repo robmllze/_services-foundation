@@ -39,14 +39,14 @@ abstract class AppSession {
 
   @mustCallSuper
   FutureOr<void> startSession(UserInterface currentUser) async {
-    assert(
-      !this._didStart,
-      "The session has already been started.",
-    );
-    assert(
-      !this.loggedIn,
-      "The user is already logged in.",
-    );
+    // assert(
+    //   !this._didStart,
+    //   "The session has already been started.",
+    // );
+    // assert(
+    //   !this.loggedIn,
+    //   "The user is already logged in.",
+    // );
     this._didStart = true;
   }
 
@@ -56,14 +56,14 @@ abstract class AppSession {
 
   @mustCallSuper
   FutureOr<void> stopSession() async {
-    assert(
-      this._didStart,
-      "The session has already been stopped.",
-    );
-    assert(
-      this.loggedOut,
-      "The user is already logged out.",
-    );
+    // assert(
+    //   this._didStart,
+    //   "The session has already been stopped.",
+    // );
+    // assert(
+    //   this.loggedOut,
+    //   "The user is already logged out.",
+    // );
     this._didStart = false;
   }
 

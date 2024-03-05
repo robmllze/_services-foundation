@@ -1,15 +1,14 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev 
+// X|Y|Z & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
-// 
+//
 // Licensing details can be found in the LICENSE file in the root directory.
-// 
+//
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
-
 
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -33,24 +32,28 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required this.firebaseAuth,
     super.onLogin,
     super.onLogout,
-  });
+  }) {
+    this.startHandlingAuthStateChanges();
+  }
 
   //
   //
   //
 
-  Future<void> _handleSpontaneousAuthStateChanges() async {
-    StreamSubscription<User?>? authStateChangesSubscription;
-    authStateChangesSubscription =
-        this.firebaseAuth.authStateChanges().listen((final firebaseUser) async {
-      if (firebaseUser != null) {
-        Here().debugLogStart("Log-in detected...");
-        final userBroker = _firebaseUserToUserBroker(firebaseUser);
-        await super.pCurrentUser.set(userBroker);
-        super.onLogin?.call(userBroker);
+  StreamSubscription<User?>? _authStateChangesSubscription;
+
+  //
+  //
+  //
+
+  Future<void> startHandlingAuthStateChanges() async {
+    await stopHandlingAuthStateChanges();
+    this._authStateChangesSubscription = this.firebaseAuth.authStateChanges().listen((user) async {
+      if (user != null) {
+        final userInterface = user.toUserInterface();
+        await super.pCurrentUser.set(userInterface);
+        super.onLogin?.call(userInterface);
       } else {
-        Here().debugLogStop("log_out detected...");
-        authStateChangesSubscription?.cancel();
         await super.pCurrentUser.set(null);
         super.onLogout?.call();
       }
@@ -61,14 +64,8 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
   //
 
-  @override
-  Future<bool> checkPersistency() async {
-    final currentFirebaseUser = this.firebaseAuth.currentUser;
-    final loggedIn = currentFirebaseUser != null;
-    if (loggedIn) {
-      await this._postLogin();
-    }
-    return loggedIn;
+  Future<void> stopHandlingAuthStateChanges() async {
+    await this._authStateChangesSubscription?.cancel();
   }
 
   //
@@ -80,10 +77,10 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required String email,
     required String password,
   }) async {
-    await this
-        .firebaseAuth
-        .signInWithEmailAndPassword(email: email, password: password);
-    await this._postLogin();
+    await this.firebaseAuth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
   }
 
   //
@@ -95,21 +92,10 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required String email,
     required String password,
   }) async {
-    await this
-        .firebaseAuth
-        .createUserWithEmailAndPassword(email: email, password: password);
-    await this._postLogin();
-  }
-
-  //
-  //
-  //
-
-  Future<void> _postLogin() async {
-    final userBroker =
-        _firebaseUserToUserBroker(this.firebaseAuth.currentUser!);
-    await super.pCurrentUser.set(userBroker);
-    await this._handleSpontaneousAuthStateChanges();
+    await this.firebaseAuth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
   }
 
   //
@@ -138,17 +124,16 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
 
   @override
-  Future<String?> getIdToken() async {
-    final token = await this.firebaseAuth.currentUser!.getIdToken();
-    return token;
-  }
+  Future<String?> getIdToken() => this.firebaseAuth.currentUser!.getIdToken();
 }
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-UserInterface _firebaseUserToUserBroker(User firebaseAuthUser) {
-  return UserInterface(
-    userId: firebaseAuthUser.uid,
-    email: firebaseAuthUser.email!,
-  );
+extension UserToUserInterfaceExtension on User {
+  UserInterface toUserInterface() {
+    return UserInterface(
+      userId: this.uid,
+      email: this.email!,
+    );
+  }
 }

@@ -1,12 +1,12 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev 
+// X|Y|Z & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
-// 
+//
 // Licensing details can be found in the LICENSE file in the root directory.
-// 
+//
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
@@ -14,8 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class RelationshipService
-    extends CollectionServiceInterface<ModelRelationship> {
+class RelationshipService extends CollectionServiceInterface<ModelRelationship> {
   //
   //
   //
@@ -50,8 +49,7 @@ class RelationshipService
       await this._addRelationships(updatedRelationshipIds);
       await this._removeRelationships(updatedRelationshipIds);
       this._currentRelationshipIds = updatedRelationshipIds;
-      final updatedConnectionIds =
-          RelationshipUtils.extractMemberIdsFromRelationships(e);
+      final updatedConnectionIds = RelationshipUtils.extractMemberIdsFromRelationships(e);
       await this._addConnections(updatedConnectionIds);
       await this._removeConnections(updatedConnectionIds);
       this._currentConnectionIds = updatedConnectionIds;
@@ -92,7 +90,8 @@ class RelationshipService
       futureServicesToAdd.add(
         eventsService.initService().then((_) {
           Here().debugLogStart(
-              "Added EventService for relationshipId: $relationshipId",);
+            "Added EventService for relationshipId: $relationshipId",
+          );
           return MapEntry(relationshipId, eventsService);
         }),
       );
@@ -119,7 +118,8 @@ class RelationshipService
   //
 
   Future<void> _onRemoveRelationships(
-      Set<String> relationshipIdsToRemove,) async {
+    Set<String> relationshipIdsToRemove,
+  ) async {
     await this.pEventServicePool.update(
           (e) => e
             ..removeWhere(
@@ -128,7 +128,8 @@ class RelationshipService
                 if (remove) {
                   eventService.dispose();
                   Here().debugLogStop(
-                      "Removed EventService for relationshipId: $relationshipId",);
+                    "Removed EventService for relationshipId: $relationshipId",
+                  );
                 }
                 return remove;
               },
@@ -163,16 +164,14 @@ class RelationshipService
       futureServicesToAdd.add(
         connectionService.initService().then((_) {
           Here().debugLogStart(
-            "Added User zService for connectionId $connectionId",
+            "Added User Service for connectionId $connectionId",
           );
           return MapEntry(connectionId, connectionService);
         }),
       );
     }
     final servicesToAdd = await Future.wait(futureServicesToAdd);
-    await this
-        .pConnectionServicePool
-        .update((e) => e..addEntries(servicesToAdd));
+    await this.pConnectionServicePool.update((e) => e..addEntries(servicesToAdd));
   }
 
   //
@@ -216,10 +215,7 @@ class RelationshipService
 
   @override
   Stream<Iterable<ModelRelationship>> stream() {
-    return this
-        .serviceEnvironment
-        .databaseQueryBroker
-        .queryRelationshipsForMembers(
+    return this.serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
       databaseService: serviceEnvironment.databaseServiceBroker,
       memberIds: {this.userPubId},
     );
