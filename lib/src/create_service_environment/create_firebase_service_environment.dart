@@ -10,28 +10,27 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_core/firebase_core.dart';
 
-import '/_common.dart';
+// import '/_common.dart';
 
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+// // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-/// Creates a service environment that mainly uses Firebase services.
-Future<ServiceEnvironment> createFirebaseServiceEnvironment(
-  FirebaseOptions firebaseOptions,
-) async {
-  await Firebase.initializeApp(options: firebaseOptions);
-  final serviceEnvironment = ServiceEnvironment(
-    authServiceBroker: FirebaseAuthServiceBroker(
-      firebaseAuth: FirebaseAuth.instance,
-    ),
-    databaseServiceBroker: FirebaseFirestoreServiceBroker(
-      firebaseFirestore: FirebaseFirestore.instance,
-    ),
-    databaseQueryBroker: FirebaseFirestoreQueryBroker.instance,
-  );
-  await serviceEnvironment.authServiceBroker.checkPersistency();
-  return serviceEnvironment;
-}
+// /// Creates a service environment that mainly uses Firebase services.
+// Future<ServiceEnvironment> createFirebaseServiceEnvironment(
+//   FirebaseOptions firebaseOptions,
+// ) async {
+//   await Firebase.initializeApp(options: firebaseOptions);
+//   final serviceEnvironment = ServiceEnvironment(
+//     authServiceBroker: FirebaseAuthServiceBroker(
+//       firebaseAuth: FirebaseAuth.instance,
+//     ),
+//     databaseServiceBroker: FirebaseFirestoreServiceBroker(
+//       firebaseFirestore: FirebaseFirestore.instance,
+//     ),
+//     databaseQueryBroker: FirebaseFirestoreQueryBroker.instance,
+//   );
+//   return serviceEnvironment;
+// }
