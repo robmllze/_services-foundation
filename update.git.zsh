@@ -3,5 +3,5 @@ git init
 git add .
 git commit -m "upstream"
 git remote add upstream https://github.com/robmllze/_services-foundation.git
-git fetch
+git fetch upstream
 git merge upstream/main --allow-unrelated-histories --no-edit
