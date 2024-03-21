@@ -15,7 +15,7 @@
 cd _services
 git init
 git add .
-git commit -m 'upstream'
+git commit -m Upstream
 git remote remove upstream
 git remote add upstream https://github.com/robmllze/_services-foundation.git
 git fetch upstream
