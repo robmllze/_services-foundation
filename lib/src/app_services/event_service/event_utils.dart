@@ -1,16 +1,16 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev 
+// 🇽🇾🇿 & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
-// 
+//
 // Licensing details can be found in the LICENSE file in the root directory.
-// 
+//
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import "/_common.dart";
+import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
@@ -235,7 +235,7 @@ final class EventUtils {
     await serviceEnvironment.databaseServiceBroker.updateModel(
       GenericModel({
         eventTag: {
-          userPubId: value ? DateTime.now().toUtc().toIso8601String() : "",
+          userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
         },
       }),
       eventsRef,
@@ -252,7 +252,7 @@ final class EventUtils {
       eventsRef,
       model: GenericModel({
         eventTag: {
-          userPubId: value ? DateTime.now().toUtc().toIso8601String() : "",
+          userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
         },
       }),
     );

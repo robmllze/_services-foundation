@@ -1,7 +1,7 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev
+// 🇽🇾🇿 & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
 //
@@ -10,7 +10,7 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import "/_common.dart";
+import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
@@ -41,11 +41,11 @@ abstract class AppSession {
   FutureOr<void> startSession(UserInterface currentUser) async {
     // assert(
     //   !this._didStart,
-    //   "The session has already been started.",
+    //   'The session has already been started.',
     // );
     // assert(
     //   !this.loggedIn,
-    //   "The user is already logged in.",
+    //   'The user is already logged in.',
     // );
     //this._didStart = true;
   }
@@ -58,11 +58,11 @@ abstract class AppSession {
   FutureOr<void> stopSession() async {
     // assert(
     //   this._didStart,
-    //   "The session has already been stopped.",
+    //   'The session has already been stopped.',
     // );
     // assert(
     //   this.loggedOut,
-    //   "The user is already logged out.",
+    //   'The user is already logged out.',
     // );
     //this._didStart = false;
   }

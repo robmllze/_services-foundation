@@ -1,7 +1,7 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev
+// 🇽🇾🇿 & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
 //
@@ -10,11 +10,12 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import "/_common.dart";
+import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class RelationshipService extends CollectionServiceInterface<ModelRelationship> {
+class RelationshipService
+    extends CollectionServiceInterface<ModelRelationship> {
   //
   //
   //
@@ -49,7 +50,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       await this._addRelationships(updatedRelationshipIds);
       await this._removeRelationships(updatedRelationshipIds);
       this._currentRelationshipIds = updatedRelationshipIds;
-      final updatedConnectionIds = RelationshipUtils.extractMemberIdsFromRelationships(e);
+      final updatedConnectionIds =
+          RelationshipUtils.extractMemberIdsFromRelationships(e);
       await this._addConnections(updatedConnectionIds);
       await this._removeConnections(updatedConnectionIds);
       this._currentConnectionIds = updatedConnectionIds;
@@ -69,7 +71,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       this._currentRelationshipIds,
       updatedRelationshipIds,
     );
-    Here().debugLog("Relationships to add: $relationshipIdsToAdd");
+    Here().debugLog('Relationships to add: $relationshipIdsToAdd');
     await this._onAddRelationships(relationshipIdsToAdd);
   }
 
@@ -90,7 +92,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       futureServicesToAdd.add(
         eventsService.initService().then((_) {
           Here().debugLogStart(
-            "Added EventService for relationshipId: $relationshipId",
+            'Added EventService for relationshipId: $relationshipId',
           );
           return MapEntry(relationshipId, eventsService);
         }),
@@ -109,7 +111,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       updatedRelationshipIds,
       this._currentRelationshipIds,
     );
-    Here().debugLog("Relationship to remove: $relationshipIdsToRemove");
+    Here().debugLog('Relationship to remove: $relationshipIdsToRemove');
     await this._onRemoveRelationships(relationshipIdsToRemove);
   }
 
@@ -128,7 +130,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
                 if (remove) {
                   eventService.dispose();
                   Here().debugLogStop(
-                    "Removed EventService for relationshipId: $relationshipId",
+                    'Removed EventService for relationshipId: $relationshipId',
                   );
                 }
                 return remove;
@@ -146,7 +148,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       this._currentConnectionIds,
       updatedConnectionIds,
     );
-    Here().debugLog("Connections to add: $connectionIdsToAdd");
+    Here().debugLog('Connections to add: $connectionIdsToAdd');
     await this._onAddConnections(connectionIdsToAdd);
   }
 
@@ -164,14 +166,16 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       futureServicesToAdd.add(
         connectionService.initService().then((_) {
           Here().debugLogStart(
-            "Added User Service for connectionId $connectionId",
+            'Added User Service for connectionId $connectionId',
           );
           return MapEntry(connectionId, connectionService);
         }),
       );
     }
     final servicesToAdd = await Future.wait(futureServicesToAdd);
-    await this.pConnectionServicePool.update((e) => e..addEntries(servicesToAdd));
+    await this
+        .pConnectionServicePool
+        .update((e) => e..addEntries(servicesToAdd));
   }
 
   //
@@ -183,7 +187,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       updatedConnectionIds,
       this._currentConnectionIds,
     );
-    Here().debugLog("Connections to remove: $connectionIdsToRemove");
+    Here().debugLog('Connections to remove: $connectionIdsToRemove');
     await this._onRemoveConnection(connectionIdsToRemove);
   }
 
@@ -200,7 +204,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
                 if (remove) {
                   eventService.dispose();
                   Here().debugLogStop(
-                    "Removed UserPubService for connectionId: $connectionId",
+                    'Removed UserPubService for connectionId: $connectionId',
                   );
                 }
                 return remove;
@@ -215,7 +219,10 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
 
   @override
   Stream<Iterable<ModelRelationship>> stream() {
-    return this.serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
+    return this
+        .serviceEnvironment
+        .databaseQueryBroker
+        .queryRelationshipsForMembers(
       databaseService: serviceEnvironment.databaseServiceBroker,
       memberIds: {this.userPubId},
     );
