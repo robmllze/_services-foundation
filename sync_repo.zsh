@@ -10,7 +10,8 @@
 ## ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ##.title~
 
-# Sync this folder with https://github.com/robmllze/_services-foundation.
+# Sync this folder with https://github.com/robmllze/_services-foundation. You can
+# change 'main' to another branch if necessary.
 cd _services
 git init
 git add .
