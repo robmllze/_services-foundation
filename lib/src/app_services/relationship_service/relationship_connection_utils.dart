@@ -29,7 +29,8 @@ final class RelationshipConnectionUtils {
     required List<(String, UserPubService)>? connectionServicePool,
     required String userPubId,
   }) {
-    final connectionService = connectionServicePool?.firstWhereOrNull((e) => e.$1 == userPubId)?.$2;
+    final connectionService =
+        connectionServicePool?.firstWhereOrNull((e) => e.$1 == userPubId)?.$2;
     return connectionService;
   }
 
@@ -43,12 +44,14 @@ final class RelationshipConnectionUtils {
   ) {
     if (connectionId != null) {
       if (relationshipPool != null && relationshipPool.isNotEmpty) {
-        final connectionRelationships = RelationshipConnectionUtils.getRelationshipsForConnection(
+        final connectionRelationships =
+            RelationshipConnectionUtils.getRelationshipsForConnection(
           relationshipPool: relationshipPool,
           connectionId: connectionId,
         );
         if (connectionRelationships.isNotEmpty) {
-          final relationshipIds = connectionRelationships.map((e) => e.id).nonNulls;
+          final relationshipIds =
+              connectionRelationships.map((e) => e.id).nonNulls;
           return relationshipIds;
         }
       }
@@ -64,6 +67,7 @@ final class RelationshipConnectionUtils {
     required Iterable<ModelRelationship> relationshipPool,
     required String connectionId,
   }) {
-    return relationshipPool.where((e) => e.memberIds?.contains(connectionId) == true);
+    return relationshipPool
+        .where((e) => e.memberIds?.contains(connectionId) == true);
   }
 }

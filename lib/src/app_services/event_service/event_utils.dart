@@ -37,7 +37,8 @@ final class EventUtils {
             ?.where(
               (e) =>
                   (eventTypes.isEmpty || eventTypes.contains(e.defType)) &&
-                  (senderPubId == null || e.whenSent?.keys.contains(senderPubId) != true) &&
+                  (senderPubId == null ||
+                      e.whenSent?.keys.contains(senderPubId) != true) &&
                   (!includeHidden && !e.isHidden) &&
                   (!includeArchived && !e.isArchived) &&
                   (!includeRead && !e.isRead),

@@ -48,7 +48,8 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
 
   Future<void> startHandlingAuthStateChanges() async {
     await stopHandlingAuthStateChanges();
-    this._authStateChangesSubscription = this.firebaseAuth.authStateChanges().listen((user) async {
+    this._authStateChangesSubscription =
+        this.firebaseAuth.authStateChanges().listen((user) async {
       if (user != null) {
         final userInterface = user.toUserInterface();
         await super.pCurrentUser.set(userInterface);

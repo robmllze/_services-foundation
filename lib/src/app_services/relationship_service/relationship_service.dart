@@ -14,7 +14,8 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class RelationshipService extends CollectionServiceInterface<ModelRelationship> {
+class RelationshipService
+    extends CollectionServiceInterface<ModelRelationship> {
   //
   //
   //
@@ -49,7 +50,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       await this._addRelationships(updatedRelationshipIds);
       await this._removeRelationships(updatedRelationshipIds);
       this._currentRelationshipIds = updatedRelationshipIds;
-      final updatedConnectionIds = RelationshipUtils.extractMemberIdsFromRelationships(e);
+      final updatedConnectionIds =
+          RelationshipUtils.extractMemberIdsFromRelationships(e);
       await this._addConnections(updatedConnectionIds);
       await this._removeConnections(updatedConnectionIds);
       this._currentConnectionIds = updatedConnectionIds;
@@ -171,7 +173,9 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       );
     }
     final servicesToAdd = await Future.wait(futureServicesToAdd);
-    await this.pConnectionServicePool.update((e) => e..addEntries(servicesToAdd));
+    await this
+        .pConnectionServicePool
+        .update((e) => e..addEntries(servicesToAdd));
   }
 
   //
@@ -215,7 +219,10 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
 
   @override
   Stream<Iterable<ModelRelationship>> stream() {
-    return this.serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
+    return this
+        .serviceEnvironment
+        .databaseQueryBroker
+        .queryRelationshipsForMembers(
       databaseService: serviceEnvironment.databaseServiceBroker,
       memberIds: {this.userPubId},
     );
