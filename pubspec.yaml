@@ -35,10 +35,6 @@ dependencies:
   xyz_pod: ^0.23.1
   xyz_utils: ^0.51.1
 
-  cloud_firestore: ^4.15.9
-  firebase_auth: ^4.17.9
-  firebase_storage: ^11.6.10
-  firebase_core: ^2.27.1
   shared_preferences: ^2.2.2
   meta: any
 
