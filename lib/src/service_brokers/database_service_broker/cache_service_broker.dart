@@ -1,7 +1,7 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev
+// 🇽🇾🇿 & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
 //
@@ -10,9 +10,9 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import "package:shared_preferences/shared_preferences.dart";
+import 'package:shared_preferences/shared_preferences.dart';
 
-import "/_common.dart";
+import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
@@ -83,7 +83,7 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
   Future<void> runTransaction(
     Future<void> Function(dynamic) transactionHandler,
   ) async {
-    throw UnsupportedError("Not supported for SharedPreferences");
+    throw UnsupportedError('Not supported for SharedPreferences');
   }
 
   //
@@ -115,7 +115,7 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
     DataRef dataRef, [
     Future<void> Function(GenericModel?)? onUpdate,
   ]) {
-    throw UnsupportedError("Not supported for SharedPreferences");
+    throw UnsupportedError('Not supported for SharedPreferences');
   }
 
   //
@@ -128,6 +128,6 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
     Future<void> Function(Iterable<GenericModel>)? onUpdate,
     int limit = 1000,
   }) {
-    throw UnsupportedError("Not supported for SharedPreferences");
+    throw UnsupportedError('Not supported for SharedPreferences');
   }
 }

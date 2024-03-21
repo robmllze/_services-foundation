@@ -1,7 +1,7 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev
+// 🇽🇾🇿 & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
 //
@@ -10,7 +10,7 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import "/_common.dart";
+import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
@@ -37,8 +37,7 @@ final class EventUtils {
             ?.where(
               (e) =>
                   (eventTypes.isEmpty || eventTypes.contains(e.defType)) &&
-                  (senderPubId == null ||
-                      e.whenSent?.keys.contains(senderPubId) != true) &&
+                  (senderPubId == null || e.whenSent?.keys.contains(senderPubId) != true) &&
                   (!includeHidden && !e.isHidden) &&
                   (!includeArchived && !e.isArchived) &&
                   (!includeRead && !e.isRead),
@@ -235,7 +234,7 @@ final class EventUtils {
     await serviceEnvironment.databaseServiceBroker.updateModel(
       GenericModel({
         eventTag: {
-          userPubId: value ? DateTime.now().toUtc().toIso8601String() : "",
+          userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
         },
       }),
       eventsRef,
@@ -252,7 +251,7 @@ final class EventUtils {
       eventsRef,
       model: GenericModel({
         eventTag: {
-          userPubId: value ? DateTime.now().toUtc().toIso8601String() : "",
+          userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
         },
       }),
     );

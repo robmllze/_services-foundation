@@ -1,7 +1,7 @@
 //.title
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //
-// X|Y|Z & Dev
+// 🇽🇾🇿 & Dev
 //
 // Copyright Ⓒ Robert Mollentze, xyzand.dev
 //
@@ -10,15 +10,15 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-export "dart:async";
+export 'dart:async';
 
-export "package:meta/meta.dart";
+export 'package:meta/meta.dart';
 
-export "package:xyz_gen_annotations/xyz_gen_annotations.dart";
-export "package:xyz_pod/xyz_pod.dart";
-export "package:xyz_utils/xyz_utils.dart";
+export 'package:xyz_gen_annotations/xyz_gen_annotations.dart';
+export 'package:xyz_pod/xyz_pod.dart';
+export 'package:xyz_utils/xyz_utils.dart';
 
-export "package:_data/lib.dart";
-export "package:_service_interfaces/lib.dart";
+export 'package:_data/lib.dart';
+export 'package:_service_interfaces/lib.dart';
 
-export "src/_all_src.g.dart";
+export 'src/_all_src.g.dart';
