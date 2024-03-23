@@ -3,10 +3,8 @@
 ##
 ## 🇽🇾🇿 & Dev
 ##
-## Copyright Ⓒ Robert Mollentze, xyzand.dev
-## 
-## Licensing details can be found in the LICENSE file in the root directory.
-## 
+## Licencing details are in the LICENSE file in the root directory.
+##
 ## ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ##.title~
 
@@ -33,7 +31,7 @@ linter:
     no_leading_underscores_for_local_identifiers: false
     depend_on_referenced_packages: false
 analyzer:
-  exclude: 
+  exclude:
     - build/**
   errors:
     prefer_final_in_for_each: error
