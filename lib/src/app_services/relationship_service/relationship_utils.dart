@@ -110,7 +110,7 @@ final class RelationshipUtils {
     userId = userId ?? serviceEnvironment.authServiceBroker.pCurrentUser.value?.userId;
     assert(userId != null);
     if (userId != null) {
-      final userPubId = IdUtils.mapUserIdToPubId(userId: userId);
+      final userPubId = IdUtils.toUserPubId(userId: userId);
       return serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
         databaseService: serviceEnvironment.databaseServiceBroker,
         memberIds: {userPubId},
