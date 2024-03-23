@@ -40,7 +40,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = (databaseService as FirebaseFirestoreServiceBroker)
         // ignore: invalid_use_of_visible_for_testing_member
         .firebaseFirestore
-        .collection(Schema.usersRef().collectionPath!);
+        .collection(Schema.userPubsRef().collectionPath!);
     // NB: Emails and searchable names must be lowercase for this function to work.
     final searchableQuery = nameOrEmailQuery.toLowerCase();
     // 0. Text length must be at least 2 to start the query.
