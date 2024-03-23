@@ -5,7 +5,7 @@
 ##
 ## Copyright Ⓒ Robert Mollentze, xyzand.dev
 ## 
-## Licensing details can be found in the LICENSE file in the root directory.
+## Licencing details are in the LICENSE file in the root directory.
 ## 
 ## ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 ##.title~
@@ -15,7 +15,7 @@
 cd _services
 git init
 git add .
-git commit -m 'upstream'
+git commit -m Upstream
 git remote remove upstream
 git remote add upstream https://github.com/robmllze/_services-foundation.git
 git fetch upstream

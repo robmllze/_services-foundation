@@ -3,9 +3,7 @@
 //
 // 🇽🇾🇿 & Dev
 //
-// Copyright Ⓒ Robert Mollentze, xyzand.dev
-//
-// Licensing details can be found in the LICENSE file in the root directory.
+// Licencing details are in the LICENSE file in the root directory.
 //
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
@@ -72,8 +70,7 @@ final class RelationshipUtils {
       relationshipId: relationshipId,
     );
     await serviceEnvironment.databaseServiceBroker.deleteModel(relationshipRef);
-    final collectionRef =
-        Schema.relationshipEventsRef(relationshipId: relationshipId);
+    final collectionRef = Schema.relationshipEventsRef(relationshipId: relationshipId);
     // await serviceEnvironment.functionsServiceBroker
     //     .deleteCollection(relationshipEventsCollectionPath);
     // ignore: invalid_use_of_visible_for_testing_member
@@ -91,8 +88,7 @@ final class RelationshipUtils {
     required ServiceEnvironment serviceEnvironment,
     required String relationshipId,
   }) async {
-    final genericModel =
-        await serviceEnvironment.databaseServiceBroker.getModel(
+    final genericModel = await serviceEnvironment.databaseServiceBroker.getModel(
       Schema.relationshipsRef(relationshipId: relationshipId),
     );
 
@@ -111,13 +107,11 @@ final class RelationshipUtils {
     ServiceEnvironment serviceEnvironment, {
     String? userId,
   }) {
-    userId = userId ??
-        serviceEnvironment.authServiceBroker.pCurrentUser.value?.userId;
+    userId = userId ?? serviceEnvironment.authServiceBroker.pCurrentUser.value?.userId;
     assert(userId != null);
     if (userId != null) {
       final userPubId = IdUtils.mapUserIdToPubId(userId: userId);
-      return serviceEnvironment.databaseQueryBroker
-          .queryRelationshipsForMembers(
+      return serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
         databaseService: serviceEnvironment.databaseServiceBroker,
         memberIds: {userPubId},
       );
