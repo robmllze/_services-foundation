@@ -3,8 +3,6 @@
 //
 // 🇽🇾🇿 & Dev
 //
-// Copyright Ⓒ Robert Mollentze, xyzand.dev
-//
 // Licensing details can be found in the LICENSE file in the root directory.
 //
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -37,8 +35,7 @@ final class EventUtils {
             ?.where(
               (e) =>
                   (eventTypes.isEmpty || eventTypes.contains(e.defType)) &&
-                  (senderPubId == null ||
-                      e.whenSent?.keys.contains(senderPubId) != true) &&
+                  (senderPubId == null || e.whenSent?.keys.contains(senderPubId) != true) &&
                   (!includeHidden && !e.isHidden) &&
                   (!includeArchived && !e.isArchived) &&
                   (!includeRead && !e.isRead),
