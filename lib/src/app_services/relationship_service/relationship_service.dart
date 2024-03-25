@@ -42,18 +42,21 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   @override
   Future<void> initService() async {
     this.cancelSubscriptions();
-    super.subscription = this.stream().listen((e) async {
-      final updatedRelationshipIds = e.map((e) => e.id).nonNulls.toSet();
+    super.subscription = this.stream().listen((rels) async {
+      final updatedRelationshipIds = rels.map((rel) => rel.id).nonNulls.toSet();
       await this._addRelationships(updatedRelationshipIds);
       await this._removeRelationships(updatedRelationshipIds);
       this._currentRelationshipIds = updatedRelationshipIds;
-      final updatedConnectionIds = RelationshipUtils.extractMemberIdsFromRelationships(e);
+      final connectionRelationships =
+          rels.where((rel) => rel.defType == RelationshipDefType.USER_AND_USER);
+      final updatedConnectionIds =
+          RelationshipUtils.extractMemberIdsFromRelationships(connectionRelationships);
       await this._addConnections(updatedConnectionIds);
       await this._removeConnections(updatedConnectionIds);
       this._currentConnectionIds = updatedConnectionIds;
-      await super.pValue.set(e);
+      await super.pValue.set(rels);
       if (this.completer.isCompleted == false) {
-        this.completer.complete(e);
+        this.completer.complete(rels);
       }
     });
   }

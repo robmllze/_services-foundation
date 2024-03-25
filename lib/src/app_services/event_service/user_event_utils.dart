@@ -346,7 +346,7 @@ final class UserEventUtils {
     required String receiverPubId,
   }) async {
     final eventId = IdUtils.newEventId();
-    final eventDef = ModelRelationshipChangedDef(
+    final eventDef = ModelRelChangedDef(
       id: eventId,
       senderPubId: senderPubId,
       receiverPubId: receiverPubId,
@@ -372,7 +372,7 @@ final class UserEventUtils {
     required String receiverPubId,
   }) async {
     final eventId = IdUtils.newEventId();
-    final eventDef = ModelRelationshipDisabledDef(
+    final eventDef = ModelRelDisabledDef(
       id: eventId,
       senderPubId: senderPubId,
       receiverPubId: receiverPubId,
@@ -398,7 +398,7 @@ final class UserEventUtils {
     required String receiverPubId,
   }) async {
     final eventId = IdUtils.newEventId();
-    final eventDef = ModelRelationshipRemovedDef(
+    final eventDef = ModelRelRemovedDef(
       id: eventId,
       senderPubId: senderPubId,
       receiverPubId: receiverPubId,
