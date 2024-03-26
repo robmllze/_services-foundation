@@ -18,12 +18,6 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
 
   final String userPubId;
-  final pEventServicePool = Pod<Map<String, EventService>>({});
-
-  var _currentRelationshipIds = <String>{};
-
-  final pConnectionServicePool = Pod<Map<String, UserPubService>>({});
-  var _currentConnectionIds = <String>{};
 
   //
   //
@@ -39,6 +33,13 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
   //
 
+  final pEventServicePool = Pod<Map<String, EventService>>({});
+  var _currentRelationshipIds = <String>{};
+
+  //
+  //
+  //
+
   @override
   Future<void> initService() async {
     this.cancelSubscriptions();
@@ -47,13 +48,6 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       await this._addRelationships(updatedRelationshipIds);
       await this._removeRelationships(updatedRelationshipIds);
       this._currentRelationshipIds = updatedRelationshipIds;
-      final connectionRelationships =
-          rels.where((rel) => rel.defType == RelationshipDefType.USER_AND_USER);
-      final updatedConnectionIds =
-          RelationshipUtils.extractMemberIdsFromRelationships(connectionRelationships);
-      await this._addConnections(updatedConnectionIds);
-      await this._removeConnections(updatedConnectionIds);
-      this._currentConnectionIds = updatedConnectionIds;
       await super.pValue.set(rels);
       if (this.completer.isCompleted == false) {
         this.completer.complete(rels);
@@ -130,78 +124,6 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
                   eventService.dispose();
                   Here().debugLogStop(
                     'Removed EventService for relationshipId: $relationshipId',
-                  );
-                }
-                return remove;
-              },
-            ),
-        );
-  }
-
-  //
-  //
-  //
-
-  Future<void> _addConnections(Set<String> updatedConnectionIds) async {
-    final connectionIdsToAdd = getSetDifference(
-      this._currentConnectionIds,
-      updatedConnectionIds,
-    );
-    Here().debugLog('Connections to add: $connectionIdsToAdd');
-    await this._onAddConnections(connectionIdsToAdd);
-  }
-
-  //
-  //
-  //
-
-  Future<void> _onAddConnections(Set<String> connectionIdsToAdd) async {
-    final futureServicesToAdd = <Future<MapEntry<String, UserPubService>>>[];
-    for (final connectionId in connectionIdsToAdd) {
-      final connectionService = UserPubService(
-        serviceEnvironment: serviceEnvironment,
-        id: connectionId,
-      );
-      futureServicesToAdd.add(
-        connectionService.initService().then((_) {
-          Here().debugLogStart(
-            'Added User Service for connectionId $connectionId',
-          );
-          return MapEntry(connectionId, connectionService);
-        }),
-      );
-    }
-    final servicesToAdd = await Future.wait(futureServicesToAdd);
-    await this.pConnectionServicePool.update((e) => e..addEntries(servicesToAdd));
-  }
-
-  //
-  //
-  //
-
-  Future<void> _removeConnections(Set<String> updatedConnectionIds) async {
-    final connectionIdsToRemove = getSetDifference(
-      updatedConnectionIds,
-      this._currentConnectionIds,
-    );
-    Here().debugLog('Connections to remove: $connectionIdsToRemove');
-    await this._onRemoveConnection(connectionIdsToRemove);
-  }
-
-  //
-  //
-  //
-
-  Future<void> _onRemoveConnection(Set<String> connectionIdsToRemove) async {
-    await this.pConnectionServicePool.update(
-          (e) => e
-            ..removeWhere(
-              (final connectionId, final eventService) {
-                final remove = connectionIdsToRemove.contains(connectionId);
-                if (remove) {
-                  eventService.dispose();
-                  Here().debugLogStop(
-                    'Removed UserPubService for connectionId: $connectionId',
                   );
                 }
                 return remove;
