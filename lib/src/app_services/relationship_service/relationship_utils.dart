@@ -75,10 +75,26 @@ final class RelationshipUtils {
       relationshipId: relationshipId,
     );
     await serviceEnvironment.databaseServiceBroker.deleteModel(relationshipRef);
-    final collectionRef = Schema.relationshipEventsRef(relationshipId: relationshipId);
+    // ignore: invalid_use_of_visible_for_testing_member
+    await deleteRelationshipEventsCollection(
+      serviceEnvironment: serviceEnvironment,
+      relationshipId: relationshipId,
+    );
+  }
+
+  //
+  //
+  //
+
+  // TODO: Replace this method with one that deletes the collection via a backend function.
+  @visibleForTesting
+  static Future<void> deleteRelationshipEventsCollection({
+    required ServiceEnvironment serviceEnvironment,
+    required String relationshipId,
+  }) async {
     // await serviceEnvironment.functionsServiceBroker
     //     .deleteCollection(relationshipEventsCollectionPath);
-    // ignore: invalid_use_of_visible_for_testing_member
+    final collectionRef = Schema.relationshipEventsRef(relationshipId: relationshipId);
     await serviceEnvironment.databaseQueryBroker.deleteCollectionTest(
       databaseService: serviceEnvironment.databaseServiceBroker,
       collectionRef: collectionRef,

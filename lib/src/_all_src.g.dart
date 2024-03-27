@@ -17,7 +17,7 @@ export 'app_services/organization_pub_member_service/organization_member_service
 export 'app_services/organization_pub_service/organization_pub_service.dart';
 export 'app_services/organization_service/organization_service.dart';
 export 'app_services/relationship_member_service/relationship_member_service.dart';
-export 'app_services/relationship_service/relationship_connection_utils.dart';
+export 'app_services/relationship_member_service/relationship_member_utils.dart';
 export 'app_services/relationship_service/relationship_service.dart';
 export 'app_services/relationship_service/relationship_utils.dart';
 export 'app_services/user_pub_member_service/user_pub_member_service.dart';

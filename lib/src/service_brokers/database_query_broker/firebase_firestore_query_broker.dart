@@ -104,6 +104,35 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   //
   //
 
+  // @override
+  // Future<ModelUserPub?> queryUserByEmail({
+  //   required DatabaseServiceInterface databaseService,
+  //   required String email,
+  // }) async {
+  //   final collection = (databaseService as FirebaseFirestoreServiceBroker)
+  //       // ignore: invalid_use_of_visible_for_testing_member
+  //       .firebaseFirestore
+  //       .collection(Schema.userPubsRef().collectionPath!);
+  //   final searchableEmail = email.toLowerCase();
+  //   final matches = await collection
+  //       // Where the email contains the query.
+  //       .where(
+  //         ModelUserPub.K_EMAIL_SEARCHABLE,
+  //         isEqualTo: searchableEmail,
+  //       )
+  //       .limit(1)
+  //       .get();
+  //   final matchData = matches.docs.firstOrNull?.data();
+  //   if (matchData != null) {
+  //     return ModelUserPub.fromJson(matchData);
+  //   }
+  //   return null;
+  // }
+
+  //
+  //
+  //
+
   @override
   Stream<Iterable<ModelUserPub>> queryUserPubsById({
     required DatabaseServiceInterface<Model> databaseService,

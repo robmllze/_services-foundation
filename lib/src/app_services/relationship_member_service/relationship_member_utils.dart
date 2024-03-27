@@ -12,41 +12,41 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-final class RelationshipConnectionUtils {
+final class RelationshipMemberUtils {
   //
   //
   //
 
-  RelationshipConnectionUtils._();
+  RelationshipMemberUtils._();
 
   //
   //
   //
 
-  static UserPubService? getConnectionServiceForRelationship({
-    required List<(String, UserPubService)>? connectionServicePool,
+  static UserPubService? getUserPubServiceForRelationship({
+    required List<(String, UserPubService)>? userPubServicePool,
     required String userPubId,
   }) {
-    final connectionService = connectionServicePool?.firstWhereOrNull((e) => e.$1 == userPubId)?.$2;
-    return connectionService;
+    final userPubService = userPubServicePool?.firstWhereOrNull((e) => e.$1 == userPubId)?.$2;
+    return userPubService;
   }
 
   //
   //
   //
 
-  static Iterable<String>? getRelationshipIdsForConnection(
+  static Iterable<String>? getRelationshipIdsForMember(
     Iterable<ModelRelationship>? relationshipPool,
-    String? connectionId,
+    String? memberId,
   ) {
-    if (connectionId != null) {
+    if (memberId != null) {
       if (relationshipPool != null && relationshipPool.isNotEmpty) {
-        final connectionRelationships = RelationshipConnectionUtils.getRelationshipsForConnection(
+        final memberRelationships = RelationshipMemberUtils.getRelationshipsForMember(
           relationshipPool: relationshipPool,
-          connectionId: connectionId,
+          memberId: memberId,
         );
-        if (connectionRelationships.isNotEmpty) {
-          final relationshipIds = connectionRelationships.map((e) => e.id).nonNulls;
+        if (memberRelationships.isNotEmpty) {
+          final relationshipIds = memberRelationships.map((e) => e.id).nonNulls;
           return relationshipIds;
         }
       }
@@ -58,10 +58,10 @@ final class RelationshipConnectionUtils {
   //
   //
 
-  static Iterable<ModelRelationship> getRelationshipsForConnection({
+  static Iterable<ModelRelationship> getRelationshipsForMember({
     required Iterable<ModelRelationship> relationshipPool,
-    required String connectionId,
+    required String memberId,
   }) {
-    return relationshipPool.where((e) => e.memberIds?.contains(connectionId) == true);
+    return relationshipPool.where((e) => e.memberIds?.contains(memberId) == true);
   }
 }
