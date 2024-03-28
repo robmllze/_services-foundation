@@ -230,11 +230,13 @@ final class EventUtils {
     required bool value,
   }) async {
     await serviceEnvironment.databaseServiceBroker.updateModel(
-      GenericModel({
-        eventTag: {
-          userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
+      GenericModel(
+        data: {
+          eventTag: {
+            userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
+          },
         },
-      }),
+      ),
       eventsRef,
     );
   }
@@ -247,11 +249,13 @@ final class EventUtils {
   }) {
     return BatchWriteOperation(
       eventsRef,
-      model: GenericModel({
-        eventTag: {
-          userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
+      model: GenericModel(
+        data: {
+          eventTag: {
+            userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
+          },
         },
-      }),
+      ),
     );
   }
 
@@ -269,7 +273,7 @@ final class EventUtils {
   static BatchWriteOperation<GenericModel> getDeleteEventOperation({
     required DataRef eventsRef,
   }) {
-    return BatchWriteOperation<GenericModel>(
+    return BatchWriteOperation(
       eventsRef,
       delete: true,
     );
@@ -285,7 +289,7 @@ final class EventUtils {
     String? receiverPubId,
     required String eventId,
     required DataRef eventsRef,
-    required Map<String, dynamic> eventDef,
+    required Model eventDef,
     required EventDefType eventDefType,
   }) async {
     final eventModel = ModelEvent(
@@ -295,7 +299,7 @@ final class EventUtils {
         if (receiverPubId != null) receiverPubId,
       },
       whenSent: {senderPubId: DateTime.now()},
-      def: eventDef,
+      def: eventDef.toGenericModel(),
       defType: eventDefType,
     );
     await serviceEnvironment.databaseServiceBroker.setModel(
@@ -309,14 +313,14 @@ final class EventUtils {
     required String receiverPubId,
     required String eventId,
     required DataRef eventsRef,
-    required Map<String, dynamic> eventDef,
+    required Model eventDef,
     required EventDefType eventDefType,
   }) {
     final eventModel = ModelEvent(
       id: eventId,
       pubIds: {senderPubId, receiverPubId},
       whenSent: {senderPubId: DateTime.now()},
-      def: eventDef,
+      def: eventDef.toGenericModel(),
       defType: eventDefType,
     );
     return BatchWriteOperation<ModelEvent>(

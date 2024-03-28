@@ -27,7 +27,7 @@ final class MessagingUtils {
     if (e.defType == EventDefType.MESSAGE) {
       final def = e.def;
       if (def != null) {
-        final defModel = ModelMessageDef.fromJson(def);
+        final defModel = ModelMessageDef.from(def);
         final message = defModel.message;
         if (message != null && message.isNotEmpty) {
           return defModel;

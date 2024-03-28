@@ -213,7 +213,7 @@ final class UserEventUtils {
     required String senderPubId,
     required String receiverPubId,
     required String eventId,
-    required Map<String, dynamic> eventDef,
+    required Model eventDef,
     required EventDefType eventDefType,
   }) async {
     final eventPath = Schema.userEventsRef(
@@ -239,7 +239,7 @@ final class UserEventUtils {
     required String senderPubId,
     required String receiverPubId,
     required String eventId,
-    required Map<String, dynamic> eventDef,
+    required GenericModel eventDef,
     required EventDefType eventDefType,
   }) {
     final eventPath = Schema.userEventsRef(
@@ -272,7 +272,7 @@ final class UserEventUtils {
       relationshipId: relationshipId,
       senderPubId: senderPubId,
       receiverPubId: receiverPubId,
-    ).toJson();
+    );
     await sendEvent(
       eventId: eventId,
       receiverPubId: receiverPubId,
@@ -298,7 +298,7 @@ final class UserEventUtils {
       id: eventId,
       senderPubId: senderPubId,
       receiverPubId: receiverPubId,
-    ).toJson();
+    );
     await sendEvent(
       eventId: eventId,
       receiverPubId: receiverPubId,
@@ -324,7 +324,7 @@ final class UserEventUtils {
       id: eventId,
       senderPubId: senderPubId,
       receiverPubId: receiverPubId,
-    ).toJson();
+    );
     await sendEvent(
       eventId: eventId,
       receiverPubId: receiverPubId,
@@ -350,7 +350,7 @@ final class UserEventUtils {
       id: eventId,
       senderPubId: senderPubId,
       receiverPubId: receiverPubId,
-    ).toJson();
+    );
     await sendEvent(
       eventId: eventId,
       receiverPubId: receiverPubId,
@@ -376,7 +376,7 @@ final class UserEventUtils {
       id: eventId,
       senderPubId: senderPubId,
       receiverPubId: receiverPubId,
-    ).toJson();
+    );
     await sendEvent(
       eventId: eventId,
       receiverPubId: receiverPubId,
@@ -402,7 +402,7 @@ final class UserEventUtils {
       id: eventId,
       senderPubId: senderPubId,
       receiverPubId: receiverPubId,
-    ).toJson();
+    );
     await sendEvent(
       eventId: eventId,
       receiverPubId: receiverPubId,

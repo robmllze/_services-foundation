@@ -61,7 +61,7 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface<Model> {
     final modelRef = this.firebaseFirestore.doc(ref.docPath);
     final snapshot = await modelRef.get();
     final modelData = snapshot.data();
-    final model = modelData != null ? GenericModel(modelData) : null;
+    final model = modelData != null ? GenericModel(data: modelData) : null;
     return model;
   }
 
@@ -94,7 +94,7 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface<Model> {
 
   @override
   Future<void> batchWrite(
-    Iterable<BatchWriteOperation<Model>> writes,
+    Iterable<BatchWriteOperation> writes,
   ) async {
     final batch = this.firebaseFirestore.batch();
     for (final write in writes) {
@@ -128,7 +128,7 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface<Model> {
     final docRef = this.firebaseFirestore.doc(dataRef.docPath);
     return docRef.snapshots().asyncMap((snapshot) async {
       final modelData = snapshot.data();
-      final model = modelData != null ? GenericModel(modelData) : null;
+      final model = modelData != null ? GenericModel(data: modelData) : null;
       await onUpdate?.call(model);
       return model;
     });
@@ -147,7 +147,7 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface<Model> {
     final collectionRef = this.firebaseFirestore.collection(ref.collectionPath!).limit(limit);
     return collectionRef.snapshots().asyncMap((querySnapshot) async {
       final modelsData = querySnapshot.docs.map((e) => e.data());
-      final models = modelsData.map((e) => GenericModel(e)).toList();
+      final models = modelsData.map((modelData) => GenericModel(data: modelData));
       await onUpdate?.call(models);
       return models;
     });

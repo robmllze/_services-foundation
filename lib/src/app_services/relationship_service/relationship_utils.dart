@@ -150,13 +150,13 @@ final class RelationshipUtils {
     required String senderPubId,
     required String receiverPubId,
     required DateTime dateSent,
-    required Map<String, dynamic>? def,
+    required Model? def,
     required RelationshipDefType? defType,
   }) async {
     final relationshipModel = ModelRelationship(
       id: newRelationshipId,
       memberIds: {senderPubId, receiverPubId},
-      def: def,
+      def: def?.toGenericModel(),
       defType: defType,
       whenEnabled: {
         senderPubId: dateSent,
@@ -181,12 +181,12 @@ final class RelationshipUtils {
     required String senderPubId,
     required String receiverPubId,
     required DateTime dateSent,
-    required Map<String, dynamic>? def,
+    required Model? def,
     required RelationshipDefType? defType,
   }) {
     final relationshipModel = ModelRelationship(
       id: newRelationshipId,
-      def: def,
+      def: def?.toGenericModel(),
       defType: defType,
       memberIds: {
         senderPubId,

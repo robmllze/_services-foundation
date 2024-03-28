@@ -45,7 +45,7 @@ final class RelationshipMemberUtils {
           relationshipPool: relationshipPool,
           memberId: memberId,
         );
-        if (memberRelationships.isNotEmpty) {
+        if (memberRelationships != null && memberRelationships.isNotEmpty) {
           final relationshipIds = memberRelationships.map((e) => e.id).nonNulls;
           return relationshipIds;
         }
@@ -58,10 +58,10 @@ final class RelationshipMemberUtils {
   //
   //
 
-  static Iterable<ModelRelationship> getRelationshipsForMember({
-    required Iterable<ModelRelationship> relationshipPool,
-    required String memberId,
+  static Iterable<ModelRelationship>? getRelationshipsForMember({
+    required Iterable<ModelRelationship>? relationshipPool,
+    required String? memberId,
   }) {
-    return relationshipPool.where((e) => e.memberIds?.contains(memberId) == true);
+    return relationshipPool?.where((e) => e.memberIds?.contains(memberId) == true);
   }
 }

@@ -202,7 +202,7 @@ final class RelationshipEventUtils {
     required String relationshipId,
     required String eventId,
     required EventDefType eventDefType,
-    required Map<String, dynamic> eventDef,
+    required GenericModel eventDef,
   }) async {
     final eventsRef = Schema.relationshipEventsRef(
       relationshipId: relationshipId,
@@ -228,7 +228,7 @@ final class RelationshipEventUtils {
     required String receiverPubId,
     required String relationshipId,
     required String eventId,
-    required Map<String, dynamic> eventDef,
+    required GenericModel eventDef,
     required EventDefType eventDefType,
   }) {
     final eventsRef = Schema.relationshipEventsRef(

@@ -56,10 +56,9 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
 
   @override
   Future<GenericModel?> getModel(DataRef ref) async {
-    final modelString = this.sharedPreferences.getString(ref.key);
-    if (modelString != null) {
-      final modelData = jsonDecode(modelString);
-      return GenericModel(modelData);
+    final value = this.sharedPreferences.getString(ref.key);
+    if (value != null) {
+      return GenericModel.fromJsonString(value);
     }
     return null;
   }
@@ -90,7 +89,7 @@ class CacheServiceBroker extends DatabaseServiceInterface<Model> {
 
   @override
   Future<void> batchWrite(
-    Iterable<BatchWriteOperation<Model>> writes,
+    Iterable<BatchWriteOperation> writes,
   ) async {
     for (final write in writes) {
       final dataRef = write.ref;
