@@ -96,7 +96,7 @@ final class RelationshipUtils {
     //     .deleteCollection(relationshipEventsCollectionPath);
     final collectionRef = Schema.relationshipEventsRef(relationshipId: relationshipId);
     await serviceEnvironment.databaseQueryBroker.deleteCollectionTest(
-      databaseService: serviceEnvironment.databaseServiceBroker,
+      databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
       collectionRef: collectionRef,
     );
   }
@@ -133,7 +133,7 @@ final class RelationshipUtils {
     if (userId != null) {
       final userPubId = IdUtils.toUserPubId(userId: userId);
       return serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
-        databaseService: serviceEnvironment.databaseServiceBroker,
+        databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
         memberIds: {userPubId},
       );
     }

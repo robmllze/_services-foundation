@@ -125,6 +125,15 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
 
   @override
   Future<String?> getIdToken() => this.firebaseAuth.currentUser!.getIdToken();
+
+  //
+  //
+  //
+
+  @override
+  Future<void> deleteUser() async {
+    await this.firebaseAuth.currentUser!.delete();
+  }
 }
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░

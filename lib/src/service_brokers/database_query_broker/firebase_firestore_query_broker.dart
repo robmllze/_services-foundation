@@ -33,11 +33,11 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
 
   @override
   Future<Iterable<ModelUserPub>> queryUserPubsByNameOrEmail({
-    required DatabaseServiceInterface databaseService,
+    required DatabaseServiceInterface databaseServiceBroker,
     required String nameOrEmailQuery,
     int limit = 10,
   }) async {
-    final collection = (databaseService as FirebaseFirestoreServiceBroker)
+    final collection = (databaseServiceBroker as FirebaseFirestoreServiceBroker)
         // ignore: invalid_use_of_visible_for_testing_member
         .firebaseFirestore
         .collection(Schema.userPubsRef().collectionPath!);
@@ -135,11 +135,11 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
 
   @override
   Stream<Iterable<ModelUserPub>> queryUserPubsById({
-    required DatabaseServiceInterface<Model> databaseService,
+    required DatabaseServiceInterface<Model> databaseServiceBroker,
     required Set<String> userpubIds,
     int limit = 1000,
   }) {
-    final collection = (databaseService as FirebaseFirestoreServiceBroker)
+    final collection = (databaseServiceBroker as FirebaseFirestoreServiceBroker)
         // ignore: invalid_use_of_visible_for_testing_member
         .firebaseFirestore
         .collection(Schema.userPubsRef().collectionPath!);
@@ -157,11 +157,11 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
 
   @override
   Stream<Iterable<ModelRelationship>> queryRelationshipsForMembers({
-    required DatabaseServiceInterface<Model> databaseService,
+    required DatabaseServiceInterface<Model> databaseServiceBroker,
     required Set<String> memberIds,
     int limit = 1000,
   }) {
-    final collection = (databaseService as FirebaseFirestoreServiceBroker)
+    final collection = (databaseServiceBroker as FirebaseFirestoreServiceBroker)
         // ignore: invalid_use_of_visible_for_testing_member
         .firebaseFirestore
         .collection(Schema.relationshipsRef().collectionPath!);
@@ -180,11 +180,11 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @visibleForTesting
   @override
   Future<void> deleteCollectionTest({
-    required DatabaseServiceInterface<Model> databaseService,
+    required DatabaseServiceInterface<Model> databaseServiceBroker,
     required DataRef collectionRef,
   }) async {
     // ignore: invalid_use_of_visible_for_testing_member
-    final firebaseFirestore = (databaseService as FirebaseFirestoreServiceBroker).firebaseFirestore;
+    final firebaseFirestore = (databaseServiceBroker as FirebaseFirestoreServiceBroker).firebaseFirestore;
     final batch = firebaseFirestore.batch();
     final collection = firebaseFirestore.collection(collectionRef.collectionPath!);
     final stream = collection.snapshots().asyncMap((e) async {

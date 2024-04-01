@@ -139,7 +139,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   @override
   Stream<Iterable<ModelRelationship>> stream() {
     return this.serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
-      databaseService: serviceEnvironment.databaseServiceBroker,
+      databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
       memberIds: {this.userPubId},
     );
   }
