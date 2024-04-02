@@ -24,11 +24,11 @@ final class RelationshipUtils {
   //
 
   static Set<String> extractMemberIdsFromRelationships(
-    Iterable<ModelRelationship> relationshipModels, {
+    Iterable<ModelRelationship> relationshipPool, {
     required Iterable<String> memberIdPrefixes,
   }) {
     final memberIds = <String>{};
-    for (final relationship in relationshipModels) {
+    for (final relationship in relationshipPool) {
       Iterable<String>? temp = relationship.memberIds;
       if (temp != null && temp.isNotEmpty) {
         temp = temp.where((e) => memberIdPrefixes.any((prefix) => e.startsWith(prefix)));
