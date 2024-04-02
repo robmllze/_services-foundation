@@ -23,45 +23,70 @@ final class RelationshipMemberUtils {
   //
   //
 
-  static UserPubService? getUserPubServiceForRelationship({
-    required List<(String, UserPubService)>? userPubServicePool,
-    required String userPubId,
-  }) {
-    final userPubService = userPubServicePool?.firstWhereOrNull((e) => e.$1 == userPubId)?.$2;
-    return userPubService;
-  }
+  // static UserPubService? getUserPubServiceForRelationship({
+  //   required Iterable<(String, UserPubService)>? userPubServicePool,
+  //   required String userPubId,
+  // }) {
+  //   return userPubServicePool?.firstWhereOrNull((e) => e.$1 == userPubId)?.$2;
+  // }
 
   //
   //
   //
 
-  static Iterable<String>? getRelationshipIdsForMember(
+  /// Gets the IDs of all relationships containing a [memberId] from a [relationshipPool].
+  static Iterable<String> getRelationshipIdsForMember(
     Iterable<ModelRelationship>? relationshipPool,
     String? memberId,
   ) {
-    if (memberId != null) {
-      if (relationshipPool != null && relationshipPool.isNotEmpty) {
-        final memberRelationships = RelationshipMemberUtils.getRelationshipsForMember(
-          relationshipPool: relationshipPool,
-          memberId: memberId,
-        );
-        if (memberRelationships != null && memberRelationships.isNotEmpty) {
-          final relationshipIds = memberRelationships.map((e) => e.id).nonNulls;
-          return relationshipIds;
-        }
-      }
-    }
-    return null;
+    return RelationshipMemberUtils.getRelationshipsForMember(
+      relationshipPool: relationshipPool,
+      memberId: memberId,
+    ).map((e) => e.id).nonNulls;
   }
 
   //
   //
   //
 
-  static Iterable<ModelRelationship>? getRelationshipsForMember({
+  /// Gets all relationships containing a [memberId] from a [relationshipPool].
+  static Iterable<ModelRelationship> getRelationshipsForMember({
     required Iterable<ModelRelationship>? relationshipPool,
     required String? memberId,
   }) {
-    return relationshipPool?.where((e) => e.memberIds?.contains(memberId) == true);
+    return memberId != null
+        ? relationshipPool?.where((e) {
+              return e.memberIds?.contains(memberId) == true;
+            }).toSet() ??
+            {}
+        : {};
+  }
+
+  //
+  //
+  //
+
+  /// Extracts the member IDs from a relationship that are public user IDs.
+  Set<String> extractUserMemberIds({
+    required ModelRelationship relationship,
+  }) {
+    return relationship.memberIds?.where((e) {
+          return IdUtils.getPrefix(e) == IdUtils.USER_PUB_ID_PREFIX;
+        }).toSet() ??
+        {};
+  }
+
+  //
+  //
+  //
+
+  /// Extracts the member IDs from a relationship that are public organization IDs.
+  Set<String> extractOrganizationMemberIds({
+    required ModelRelationship relationship,
+  }) {
+    return relationship.memberIds?.where((e) {
+          return IdUtils.getPrefix(e) == IdUtils.ORGANIZATION_PUB_ID_PPREFIX;
+        }).toSet() ??
+        {};
   }
 }
