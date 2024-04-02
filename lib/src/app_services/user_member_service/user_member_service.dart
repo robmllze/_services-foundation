@@ -12,12 +12,12 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class UserPubMemberService extends RelationshipMemberService<ModelUserPub, UserPubService> {
+class UserMemberService extends RelationshipMemberService<ModelUserPub, UserPubService> {
   //
   //
   //
 
-  UserPubMemberService({
+  UserMemberService({
     required super.relationshipService,
     required super.defTypes,
   }) : super(
