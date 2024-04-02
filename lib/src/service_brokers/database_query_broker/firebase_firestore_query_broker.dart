@@ -8,7 +8,10 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
+// ignore_for_file: invalid_use_of_visible_for_testing_member
+
 import 'package:flutter/material.dart' show StringCharacters;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/_common.dart';
 
@@ -37,10 +40,9 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     required String nameOrEmailQuery,
     int limit = 10,
   }) async {
-    final collection = (databaseServiceBroker as FirebaseFirestoreServiceBroker)
-        // ignore: invalid_use_of_visible_for_testing_member
-        .firebaseFirestore
-        .collection(Schema.userPubsRef().collectionPath!);
+    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
+    final collectionPath = Schema.userPubsRef().collectionPath!;
+    final collection = firebaseFirestore.collection(collectionPath);
     // NB: Emails and searchable names must be lowercase for this function to work.
     final searchableQuery = nameOrEmailQuery.toLowerCase();
     // 0. Text length must be at least 2 to start the query.
@@ -104,30 +106,22 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   //
   //
 
-  // @override
-  // Future<ModelUserPub?> queryUserByEmail({
-  //   required DatabaseServiceInterface databaseService,
-  //   required String email,
-  // }) async {
-  //   final collection = (databaseService as FirebaseFirestoreServiceBroker)
-  //       // ignore: invalid_use_of_visible_for_testing_member
-  //       .firebaseFirestore
-  //       .collection(Schema.userPubsRef().collectionPath!);
-  //   final searchableEmail = email.toLowerCase();
-  //   final matches = await collection
-  //       // Where the email contains the query.
-  //       .where(
-  //         ModelUserPub.K_EMAIL_SEARCHABLE,
-  //         isEqualTo: searchableEmail,
-  //       )
-  //       .limit(1)
-  //       .get();
-  //   final matchData = matches.docs.firstOrNull?.data();
-  //   if (matchData != null) {
-  //     return ModelUserPub.fromJson(matchData);
-  //   }
-  //   return null;
-  // }
+  @override
+  Stream<Iterable<ModelUserPub>> queryUserPubsByEmail({
+    required DatabaseServiceInterface databaseServiceBroker,
+    required Set<String> emails,
+    int limit = 1000,
+  }) {
+    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
+    final collectionPath = Schema.userPubsRef().collectionPath!;
+    final collection = firebaseFirestore.collection(collectionPath);
+    final searchableEmails = emails.map((e) => e.toLowerCase());
+    final results = collection
+        .where(ModelUserPub.K_EMAIL_SEARCHABLE, arrayContainsAny: searchableEmails)
+        .snapshots()
+        .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
+    return results;
+  }
 
   //
   //
@@ -135,20 +129,19 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
 
   @override
   Stream<Iterable<ModelUserPub>> queryUserPubsById({
-    required DatabaseServiceInterface<Model> databaseServiceBroker,
-    required Set<String> userpubIds,
+    required DatabaseServiceInterface databaseServiceBroker,
+    required Set<String> pubIds,
     int limit = 1000,
   }) {
-    final collection = (databaseServiceBroker as FirebaseFirestoreServiceBroker)
-        // ignore: invalid_use_of_visible_for_testing_member
-        .firebaseFirestore
-        .collection(Schema.userPubsRef().collectionPath!);
-    final userPub = collection
-        .where(ModelUserPub.K_ID, arrayContainsAny: userpubIds)
+    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
+    final collectionPath = Schema.userPubsRef().collectionPath!;
+    final collection = firebaseFirestore.collection(collectionPath);
+    final results = collection
+        .where(ModelUserPub.K_ID, arrayContainsAny: pubIds)
         .limit(limit)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
-    return userPub;
+    return results;
   }
 
   //
@@ -157,14 +150,12 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
 
   @override
   Stream<Iterable<ModelRelationship>> queryRelationshipsForMembers({
-    required DatabaseServiceInterface<Model> databaseServiceBroker,
+    required DatabaseServiceInterface databaseServiceBroker,
     required Set<String> memberIds,
     int limit = 1000,
   }) {
-    final collection = (databaseServiceBroker as FirebaseFirestoreServiceBroker)
-        // ignore: invalid_use_of_visible_for_testing_member
-        .firebaseFirestore
-        .collection(Schema.relationshipsRef().collectionPath!);
+    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
+    final collection = firebaseFirestore.collection(Schema.relationshipsRef().collectionPath!);
     final relationships = collection
         .where(ModelRelationship.K_MEMBER_IDS, arrayContainsAny: memberIds)
         .limit(limit)
@@ -179,12 +170,11 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
 
   @visibleForTesting
   @override
-  Future<void> deleteCollectionTest({
-    required DatabaseServiceInterface<Model> databaseServiceBroker,
+  Future<void> lazyDeleteCollection({
+    required DatabaseServiceInterface databaseServiceBroker,
     required DataRef collectionRef,
   }) async {
-    // ignore: invalid_use_of_visible_for_testing_member
-    final firebaseFirestore = (databaseServiceBroker as FirebaseFirestoreServiceBroker).firebaseFirestore;
+    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final batch = firebaseFirestore.batch();
     final collection = firebaseFirestore.collection(collectionRef.collectionPath!);
     final stream = collection.snapshots().asyncMap((e) async {
@@ -195,4 +185,11 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     await streamToFuture(stream);
     await batch.commit();
   }
+}
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+extension _FirebaseFirestoreOnDatabaseServiceInterfaceExtension on DatabaseServiceInterface {
+  FirebaseFirestore get firebaseFirestore =>
+      (this as FirebaseFirestoreServiceBroker).firebaseFirestore;
 }

@@ -17,18 +17,30 @@ import '/_common.dart';
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 /// Creates a service environment that mainly uses Firebase services.
-Future<ServiceEnvironment> createFirebaseServiceEnvironment(
-  FirebaseOptions firebaseOptions,
-) async {
-  await Firebase.initializeApp(options: firebaseOptions);
+Future<ServiceEnvironment> createFirebaseServiceEnvironment({
+  required FirebaseOptions firebaseOptions,
+  required String functionsRegion,
+}) async {
+  final app = await Firebase.initializeApp(options: firebaseOptions);
+  final firebaseFirestore = FirebaseFirestore.instanceFor(app: app);
+  final firebaseAuth = FirebaseAuth.instanceFor(app: app);
+  final authServiceBroker = FirebaseAuthServiceBroker(
+    firebaseAuth: firebaseAuth,
+  );
+  final databaseServiceBroker = FirebaseFirestoreServiceBroker(
+    firebaseFirestore: firebaseFirestore,
+  );
+  final databaseQueryBroker = FirebaseFirestoreQueryBroker.instance;
+  final functionsServiceBroker = FirebaseFunctionsServiceBroker(
+    region: functionsRegion,
+    projectId: firebaseOptions.projectId,
+    authServiceBroker: authServiceBroker,
+  );
   final serviceEnvironment = ServiceEnvironment(
-    authServiceBroker: FirebaseAuthServiceBroker(
-      firebaseAuth: FirebaseAuth.instance,
-    ),
-    databaseServiceBroker: FirebaseFirestoreServiceBroker(
-      firebaseFirestore: FirebaseFirestore.instance,
-    ),
-    databaseQueryBroker: FirebaseFirestoreQueryBroker.instance,
+    authServiceBroker: authServiceBroker,
+    databaseServiceBroker: databaseServiceBroker,
+    databaseQueryBroker: databaseQueryBroker,
+    functionsServiceBroker: functionsServiceBroker,
   );
   return serviceEnvironment;
 }

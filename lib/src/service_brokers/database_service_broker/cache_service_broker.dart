@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class CacheServiceBroker extends DatabaseServiceInterface<Model> {
+class CacheServiceBroker extends DatabaseServiceInterface {
   //
   //
   //

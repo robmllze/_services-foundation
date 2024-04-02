@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface<Model> {
+class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   //
   //
   //
