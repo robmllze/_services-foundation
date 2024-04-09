@@ -22,7 +22,6 @@ export 'app_services/relationship_service/relationship_service.dart';
 export 'app_services/relationship_service/relationship_utils.dart';
 export 'app_services/user_member_service/user_member_service.dart';
 export 'app_services/user_pub_service/user_pub_service.dart';
-export 'app_services/user_pub_service/user_pub_utils.dart';
 export 'app_services/user_service/user_service.dart';
 export 'app_services/user_service/user_utils.dart';
 export 'app_state/app_environment.dart';

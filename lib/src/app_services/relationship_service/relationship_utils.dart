@@ -23,19 +23,19 @@ final class RelationshipUtils {
   //
   //
 
-  static Set<String> extractMemberIdsFromRelationships(
+  static Set<String> extractMemberPidsFromRelationships(
     Iterable<ModelRelationship> relationshipPool, {
     required Iterable<String> memberIdPrefixes,
   }) {
-    final memberIds = <String>{};
+    final memberPids = <String>{};
     for (final relationship in relationshipPool) {
-      Iterable<String>? temp = relationship.memberIds;
+      Iterable<String>? temp = relationship.memberPids;
       if (temp != null && temp.isNotEmpty) {
         temp = temp.where((e) => memberIdPrefixes.any((prefix) => e.startsWith(prefix)));
-        memberIds.addAll(temp);
+        memberPids.addAll(temp);
       }
     }
-    return memberIds;
+    return memberPids;
   }
 
   //
@@ -128,10 +128,10 @@ final class RelationshipUtils {
     userId = userId ?? serviceEnvironment.authServiceBroker.pCurrentUser.value?.userId;
     assert(userId != null);
     if (userId != null) {
-      final userPubId = IdUtils.toUserPubId(userId: userId);
+      final userPid = IdUtils.toUserPid(userId: userId);
       return serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
         databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-        memberIds: {userPubId},
+        memberPids: {userPid},
       );
     }
     return null;
@@ -144,20 +144,20 @@ final class RelationshipUtils {
   static Future<void> createRelationship({
     required ServiceEnvironment serviceEnvironment,
     required String newRelationshipId,
-    required String senderPubId,
-    required String receiverPubId,
+    required String senderPid,
+    required String receiverPid,
     required DateTime dateSent,
     required Model? def,
     required RelationshipDefType? defType,
   }) async {
     final relationshipModel = ModelRelationship(
       id: newRelationshipId,
-      memberIds: {senderPubId, receiverPubId},
+      memberPids: {senderPid, receiverPid},
       def: def?.toGenericModel(),
       defType: defType,
       whenEnabled: {
-        senderPubId: dateSent,
-        receiverPubId: dateSent,
+        senderPid: dateSent,
+        receiverPid: dateSent,
       },
     );
     final relationshipRef = Schema.relationshipsRef(
@@ -175,8 +175,8 @@ final class RelationshipUtils {
 
   static BatchWriteOperation<ModelRelationship> getCreateRelationshipOperation({
     required String newRelationshipId,
-    required String senderPubId,
-    required String receiverPubId,
+    required String senderPid,
+    required String receiverPid,
     required DateTime dateSent,
     required Model? def,
     required RelationshipDefType? defType,
@@ -185,13 +185,13 @@ final class RelationshipUtils {
       id: newRelationshipId,
       def: def?.toGenericModel(),
       defType: defType,
-      memberIds: {
-        senderPubId,
-        receiverPubId,
+      memberPids: {
+        senderPid,
+        receiverPid,
       },
       whenEnabled: {
-        receiverPubId: dateSent,
-        senderPubId: dateSent,
+        receiverPid: dateSent,
+        senderPid: dateSent,
       },
     );
 

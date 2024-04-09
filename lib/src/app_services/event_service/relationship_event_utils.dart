@@ -37,7 +37,7 @@ final class RelationshipEventUtils {
 
   static Future<void> archiveEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required String relationshipId,
     required String eventId,
     bool archive = true,
@@ -48,7 +48,7 @@ final class RelationshipEventUtils {
     );
     await EventUtils.archiveEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventsRef: eventsRef,
       archive: archive,
     );
@@ -60,7 +60,7 @@ final class RelationshipEventUtils {
 
   static Future<void> hideEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required String relationshipId,
     required String eventId,
     bool hide = true,
@@ -71,7 +71,7 @@ final class RelationshipEventUtils {
     );
     await EventUtils.hideEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventsRef: eventsRef,
       hide: hide,
     );
@@ -83,7 +83,7 @@ final class RelationshipEventUtils {
 
   static Future<void> likeEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required String relationshipId,
     required String eventId,
     bool like = true,
@@ -94,7 +94,7 @@ final class RelationshipEventUtils {
     );
     await EventUtils.likeEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventsRef: eventsRef,
       like: like,
     );
@@ -106,7 +106,7 @@ final class RelationshipEventUtils {
 
   static Future<void> readEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required String relationshipId,
     required String eventId,
     bool read = true,
@@ -117,7 +117,7 @@ final class RelationshipEventUtils {
     );
     await EventUtils.readEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventsRef: eventsRef,
       read: read,
     );
@@ -129,7 +129,7 @@ final class RelationshipEventUtils {
 
   static Future<void> receiveEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required String relationshipId,
     required String eventId,
     bool receive = true,
@@ -140,7 +140,7 @@ final class RelationshipEventUtils {
     );
     await EventUtils.receiveEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventsRef: eventsRef,
       receive: receive,
     );
@@ -152,7 +152,7 @@ final class RelationshipEventUtils {
 
   static Future<void> tagEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required String relationshipId,
     required String eventId,
     required String eventTag,
@@ -164,7 +164,7 @@ final class RelationshipEventUtils {
     );
     await EventUtils.tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: eventTag,
       eventsRef: eventsRef,
       value: value,
@@ -177,7 +177,7 @@ final class RelationshipEventUtils {
 
   static Future<void> deleteEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required String relationshipId,
     required String eventId,
   }) async {
@@ -197,8 +197,8 @@ final class RelationshipEventUtils {
 
   static Future<void> sendEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String senderPubId,
-    String? receiverPubId,
+    required String senderPid,
+    String? receiverPid,
     required String relationshipId,
     required String eventId,
     required EventDefType eventDefType,
@@ -210,8 +210,8 @@ final class RelationshipEventUtils {
     );
     await EventUtils.sendEvent(
       serviceEnvironment: serviceEnvironment,
-      senderPubId: senderPubId,
-      receiverPubId: receiverPubId,
+      senderPid: senderPid,
+      receiverPid: receiverPid,
       eventId: eventId,
       eventsRef: eventsRef,
       eventDef: eventDef,
@@ -224,8 +224,8 @@ final class RelationshipEventUtils {
   //
 
   static BatchWriteOperation<ModelEvent> getSendEventOperation({
-    required String senderPubId,
-    required String receiverPubId,
+    required String senderPid,
+    required String receiverPid,
     required String relationshipId,
     required String eventId,
     required GenericModel eventDef,
@@ -236,8 +236,8 @@ final class RelationshipEventUtils {
       eventId: eventId,
     );
     return EventUtils.getSendEventOperation(
-      senderPubId: senderPubId,
-      receiverPubId: receiverPubId,
+      senderPid: senderPid,
+      receiverPid: receiverPid,
       eventId: eventId,
       eventsRef: eventsRef,
       eventDef: eventDef,

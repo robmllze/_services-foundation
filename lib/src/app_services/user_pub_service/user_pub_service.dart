@@ -27,7 +27,7 @@ class UserPubService extends DocumentServiceInterface<ModelUserPub> {
   //
 
   @override
-  DataRef databaseRef() => Schema.userPubsRef(userPubId: id);
+  DataRef databaseRef() => Schema.userPubsRef(userPid: id);
 
   //
   //

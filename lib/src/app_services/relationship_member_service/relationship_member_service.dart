@@ -44,8 +44,8 @@ class RelationshipMemberService<TModel extends Model,
   //
 
   final pMemberServicePool = Pod<Map<String, TDocumentService>>({});
-  var _currentMemberIds = <String>{};
-  Set<String> get currentMemberIds => this._currentMemberIds;
+  var _currentMemberPids = <String>{};
+  Set<String> get currentMemberPids => this._currentMemberPids;
 
   //
   //
@@ -57,39 +57,39 @@ class RelationshipMemberService<TModel extends Model,
 
   void _listener() async {
     final relationships = this.relationshipService.pValue.value?.where((e) {
-          final defType = e.defType ?? findRelationshipDefTypeFromMemberIds(e.memberIds);
+          final defType = e.defType ?? findRelationshipDefTypeFromMemberPids(e.memberPids);
           return this.defTypes.contains(defType);
         }) ??
         {};
-    final memberIds = RelationshipUtils.extractMemberIdsFromRelationships(
+    final memberPids = RelationshipUtils.extractMemberPidsFromRelationships(
       relationships,
       memberIdPrefixes: this.memberIdPrefixes,
     );
-    await this._addMembers(memberIds);
-    await this._removeMembers(memberIds);
-    this._currentMemberIds = memberIds;
+    await this._addMembers(memberPids);
+    await this._removeMembers(memberPids);
+    this._currentMemberPids = memberPids;
   }
 
   //
   //
   //
 
-  Future<void> _addMembers(Set<String> updatedMemberIds) async {
-    final memberIdsToAdd = getSetDifference(
-      this._currentMemberIds,
-      updatedMemberIds,
+  Future<void> _addMembers(Set<String> updatedMemberPids) async {
+    final memberPidsToAdd = getSetDifference(
+      this._currentMemberPids,
+      updatedMemberPids,
     );
-    Here().debugLog('Members to add: $memberIdsToAdd');
-    await this._onAddMembers(memberIdsToAdd);
+    Here().debugLog('Members to add: $memberPidsToAdd');
+    await this._onAddMembers(memberPidsToAdd);
   }
 
   //
   //
   //
 
-  Future<void> _onAddMembers(Set<String> memberIdsToAdd) async {
+  Future<void> _onAddMembers(Set<String> memberPidsToAdd) async {
     final futureServicesToAdd = <Future<MapEntry<String, TDocumentService>>>[];
-    for (final memberId in memberIdsToAdd) {
+    for (final memberId in memberPidsToAdd) {
       final memberService = this.serviceInstantiator(
         relationshipService.serviceEnvironment,
         memberId,
@@ -111,25 +111,25 @@ class RelationshipMemberService<TModel extends Model,
   //
   //
 
-  Future<void> _removeMembers(Set<String> updatedMemberIds) async {
-    final memberIdsToRemove = getSetDifference(
-      updatedMemberIds,
-      this._currentMemberIds,
+  Future<void> _removeMembers(Set<String> updatedMemberPids) async {
+    final memberPidsToRemove = getSetDifference(
+      updatedMemberPids,
+      this._currentMemberPids,
     );
-    Here().debugLog('Members to remove: $memberIdsToRemove');
-    await this._onRemoveMember(memberIdsToRemove);
+    Here().debugLog('Members to remove: $memberPidsToRemove');
+    await this._onRemoveMember(memberPidsToRemove);
   }
 
   //
   //
   //
 
-  Future<void> _onRemoveMember(Set<String> memberIdsToRemove) async {
+  Future<void> _onRemoveMember(Set<String> memberPidsToRemove) async {
     await this.pMemberServicePool.update(
           (e) => e
             ..removeWhere(
               (memberId, eventService) {
-                final remove = memberIdsToRemove.contains(memberId);
+                final remove = memberPidsToRemove.contains(memberId);
                 if (remove) {
                   eventService.dispose();
                   Here().debugLogStop(

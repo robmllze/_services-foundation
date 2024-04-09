@@ -17,7 +17,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
   //
 
-  final String userPubId;
+  final String userPid;
 
   //
   //
@@ -26,7 +26,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   RelationshipService({
     required super.serviceEnvironment,
     required super.limit,
-    required this.userPubId,
+    required this.userPid,
   }) : super(ref: Schema.relationshipsRef());
 
   //
@@ -140,7 +140,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   Stream<Iterable<ModelRelationship>> stream() {
     return this.serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
       databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-      memberIds: {this.userPubId},
+      memberPids: {this.userPid},
     );
   }
 

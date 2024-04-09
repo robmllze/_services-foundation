@@ -25,7 +25,7 @@ final class EventUtils {
 
   static int getUnreadEventCount({
     required Iterable<ModelEvent>? eventPool,
-    String? senderPubId,
+    String? senderPid,
     Set<EventDefType> eventTypes = const {},
     bool includeArchived = false,
     bool includeHidden = false,
@@ -35,7 +35,7 @@ final class EventUtils {
             ?.where(
               (e) =>
                   (eventTypes.isEmpty || eventTypes.contains(e.defType)) &&
-                  (senderPubId == null || e.whenSent?.keys.contains(senderPubId) != true) &&
+                  (senderPid == null || e.whenSent?.keys.contains(senderPid) != true) &&
                   (!includeHidden && !e.isHidden) &&
                   (!includeArchived && !e.isArchived) &&
                   (!includeRead && !e.isRead),
@@ -63,13 +63,13 @@ final class EventUtils {
 
   static Future<void> archiveEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required DataRef eventsRef,
     bool archive = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_ARCHIVED,
       eventsRef: eventsRef,
       value: archive,
@@ -77,12 +77,12 @@ final class EventUtils {
   }
 
   static BatchWriteOperation<GenericModel> getArchiveEventOperation({
-    required String userPubId,
+    required String userPid,
     required DataRef eventsRef,
     bool archive = true,
   }) {
     return getTagEventOperation(
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_ARCHIVED,
       eventsRef: eventsRef,
       value: archive,
@@ -95,13 +95,13 @@ final class EventUtils {
 
   static Future<void> hideEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required DataRef eventsRef,
     bool hide = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_HIDDEN,
       eventsRef: eventsRef,
       value: hide,
@@ -109,12 +109,12 @@ final class EventUtils {
   }
 
   static BatchWriteOperation<GenericModel> getHideEventOperation({
-    required String userPubId,
+    required String userPid,
     required DataRef eventsRef,
     bool hide = true,
   }) {
     return getTagEventOperation(
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_HIDDEN,
       eventsRef: eventsRef,
       value: hide,
@@ -127,13 +127,13 @@ final class EventUtils {
 
   static Future<void> likeEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required DataRef eventsRef,
     bool like = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_LIKED,
       eventsRef: eventsRef,
       value: like,
@@ -141,13 +141,13 @@ final class EventUtils {
   }
 
   static BatchWriteOperation<GenericModel> getLikeEventOperation({
-    required String userPubId,
+    required String userPid,
     required String eventId,
     required DataRef eventsRef,
     bool like = true,
   }) {
     return getTagEventOperation(
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_LIKED,
       eventsRef: eventsRef,
       value: like,
@@ -160,13 +160,13 @@ final class EventUtils {
 
   static Future<void> readEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required DataRef eventsRef,
     bool read = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_READ,
       eventsRef: eventsRef,
       value: read,
@@ -174,12 +174,12 @@ final class EventUtils {
   }
 
   static BatchWriteOperation<GenericModel> getReadEventOperation({
-    required String userPubId,
+    required String userPid,
     required DataRef eventsRef,
     bool read = true,
   }) {
     return getTagEventOperation(
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_READ,
       eventsRef: eventsRef,
       value: read,
@@ -192,13 +192,13 @@ final class EventUtils {
 
   static Future<void> receiveEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required DataRef eventsRef,
     bool receive = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_RECEIVED,
       eventsRef: eventsRef,
       value: receive,
@@ -206,12 +206,12 @@ final class EventUtils {
   }
 
   static BatchWriteOperation<GenericModel> getReceiveEventOperation({
-    required String userPubId,
+    required String userPid,
     required DataRef eventsRef,
     bool receive = true,
   }) {
     return getTagEventOperation(
-      userPubId: userPubId,
+      userPid: userPid,
       eventTag: ModelEvent.K_WHEN_RECEIVED,
       eventsRef: eventsRef,
       value: receive,
@@ -224,7 +224,7 @@ final class EventUtils {
 
   static Future<void> tagEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPubId,
+    required String userPid,
     required String eventTag,
     required DataRef eventsRef,
     required bool value,
@@ -233,7 +233,7 @@ final class EventUtils {
       GenericModel(
         data: {
           eventTag: {
-            userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
+            userPid: value ? DateTime.now().toUtc().toIso8601String() : '',
           },
         },
       ),
@@ -242,7 +242,7 @@ final class EventUtils {
   }
 
   static BatchWriteOperation<GenericModel> getTagEventOperation({
-    required String userPubId,
+    required String userPid,
     required String eventTag,
     required DataRef eventsRef,
     required bool value,
@@ -252,7 +252,7 @@ final class EventUtils {
       model: GenericModel(
         data: {
           eventTag: {
-            userPubId: value ? DateTime.now().toUtc().toIso8601String() : '',
+            userPid: value ? DateTime.now().toUtc().toIso8601String() : '',
           },
         },
       ),
@@ -285,8 +285,8 @@ final class EventUtils {
 
   static Future<void> sendEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String senderPubId,
-    String? receiverPubId,
+    required String senderPid,
+    String? receiverPid,
     required String eventId,
     required DataRef eventsRef,
     required Model eventDef,
@@ -294,11 +294,11 @@ final class EventUtils {
   }) async {
     final eventModel = ModelEvent(
       id: eventId,
-      pubIds: {
-        senderPubId,
-        if (receiverPubId != null) receiverPubId,
+      pids: {
+        senderPid,
+        if (receiverPid != null) receiverPid,
       },
-      whenSent: {senderPubId: DateTime.now()},
+      whenSent: {senderPid: DateTime.now()},
       def: eventDef.toGenericModel(),
       defType: eventDefType,
     );
@@ -309,8 +309,8 @@ final class EventUtils {
   }
 
   static BatchWriteOperation<ModelEvent> getSendEventOperation({
-    required String senderPubId,
-    required String receiverPubId,
+    required String senderPid,
+    required String receiverPid,
     required String eventId,
     required DataRef eventsRef,
     required Model eventDef,
@@ -318,8 +318,8 @@ final class EventUtils {
   }) {
     final eventModel = ModelEvent(
       id: eventId,
-      pubIds: {senderPubId, receiverPubId},
-      whenSent: {senderPubId: DateTime.now()},
+      pids: {senderPid, receiverPid},
+      whenSent: {senderPid: DateTime.now()},
       def: eventDef.toGenericModel(),
       defType: eventDefType,
     );

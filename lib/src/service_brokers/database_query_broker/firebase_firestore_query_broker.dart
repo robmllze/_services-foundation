@@ -87,13 +87,13 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
           .map((final snapshot) => ModelUserPub.fromJson(snapshot.data()))
           .toSet();
       // 5. Get a unique set of all access UIDs.
-      final userpubIds = matchesCombined.map((e) => e.id).nonNulls.toSet();
+      final userpids = matchesCombined.map((e) => e.id).nonNulls.toSet();
       // 6. Remove duplicates as well as current user's model.
       final matchesDuplicatesRemoved =
-          userpubIds.map((id) => matchesCombined.firstWhere((e) => e.id == id));
+          userpids.map((id) => matchesCombined.firstWhere((e) => e.id == id));
       try {
         // 7. Filter the matches that are marked as deleted.
-        final matchesNotDeleted = matchesDuplicatesRemoved.where((e) => e.whenDeleted == null);
+        final matchesNotDeleted = matchesDuplicatesRemoved.where((e) => e.deletedAt == null);
         // 8. Return the results.
         return matchesNotDeleted;
       } catch (_) {}
@@ -130,14 +130,14 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelUserPub>> queryUserPubsById({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> pubIds,
+    required Set<String> pids,
     int limit = 1000,
   }) {
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.userPubsRef().collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
     final results = collection
-        .where(ModelUserPub.K_ID, arrayContainsAny: pubIds)
+        .where(ModelUserPub.K_ID, arrayContainsAny: pids)
         .limit(limit)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
@@ -151,13 +151,13 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelRelationship>> queryRelationshipsForMembers({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> memberIds,
+    required Set<String> memberPids,
     int limit = 1000,
   }) {
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collection = firebaseFirestore.collection(Schema.relationshipsRef().collectionPath!);
     final relationships = collection
-        .where(ModelRelationship.K_MEMBER_IDS, arrayContainsAny: memberIds)
+        .where(ModelRelationship.K_MEMBER_PIDS, arrayContainsAny: memberPids)
         .limit(limit)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));

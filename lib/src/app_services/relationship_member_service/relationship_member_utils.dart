@@ -25,9 +25,9 @@ final class RelationshipMemberUtils {
 
   // static UserPubService? getUserPubServiceForRelationship({
   //   required Iterable<(String, UserPubService)>? userPubServicePool,
-  //   required String userPubId,
+  //   required String userPid,
   // }) {
-  //   return userPubServicePool?.firstWhereOrNull((e) => e.$1 == userPubId)?.$2;
+  //   return userPubServicePool?.firstWhereOrNull((e) => e.$1 == userPid)?.$2;
   // }
 
   //
@@ -56,7 +56,7 @@ final class RelationshipMemberUtils {
   }) {
     return memberId != null
         ? relationshipPool?.where((e) {
-              return e.memberIds?.contains(memberId) == true;
+              return e.memberPids?.contains(memberId) == true;
             }).toSet() ??
             {}
         : {};
@@ -67,11 +67,11 @@ final class RelationshipMemberUtils {
   //
 
   /// Extracts the member IDs from a relationship that are public user IDs.
-  Set<String> extractUserMemberIds({
+  Set<String> extractUserMemberPids({
     required ModelRelationship relationship,
   }) {
-    return relationship.memberIds?.where((e) {
-          return IdUtils.getPrefix(e) == IdUtils.USER_PUB_ID_PREFIX;
+    return relationship.memberPids?.where((e) {
+          return IdUtils.getPrefix(e) == IdUtils.USER_PID_PREFIX;
         }).toSet() ??
         {};
   }
@@ -81,11 +81,11 @@ final class RelationshipMemberUtils {
   //
 
   /// Extracts the member IDs from a relationship that are public organization IDs.
-  Set<String> extractOrganizationMemberIds({
+  Set<String> extractOrganizationMemberPids({
     required ModelRelationship relationship,
   }) {
-    return relationship.memberIds?.where((e) {
-          return IdUtils.getPrefix(e) == IdUtils.ORGANIZATION_PUB_ID_PPREFIX;
+    return relationship.memberPids?.where((e) {
+          return IdUtils.getPrefix(e) == IdUtils.ORGANIZATION_PID_PPREFIX;
         }).toSet() ??
         {};
   }

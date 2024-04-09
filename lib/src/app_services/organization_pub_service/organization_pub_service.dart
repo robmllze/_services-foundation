@@ -27,7 +27,7 @@ class OrganizationPubService extends DocumentServiceInterface<ModelOrganizationP
   //
 
   @override
-  DataRef databaseRef() => Schema.organizationPubsRef(organizationPubId: id);
+  DataRef databaseRef() => Schema.organizationPubsRef(organizationPid: id);
 
   //
   //
