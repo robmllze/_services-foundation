@@ -23,15 +23,100 @@ final class RelationshipUtils {
   //
   //
 
+  static Iterable<ModelRelationship> filterByDefType({
+    required Iterable<ModelRelationship>? relationshipPool,
+    required Set<RelationshipDefType>? defTypes,
+  }) {
+    if (defTypes == null || defTypes.isEmpty) return [];
+    return relationshipPool?.where(
+          (rel) {
+            final defType = rel.defType;
+            return defType != null ? defTypes.contains(defType) : false;
+          },
+        ) ??
+        [];
+  }
+
+  //
+  //
+  //
+
+  static Iterable<ModelRelationship> filterByEveryMember({
+    required Iterable<ModelRelationship>? relationshipPool,
+    required Set<String?>? memberPids,
+  }) {
+    final pids = memberPids?.nonNulls;
+    if (pids == null || pids.isEmpty) return [];
+    return relationshipPool?.where(
+          (rel) {
+            return pids.every((pid) {
+              return rel.memberPids?.contains(pid) == true;
+            });
+          },
+        ) ??
+        [];
+  }
+
+  //
+  //
+  //
+
+  static Iterable<ModelRelationship> filterByAnyMember({
+    required Iterable<ModelRelationship>? relationshipPool,
+    required Set<String>? memberPids,
+  }) {
+    final pids = memberPids?.nonNulls;
+    if (pids == null || pids.isEmpty) return [];
+    return relationshipPool?.where(
+          (rel) {
+            return pids.any((pid) {
+              return rel.memberPids?.contains(pid) == true;
+            });
+          },
+        ) ??
+        [];
+  }
+
+  //
+  //
+  //
+
+  Set<String> extractUserMemberPids({
+    required ModelRelationship relationship,
+  }) {
+    return relationship.memberPids?.where((e) {
+          return IdUtils.getPrefix(e) == IdUtils.USER_PID_PREFIX;
+        }).toSet() ??
+        {};
+  }
+
+  //
+  //
+  //
+
+  /// Extracts the member IDs from a relationship that are public organization IDs.
+  Set<String> extractOrganizationMemberPids({
+    required ModelRelationship relationship,
+  }) {
+    return relationship.memberPids?.where((e) {
+          return IdUtils.getPrefix(e) == IdUtils.ORGANIZATION_PID_PPREFIX;
+        }).toSet() ??
+        {};
+  }
+
+  //
+  //
+  //
+
   static Set<String> extractMemberPidsFromRelationships(
     Iterable<ModelRelationship> relationshipPool, {
-    required Iterable<String> memberIdPrefixes,
+    required Iterable<String> memberPidPrefixes,
   }) {
     final memberPids = <String>{};
     for (final relationship in relationshipPool) {
       Iterable<String>? temp = relationship.memberPids;
       if (temp != null && temp.isNotEmpty) {
-        temp = temp.where((e) => memberIdPrefixes.any((prefix) => e.startsWith(prefix)));
+        temp = temp.where((e) => memberPidPrefixes.any((prefix) => e.startsWith(prefix)));
         memberPids.addAll(temp);
       }
     }

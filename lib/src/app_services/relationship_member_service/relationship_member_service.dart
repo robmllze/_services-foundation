@@ -20,10 +20,10 @@ class RelationshipMemberService<TModel extends Model,
 
   final RelationshipService relationshipService;
   final Iterable<RelationshipDefType> defTypes;
-  final Iterable<String> memberIdPrefixes;
+  final Iterable<String> memberPidPrefixes;
   final TDocumentService Function(
     ServiceEnvironment serviceEnvironment,
-    String memberId,
+    String memberPid,
   ) serviceInstantiator;
 
   //
@@ -33,7 +33,7 @@ class RelationshipMemberService<TModel extends Model,
   RelationshipMemberService({
     required this.relationshipService,
     required this.defTypes,
-    required this.memberIdPrefixes,
+    required this.memberPidPrefixes,
     required this.serviceInstantiator,
   }) {
     this._init();
@@ -63,7 +63,7 @@ class RelationshipMemberService<TModel extends Model,
         {};
     final memberPids = RelationshipUtils.extractMemberPidsFromRelationships(
       relationships,
-      memberIdPrefixes: this.memberIdPrefixes,
+      memberPidPrefixes: this.memberPidPrefixes,
     );
     await this._addMembers(memberPids);
     await this._removeMembers(memberPids);
@@ -89,17 +89,17 @@ class RelationshipMemberService<TModel extends Model,
 
   Future<void> _onAddMembers(Set<String> memberPidsToAdd) async {
     final futureServicesToAdd = <Future<MapEntry<String, TDocumentService>>>[];
-    for (final memberId in memberPidsToAdd) {
+    for (final memberPid in memberPidsToAdd) {
       final memberService = this.serviceInstantiator(
         relationshipService.serviceEnvironment,
-        memberId,
+        memberPid,
       );
       futureServicesToAdd.add(
         memberService.initService().then((_) {
           Here().debugLogStart(
-            'Added service for memberId: $memberId',
+            'Added service for memberPid: $memberPid',
           );
-          return MapEntry(memberId, memberService);
+          return MapEntry(memberPid, memberService);
         }),
       );
     }
@@ -128,12 +128,12 @@ class RelationshipMemberService<TModel extends Model,
     await this.pMemberServicePool.update(
           (e) => e
             ..removeWhere(
-              (memberId, eventService) {
-                final remove = memberPidsToRemove.contains(memberId);
+              (memberPid, eventService) {
+                final remove = memberPidsToRemove.contains(memberPid);
                 if (remove) {
                   eventService.dispose();
                   Here().debugLogStop(
-                    'Removed service for memberId: $memberId',
+                    'Removed service for memberPid: $memberPid',
                   );
                 }
                 return remove;

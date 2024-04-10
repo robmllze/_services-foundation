@@ -23,7 +23,6 @@ export 'app_services/project_member_service/project_member_service.dart';
 export 'app_services/project_pub_service/project_pub_service.dart';
 export 'app_services/project_service/project_service.dart';
 export 'app_services/relationship_member_service/relationship_member_service.dart';
-export 'app_services/relationship_member_service/relationship_member_utils.dart';
 export 'app_services/relationship_service/relationship_service.dart';
 export 'app_services/relationship_service/relationship_utils.dart';
 export 'app_services/user_member_service/user_member_service.dart';

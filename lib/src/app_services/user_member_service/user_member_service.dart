@@ -21,10 +21,10 @@ class UserMemberService extends RelationshipMemberService<ModelUserPub, UserPubS
     required super.relationshipService,
     required super.defTypes,
   }) : super(
-          memberIdPrefixes: [IdUtils.USER_PID_PREFIX],
-          serviceInstantiator: (serviceEnvironment, memberId) => UserPubService(
+          memberPidPrefixes: [IdUtils.USER_PID_PREFIX],
+          serviceInstantiator: (serviceEnvironment, memberPid) => UserPubService(
             serviceEnvironment: serviceEnvironment,
-            id: memberId,
+            id: memberPid,
           ),
         );
 }

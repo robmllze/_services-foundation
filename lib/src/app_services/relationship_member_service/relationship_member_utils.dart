@@ -23,43 +23,38 @@ final class RelationshipMemberUtils {
   //
   //
 
-  // static UserPubService? getUserPubServiceForRelationship({
-  //   required Iterable<(String, UserPubService)>? userPubServicePool,
-  //   required String userPid,
-  // }) {
-  //   return userPubServicePool?.firstWhereOrNull((e) => e.$1 == userPid)?.$2;
-  // }
-
-  //
-  //
-  //
-
-  /// Gets the IDs of all relationships containing a [memberId] from a [relationshipPool].
-  static Iterable<String> getRelationshipIdsForMember(
-    Iterable<ModelRelationship>? relationshipPool,
-    String? memberId,
-  ) {
-    return RelationshipMemberUtils.getRelationshipsForMember(
-      relationshipPool: relationshipPool,
-      memberId: memberId,
-    ).map((e) => e.id).nonNulls;
+  static Iterable<ModelRelationship> getRelationshipsThatContainEveryMember({
+    required Iterable<ModelRelationship>? relationshipPool,
+    required Set<String>? memberPids,
+  }) {
+    if (memberPids == null || memberPids.isEmpty) return [];
+    return relationshipPool?.where(
+          (relationship) {
+            return memberPids.every((pid) {
+              return relationship.memberPids?.contains(pid) == true;
+            });
+          },
+        ) ??
+        [];
   }
 
   //
   //
   //
 
-  /// Gets all relationships containing a [memberId] from a [relationshipPool].
-  static Iterable<ModelRelationship> getRelationshipsForMember({
+  static Iterable<ModelRelationship> getRelationshipsThatContainAnyMember({
     required Iterable<ModelRelationship>? relationshipPool,
-    required String? memberId,
+    required Set<String>? memberPids,
   }) {
-    return memberId != null
-        ? relationshipPool?.where((e) {
-              return e.memberPids?.contains(memberId) == true;
-            }).toSet() ??
-            {}
-        : {};
+    if (memberPids == null || memberPids.isEmpty) return [];
+    return relationshipPool?.where(
+          (relationship) {
+            return memberPids.any((pid) {
+              return relationship.memberPids?.contains(pid) == true;
+            });
+          },
+        ) ??
+        [];
   }
 
   //
