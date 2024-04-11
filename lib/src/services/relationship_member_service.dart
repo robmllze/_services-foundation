@@ -57,12 +57,12 @@ class RelationshipMemberService<TModel extends Model,
 
   void _listener() async {
     final relationships = this.relationshipService.pValue.value?.where((e) {
-          final defType = e.defType ?? findRelationshipDefTypeFromMemberPids(e.memberPids);
+          final defType = e.defType;
           return this.defTypes.contains(defType);
         }) ??
         {};
     final memberPids = RelationshipUtils.extractMemberPidsFromRelationships(
-      relationships,
+      relationshipPool: relationships,
       memberPidPrefixes: this.memberPidPrefixes,
     );
     await this._addMembers(memberPids);

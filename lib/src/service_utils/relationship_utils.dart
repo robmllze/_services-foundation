@@ -81,46 +81,68 @@ final class RelationshipUtils {
   //
   //
 
-  Set<String> extractUserMemberPids({
+  static Set<String> extractUserMemberPids({
     required ModelRelationship relationship,
   }) {
-    return relationship.memberPids?.where((e) {
-          return IdUtils.getPrefix(e) == IdUtils.USER_PID_PREFIX;
-        }).toSet() ??
-        {};
+    return relationship.extractMemberPids(
+      memberPidPrefixes: {
+        IdUtils.USER_PID_PREFIX,
+      },
+    );
   }
 
-  //
-  //
-  //
-
-  /// Extracts the member IDs from a relationship that are public organization IDs.
-  Set<String> extractOrganizationMemberPids({
+  static Set<String> extractOrganizationMemberPids({
     required ModelRelationship relationship,
   }) {
-    return relationship.memberPids?.where((e) {
-          return IdUtils.getPrefix(e) == IdUtils.ORGANIZATION_PID_PPREFIX;
-        }).toSet() ??
-        {};
+    return relationship.extractMemberPids(
+      memberPidPrefixes: {
+        IdUtils.ORGANIZATION_PID_PPREFIX,
+      },
+    );
   }
 
-  //
-  //
-  //
+  static Set<String> extractProjectMemberPids({
+    required ModelRelationship relationship,
+  }) {
+    return relationship.extractMemberPids(
+      memberPidPrefixes: {
+        IdUtils.PROJECT_PID_PPREFIX,
+      },
+    );
+  }
 
-  static Set<String> extractMemberPidsFromRelationships(
-    Iterable<ModelRelationship> relationshipPool, {
+  static Set<String> extractJobMemberPids({
+    required ModelRelationship relationship,
+  }) {
+    return relationship.extractMemberPids(
+      memberPidPrefixes: {
+        IdUtils.JOB_PID_PPREFIX,
+      },
+    );
+  }
+
+  static Set<String> extractMemberPidsFromRelationships({
+    required Iterable<ModelRelationship> relationshipPool,
     required Iterable<String> memberPidPrefixes,
   }) {
-    final memberPids = <String>{};
+    final result = <String>{};
     for (final relationship in relationshipPool) {
-      Iterable<String>? temp = relationship.memberPids;
-      if (temp != null && temp.isNotEmpty) {
-        temp = temp.where((e) => memberPidPrefixes.any((prefix) => e.startsWith(prefix)));
-        memberPids.addAll(temp);
-      }
+      final chunk = relationship.extractMemberPids(
+        memberPidPrefixes: memberPidPrefixes,
+      );
+      result.addAll(chunk);
     }
-    return memberPids;
+    return result;
+  }
+
+  static Map<String, ModelRelationship> generateMemberPidRelationshipMap({
+    required Iterable<ModelRelationship> relationshipPool,
+  }) {
+    final entries = relationshipPool.expand(
+      (a) => a.memberPids?.map((b) => MapEntry(b, a)) ?? <MapEntry<String, ModelRelationship>>{},
+    );
+    final result = Map.fromEntries(entries);
+    return result;
   }
 
   //
@@ -259,7 +281,7 @@ final class RelationshipUtils {
   //
 
   static BatchWriteOperation<ModelRelationship> getCreateRelationshipOperation({
-    required String newRelationshipId,
+    required String relationshipId,
     required String senderPid,
     required String receiverPid,
     required DateTime dateSent,
@@ -267,7 +289,7 @@ final class RelationshipUtils {
     required RelationshipDefType? defType,
   }) {
     final relationshipModel = ModelRelationship(
-      id: newRelationshipId,
+      id: relationshipId,
       def: def?.toGenericModel(),
       defType: defType,
       memberPids: {
@@ -281,7 +303,7 @@ final class RelationshipUtils {
     );
 
     final relationshipRef = Schema.relationshipsRef(
-      relationshipId: newRelationshipId,
+      relationshipId: relationshipId,
     );
     return BatchWriteOperation<ModelRelationship>(
       relationshipRef,
