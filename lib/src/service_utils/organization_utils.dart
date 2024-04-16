@@ -28,7 +28,7 @@ final class OrganizationUtils {
     required Set<String> organizationPids,
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
-    // Ensure organizationPids contains only organization pids.
+    // Ensure organizationPids contains valid pids.
     final temp = organizationPids.where((pid) => IdUtils.isOrganizationPid(pid)).toSet();
     assert(temp.length == organizationPids.length, 'organizationPids contains invalid pids.');
     organizationPids = temp;
@@ -46,80 +46,30 @@ final class OrganizationUtils {
 
     // Get all project ids/pids associated with organizationPids.
     final projectPids = organizationAssociatedMemberPids.where((pid) => IdUtils.isProjectPid(pid));
-    final projectIds = projectPids.map((pid) => IdUtils.toProjectId(projectPid: pid));
 
-    // Get all relationships associated with projectPids (ORGANIZATION_AND_PROJECT, JOB_AND_PROJECT, PROJECT_AND_USER).
-    final projectAssociatedRelationshipPool =
-        relationshipPool.filterByAnyMember(memberPids: projectPids).toSet();
-
-    // Get all member pids associated with projectPids, including organization, project and user pids.
-    final projectAssociatedMemberPids = projectAssociatedRelationshipPool.allMemberPids();
-
-    // Get all job ids/pids associated with projectPids.
-    final jobPids = projectAssociatedMemberPids.where((pid) => IdUtils.isJobPid(pid));
-    final jobIds = jobPids.map((pid) => IdUtils.toJobId(jobPid: pid));
-
-    // Get all relationships associated with jobPids (JOB_AND_PROJECT, JOB_AND_USER).
-    final jobAssociatedRelationshipPool =
-        relationshipPool.filterByAnyMember(memberPids: jobPids).toSet();
-
-    // Consolidate all associated relationship pools.
-    final associatedRelationshipPool = Map.fromEntries([
-      ...organizationAssociatedRelationshipPool.map((e) => MapEntry(e.id, e)),
-      ...projectAssociatedRelationshipPool.map((e) => MapEntry(e.id, e)),
-      ...jobAssociatedRelationshipPool.map((e) => MapEntry(e.id, e)),
-    ]).values;
-
-    final result = <BatchWriteOperation>[];
-
-    // Add operations to delete all relationships associated with the organizationPid.
-    for (final relationshipId in associatedRelationshipPool.allIds()) {
-      result.addAll(
+    // Return operations to delete everything associated with organizationPids.
+    return {
+      for (final relationshipId in organizationAssociatedRelationshipPool.allIds())
         // ignore: invalid_use_of_visible_for_testing_member
-        await RelationshipUtils.getLazyDeleteRelationshipOperations(
+        ...await RelationshipUtils.getLazyDeleteRelationshipOperations(
           serviceEnvironment: serviceEnvironment,
           relationshipId: relationshipId,
         ),
-      );
-    }
-
-    // Add operations to delete the organization, organization pub, project,
-    // project pub, job and job pub documents.
-    {
-      result.addAll([
-        for (final organizationId in organizationIds)
-          BatchWriteOperation(
-            Schema.organizationsRef(organizationId: organizationId),
-            delete: true,
-          ),
-        for (final organizationPid in organizationPids)
-          BatchWriteOperation(
-            Schema.organizationPubsRef(organizationPid: organizationPid),
-            delete: true,
-          ),
-        for (final projectId in projectIds)
-          BatchWriteOperation(
-            Schema.projectsRef(projectId: projectId),
-            delete: true,
-          ),
-        for (final projectPid in projectPids)
-          BatchWriteOperation(
-            Schema.projectPubsRef(projectPid: projectPid),
-            delete: true,
-          ),
-        for (final jobId in jobIds)
-          BatchWriteOperation(
-            Schema.jobsRef(jobId: jobId),
-            delete: true,
-          ),
-        for (final jobPid in jobPids)
-          BatchWriteOperation(
-            Schema.jobPubsRef(jobPid: jobPid),
-            delete: true,
-          ),
-      ]);
-    }
-
-    return result;
+      for (final organizationId in organizationIds)
+        BatchWriteOperation(
+          Schema.organizationsRef(organizationId: organizationId),
+          delete: true,
+        ),
+      for (final organizationPid in organizationPids)
+        BatchWriteOperation(
+          Schema.organizationPubsRef(organizationPid: organizationPid),
+          delete: true,
+        ),
+      ...await ProjectUtils.getLazyDeleteProjectsOperations(
+        serviceEnvironment: serviceEnvironment,
+        projectPids: projectPids,
+        relationshipPool: relationshipPool,
+      ),
+    };
   }
 }

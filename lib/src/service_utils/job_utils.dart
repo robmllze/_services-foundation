@@ -21,51 +21,41 @@ final class JobUtils {
   //
   //
 
-  Future<void> lazyDeleteJobs({
+  static Future<Iterable<BatchWriteOperation>> getLazyDeleteJobsOperations({
     required ServiceEnvironment serviceEnvironment,
-    required Set<String> jobPid,
+    required Iterable<String> jobPids,
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
-    //   {
-    //     // Get all relationship IDs associated with the jobPid and users.
-    //     final relationshipIds = relationshipPool.filterByEveryMember(
-    //       memberPids: {jobPid},
-    //     ).filterByDefType(
-    //       defTypes: {RelationshipDefType.JOB_AND_USER},
-    //     ).allIds();
+    // Ensure jobPids contains valid pids.
+    final temp = jobPids.where((pid) => IdUtils.isJobPid(pid));
+    assert(temp.length == jobPids.length, 'jobPids contains invalid pids.');
+    jobPids = temp.toSet();
 
-    //     // Delete all events associated with the jobPid and users.
-    //     for (final relationshipId in relationshipIds) {
-    //       // ignore: invalid_use_of_visible_for_testing_member
-    //       await RelationshipUtils.lazyDeleteRelationshipEventsCollection(
-    //         serviceEnvironment: serviceEnvironment,
-    //         relationshipId: relationshipId,
-    //       );
-    //     }
-    //   }
+    // Get all job ids associated with jobPids.
+    final jobIds = jobPids.map((pid) => IdUtils.toJobId(jobPid: pid));
 
-    //   await serviceEnvironment.databaseServiceBroker.batchWrite(
-    //     [
-    //       BatchWriteOperation(
-    //         Schema.organizationsRef(
-    //             organizationId: IdUtils.toOrganizationId(organizationPid: organizationPid)),
-    //         delete: true,
-    //       ),
-    //       BatchWriteOperation(
-    //         Schema.organizationPubsRef(
-    //           organizationPid: organizationPid,
-    //         ),
-    //         delete: true,
-    //       ),
-    //       ...relationshipIds.map(
-    //         (relationshipId) => BatchWriteOperation(
-    //           Schema.relationshipsRef(
-    //             relationshipId: relationshipId,
-    //           ),
-    //           delete: true,
-    //         ),
-    //       ),
-    //     ],
-    //   );
+    // Get all relationships associated with jobPids (JOB_AND_PROJECT, JOB_AND_USER).
+    final jobAssociatedRelationshipPool =
+        relationshipPool.filterByAnyMember(memberPids: jobPids).toSet();
+
+    // Return operations to delete everything associated with jobPids.
+    return {
+      for (final relationshipId in jobAssociatedRelationshipPool.allIds())
+        // ignore: invalid_use_of_visible_for_testing_member
+        ...await RelationshipUtils.getLazyDeleteRelationshipOperations(
+          serviceEnvironment: serviceEnvironment,
+          relationshipId: relationshipId,
+        ),
+      for (final jobId in jobIds)
+        BatchWriteOperation(
+          Schema.jobsRef(jobId: jobId),
+          delete: true,
+        ),
+      for (final jobPid in jobPids)
+        BatchWriteOperation(
+          Schema.jobPubsRef(jobPid: jobPid),
+          delete: true,
+        ),
+    };
   }
 }
