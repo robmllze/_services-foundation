@@ -35,12 +35,12 @@ final class JobUtils {
     final jobIds = jobPids.map((pid) => IdUtils.toJobId(jobPid: pid));
 
     // Get all relationships associated with jobPids (JOB_AND_PROJECT, JOB_AND_USER).
-    final jobAssociatedRelationshipPool =
+    final associatedRelationshipPool =
         relationshipPool.filterByAnyMember(memberPids: jobPids).toSet();
 
     // Return operations to delete everything associated with jobPids.
     return {
-      for (final relationshipId in jobAssociatedRelationshipPool.allIds())
+      for (final relationshipId in associatedRelationshipPool.allIds())
         // ignore: invalid_use_of_visible_for_testing_member
         ...await RelationshipUtils.getLazyDeleteRelationshipOperations(
           serviceEnvironment: serviceEnvironment,

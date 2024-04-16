@@ -31,18 +31,18 @@ final class ProjectUtils {
     final projectIds = projectPids.map((pid) => IdUtils.toProjectId(projectPid: pid));
 
     // Get all relationships associated with projectPids (ORGANIZATION_AND_PROJECT, JOB_AND_PROJECT, PROJECT_AND_USER).
-    final projectAssociatedRelationshipPool =
+    final associatedRelationshipPool =
         relationshipPool.filterByAnyMember(memberPids: projectPids).toSet();
 
     // Get all member pids associated with projectPids, including organization, project and user pids.
-    final projectAssociatedMemberPids = projectAssociatedRelationshipPool.allMemberPids();
+    final projectAssociatedMemberPids = associatedRelationshipPool.allMemberPids();
 
     // Get all job ids/pids associated with projectPids.
     final jobPids = projectAssociatedMemberPids.where((pid) => IdUtils.isJobPid(pid));
 
     // Return operations to delete everything associated with projectPids.
     return {
-      for (final relationshipId in projectAssociatedRelationshipPool.allIds())
+      for (final relationshipId in associatedRelationshipPool.allIds())
         // ignore: invalid_use_of_visible_for_testing_member
         ...await RelationshipUtils.getLazyDeleteRelationshipOperations(
           serviceEnvironment: serviceEnvironment,
