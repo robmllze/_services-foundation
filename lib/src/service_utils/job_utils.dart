@@ -17,6 +17,58 @@ final class JobUtils {
   //
   //
 
+  static Future<void> createNewJob({
+    required ServiceEnvironment serviceEnvironment,
+    required String userPid,
+    required String projectPid,
+    required String displayName,
+    required String description,
+  }) async {
+    final now = DateTime.now();
+    final jobId = IdUtils.newId();
+    final jobPid = IdUtils.toJobPid(jobId: jobId);
+    final job = ModelJob(
+      id: jobPid,
+      pid: jobPid,
+      createdAt: now,
+    );
+    final jobPub = ModelProjectPub(
+      id: jobPid,
+      projectId: jobId,
+      openedAt: now,
+      displayName: displayName,
+      displayNameSearchable: displayName.toLowerCase(),
+      description: description,
+    );
+    final relationshipId = IdUtils.newRelationshipId();
+    final relationship = ModelRelationship(
+      id: relationshipId,
+      defType: RelationshipDefType.JOB_AND_PROJECT,
+      memberPids: {
+        userPid,
+        jobPid,
+        projectPid,
+      },
+    );
+
+    await serviceEnvironment.databaseServiceBroker.batchWrite(
+      [
+        BatchWriteOperation(
+          Schema.jobsRef(jobId: jobId),
+          model: job,
+        ),
+        BatchWriteOperation(
+          Schema.jobPubsRef(jobPid: jobPid),
+          model: jobPub,
+        ),
+        BatchWriteOperation(
+          Schema.relationshipsRef(relationshipId: relationshipId),
+          model: relationship,
+        ),
+      ],
+    );
+  }
+
   //
   //
   //

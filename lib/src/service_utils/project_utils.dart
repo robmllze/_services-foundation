@@ -17,6 +17,62 @@ final class ProjectUtils {
   //
   //
 
+  static Future<void> createNewProject({
+    required ServiceEnvironment serviceEnvironment,
+    required String userPid,
+    required String organizationPid,
+    required String displayName,
+    required String description,
+  }) async {
+    final now = DateTime.now();
+    final projectId = IdUtils.newId();
+    final projectPid = IdUtils.toProjectPid(projectId: projectId);
+    final project = ModelProject(
+      id: projectId,
+      pid: projectPid,
+      createdAt: now,
+    );
+    final projectPub = ModelProjectPub(
+      id: projectPid,
+      projectId: projectId,
+      openedAt: now,
+      displayName: displayName,
+      displayNameSearchable: displayName.toLowerCase(),
+      description: description,
+    );
+    final relationshipId = IdUtils.newRelationshipId();
+    final relationship = ModelRelationship(
+      id: relationshipId,
+      defType: RelationshipDefType.ORGANIZATION_AND_PROJECT,
+      memberPids: {
+        userPid,
+        projectPid,
+        organizationPid,
+      },
+    );
+
+    await serviceEnvironment.databaseServiceBroker.batchWrite(
+      [
+        BatchWriteOperation(
+          Schema.projectsRef(projectId: projectId),
+          model: project,
+        ),
+        BatchWriteOperation(
+          Schema.projectPubsRef(projectPid: projectPid),
+          model: projectPub,
+        ),
+        BatchWriteOperation(
+          Schema.relationshipsRef(relationshipId: relationshipId),
+          model: relationship,
+        ),
+      ],
+    );
+  }
+
+  //
+  //
+  //
+
   static Future<Iterable<BatchWriteOperation>> getLazyDeleteProjectsOperations({
     required ServiceEnvironment serviceEnvironment,
     required Iterable<String> projectPids,

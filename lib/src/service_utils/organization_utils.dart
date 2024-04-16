@@ -23,6 +23,64 @@ final class OrganizationUtils {
   //
   //
 
+  static Future<void> createNewOrganization({
+    required ServiceEnvironment serviceEnvironment,
+    required String userPid,
+    required String displayName,
+    required String description,
+  }) async {
+    final now = DateTime.now();
+    final organizationId = IdUtils.newId();
+    final organizationPid = IdUtils.toOrganizationPid(organizationId: organizationId);
+    final organization = ModelOrganization(
+      id: organizationId,
+      pid: organizationPid,
+      createdAt: now,
+    );
+    final organizationPub = ModelOrganizationPub(
+      id: organizationPid,
+      organizationId: organizationId,
+      openedAt: now,
+      displayName: displayName,
+      displayNameSearchable: displayName.toLowerCase(),
+      description: description,
+    );
+    final relationshipId = IdUtils.newRelationshipId();
+    final relationship = ModelRelationship(
+      id: relationshipId,
+      defType: RelationshipDefType.ORGANIZATION_AND_USER,
+      def: ModelUserAndOrgRelDef(
+        userPid: userPid,
+        organizationPid: organizationPid,
+      ).toGenericModel(),
+      memberPids: {
+        userPid,
+        organizationPid,
+      },
+    );
+
+    await serviceEnvironment.databaseServiceBroker.batchWrite(
+      [
+        BatchWriteOperation(
+          Schema.organizationsRef(organizationId: organizationId),
+          model: organization,
+        ),
+        BatchWriteOperation(
+          Schema.organizationPubsRef(organizationPid: organizationPid),
+          model: organizationPub,
+        ),
+        BatchWriteOperation(
+          Schema.relationshipsRef(relationshipId: relationshipId),
+          model: relationship,
+        ),
+      ],
+    );
+  }
+
+  //
+  //
+  //
+
   static Future<Iterable<BatchWriteOperation>> getLazyDeleteOrganizationsOperations({
     required ServiceEnvironment serviceEnvironment,
     required Set<String> organizationPids,
