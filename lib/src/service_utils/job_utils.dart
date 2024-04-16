@@ -17,18 +17,55 @@ final class JobUtils {
   //
   //
 
-  static Iterable<ModelJobPub> filterJobPubsByRelationship({
-    required String? relationshipId,
-    required Iterable<ModelRelationship>? relationshipPool,
-    required Iterable<ModelJobPub>? jobPubPool,
-  }) {
-    final relationship = ModelRelationship.fromPool(pool: relationshipPool, id: relationshipId);
-    if (relationship != null) {
-      final pids = RelationshipUtils.extractJobMemberPids(relationship: relationship);
-      final result = pids.map((pid) => ModelJobPub.fromPool(pool: jobPubPool, id: pid)).nonNulls;
-      return result;
-    } else {
-      return [];
-    }
+  //
+  //
+  //
+
+  Future<void> lazyDeleteJobs({
+    required ServiceEnvironment serviceEnvironment,
+    required Set<String> jobPid,
+    required Iterable<ModelRelationship> relationshipPool,
+  }) async {
+    //   {
+    //     // Get all relationship IDs associated with the jobPid and users.
+    //     final relationshipIds = relationshipPool.filterByEveryMember(
+    //       memberPids: {jobPid},
+    //     ).filterByDefType(
+    //       defTypes: {RelationshipDefType.JOB_AND_USER},
+    //     ).allIds();
+
+    //     // Delete all events associated with the jobPid and users.
+    //     for (final relationshipId in relationshipIds) {
+    //       // ignore: invalid_use_of_visible_for_testing_member
+    //       await RelationshipUtils.lazyDeleteRelationshipEventsCollection(
+    //         serviceEnvironment: serviceEnvironment,
+    //         relationshipId: relationshipId,
+    //       );
+    //     }
+    //   }
+
+    //   await serviceEnvironment.databaseServiceBroker.batchWrite(
+    //     [
+    //       BatchWriteOperation(
+    //         Schema.organizationsRef(
+    //             organizationId: IdUtils.toOrganizationId(organizationPid: organizationPid)),
+    //         delete: true,
+    //       ),
+    //       BatchWriteOperation(
+    //         Schema.organizationPubsRef(
+    //           organizationPid: organizationPid,
+    //         ),
+    //         delete: true,
+    //       ),
+    //       ...relationshipIds.map(
+    //         (relationshipId) => BatchWriteOperation(
+    //           Schema.relationshipsRef(
+    //             relationshipId: relationshipId,
+    //           ),
+    //           delete: true,
+    //         ),
+    //       ),
+    //     ],
+    //   );
   }
 }

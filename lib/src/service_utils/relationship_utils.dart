@@ -23,60 +23,6 @@ final class RelationshipUtils {
   //
   //
 
-  static Iterable<ModelRelationship> filterByDefType({
-    required Iterable<ModelRelationship>? relationshipPool,
-    required Set<RelationshipDefType>? defTypes,
-  }) {
-    if (defTypes == null || defTypes.isEmpty) return [];
-    return relationshipPool?.where(
-          (rel) {
-            final defType = rel.defType;
-            return defType != null ? defTypes.contains(defType) : false;
-          },
-        ) ??
-        [];
-  }
-
-  //
-  //
-  //
-
-  static Iterable<ModelRelationship> filterByEveryMember({
-    required Iterable<ModelRelationship>? relationshipPool,
-    required Set<String?>? memberPids,
-  }) {
-    final pids = memberPids?.nonNulls;
-    if (pids == null || pids.isEmpty) return [];
-    return relationshipPool?.where(
-          (rel) {
-            return pids.every((pid) {
-              return rel.memberPids?.contains(pid) == true;
-            });
-          },
-        ) ??
-        [];
-  }
-
-  //
-  //
-  //
-
-  static Iterable<ModelRelationship> filterByAnyMember({
-    required Iterable<ModelRelationship>? relationshipPool,
-    required Set<String>? memberPids,
-  }) {
-    final pids = memberPids?.nonNulls;
-    if (pids == null || pids.isEmpty) return [];
-    return relationshipPool?.where(
-          (rel) {
-            return pids.any((pid) {
-              return rel.memberPids?.contains(pid) == true;
-            });
-          },
-        ) ??
-        [];
-  }
-
   //
   //
   //
@@ -174,35 +120,26 @@ final class RelationshipUtils {
   //
   //
 
-  static Future<void> deleteRelationship({
-    required ServiceEnvironment serviceEnvironment,
-    required String relationshipId,
-  }) async {
-    final relationshipRef = Schema.relationshipsRef(
-      relationshipId: relationshipId,
-    );
-    await serviceEnvironment.databaseServiceBroker.deleteModel(relationshipRef);
-    await lazyDeleteRelationshipEventsCollection(
-      serviceEnvironment: serviceEnvironment,
-      relationshipId: relationshipId,
-    );
-  }
-
-  //
-  //
-  //
-
   @visibleForTesting
-  static Future<void> lazyDeleteRelationshipEventsCollection({
+  static Future<Iterable<BatchWriteOperation>> getLazyDeleteRelationshipOperations({
     required ServiceEnvironment serviceEnvironment,
     required String relationshipId,
   }) async {
-    final collectionRef = Schema.relationshipEventsRef(relationshipId: relationshipId);
-    // ignore: invalid_use_of_visible_for_testing_member
-    await serviceEnvironment.databaseQueryBroker.lazyDeleteCollection(
-      databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-      collectionRef: collectionRef,
-    );
+    return [
+      // Operation to delete the relationship document.
+      BatchWriteOperation(
+        Schema.relationshipsRef(
+          relationshipId: relationshipId,
+        ),
+        delete: true,
+      ),
+      // Operations to delete the events collection associated with the relationship document.
+      // ignore: invalid_use_of_visible_for_testing_member
+      ...await serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
+        databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+        collectionRef: Schema.relationshipEventsRef(relationshipId: relationshipId),
+      ),
+    ];
   }
 
   //
@@ -216,7 +153,6 @@ final class RelationshipUtils {
     final genericModel = await serviceEnvironment.databaseServiceBroker.getModel(
       Schema.relationshipsRef(relationshipId: relationshipId),
     );
-
     if (genericModel != null) {
       final relationshipModel = ModelRelationship.from(genericModel);
       return relationshipModel;
