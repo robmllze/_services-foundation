@@ -31,7 +31,7 @@ class FirebaseFunctionsServiceBroker extends FunctionsServiceInterface {
   Uri functionsEndpointUrl(String functionId) {
     return Uri(
       scheme: 'https',
-      host: '${this.region}-${this.projectId}',
+      host: '${this.region}-${this.projectId}.cloudfunctions.net',
       path: functionId,
     );
   }
