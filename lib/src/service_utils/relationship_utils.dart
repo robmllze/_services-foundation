@@ -172,7 +172,7 @@ final class RelationshipUtils {
     assert(userId != null);
     if (userId != null) {
       final userPid = IdUtils.toUserPid(userId: userId);
-      return serviceEnvironment.databaseQueryBroker.queryRelationshipsForMembers(
+      return serviceEnvironment.databaseQueryBroker.queryRelationshipsForAnyMembers(
         databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
         memberPids: {userPid},
       );
@@ -244,6 +244,47 @@ final class RelationshipUtils {
     return BatchWriteOperation<ModelRelationship>(
       relationshipRef,
       model: relationshipModel,
+    );
+  }
+
+  //
+  //
+  //
+
+  /// Queries all relationships on the database between the given [memberPids]
+  /// of any [defTypes].
+  static Future<Iterable<ModelRelationship>> queryRelationshipsBetween({
+    required ServiceEnvironment serviceEnvironment,
+    required Set<String> memberPids,
+    Set<RelationshipDefType> defTypes = const {},
+  }) async {
+    var a = await streamToFuture(
+      serviceEnvironment.databaseQueryBroker.queryRelationshipsForAllMembers(
+        databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+        memberPids: memberPids,
+      ),
+    );
+    if (defTypes.isNotEmpty) {
+      a = a.where((e) => defTypes.contains(e.defType)).toList();
+    }
+    return a;
+  }
+
+  //
+  //
+  //
+
+  static ModelRelationship createNewRelationship({
+    required Set<String> memberPids,
+    required RelationshipDefType defType,
+    GenericModel? def,
+  }) {
+    return ModelRelationship(
+      id: IdUtils.newId(),
+      defType: defType,
+      def: def,
+      memberPids: memberPids,
+      createdAt: DateTime.now(),
     );
   }
 }

@@ -149,7 +149,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<ModelRelationship>> queryRelationshipsForMembers({
+  Stream<Iterable<ModelRelationship>> queryRelationshipsForAnyMembers({
     required DatabaseServiceInterface databaseServiceBroker,
     required Set<String> memberPids,
     int limit = 1000,
@@ -158,6 +158,26 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = firebaseFirestore.collection(Schema.relationshipsRef().collectionPath!);
     final relationships = collection
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContainsAny: memberPids)
+        .limit(limit)
+        .snapshots()
+        .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
+    return relationships;
+  }
+
+  //
+  //
+  //
+
+  @override
+  Stream<Iterable<ModelRelationship>> queryRelationshipsForAllMembers({
+    required DatabaseServiceInterface databaseServiceBroker,
+    required Set<String> memberPids,
+    int limit = 1000,
+  }) {
+    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
+    final collection = firebaseFirestore.collection(Schema.relationshipsRef().collectionPath!);
+    final relationships = collection
+        .where(ModelRelationship.K_MEMBER_PIDS, arrayContains: memberPids)
         .limit(limit)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
