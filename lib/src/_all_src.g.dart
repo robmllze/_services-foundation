@@ -16,6 +16,7 @@ export 'service_brokers/database_service_broker/cache_service_broker.dart';
 export 'service_brokers/database_service_broker/firebase_firestore_service_broker.dart';
 export 'service_brokers/functions_service_broker/firebase_functions_service_broker.dart';
 export 'service_utils/event_utils.dart';
+export 'service_utils/invitation_utils.dart';
 export 'service_utils/job_pub_pool_extension.dart';
 export 'service_utils/job_utils.dart';
 export 'service_utils/messaging_utils.dart';

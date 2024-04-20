@@ -23,6 +23,94 @@ final class RelationshipUtils {
   //
   //
 
+  // --- ModelRelationship CRUD ---
+
+  // Create.
+  static BatchWriteOperation<ModelRelationship> dbCreateRelationshipOperation({
+    required ModelRelationship relationship,
+  }) {
+    final ref = Schema.relationshipsRef(relationshipId: relationship.id!);
+    return BatchWriteOperation(ref, model: relationship, mergeExisting: true);
+  }
+
+  // Read.
+  static Future<ModelRelationship?> dbReadRelationship({
+    required ServiceEnvironment serviceEnvironment,
+    required String relationshipId,
+  }) async {
+    final ref = Schema.relationshipsRef(relationshipId: relationshipId);
+    final genericModel = await serviceEnvironment.databaseServiceBroker.getModel(ref);
+    if (genericModel != null) {
+      return ModelRelationship.from(genericModel);
+    }
+    return null;
+  }
+
+  // Update.
+  static BatchWriteOperation<ModelRelationship> dbUpdateRelationshipOperation({
+    required ModelRelationship relationship,
+  }) {
+    final ref = Schema.relationshipsRef(relationshipId: relationship.id!);
+    return BatchWriteOperation(
+      ref,
+      model: relationship,
+      mergeExisting: false,
+      overwriteExisting: false,
+    );
+  }
+
+  // Delete.
+  static BatchWriteOperation<ModelRelationship> dbDeleteRelationshipOperation({
+    required String relationshipId,
+  }) {
+    final ref = Schema.relationshipsRef(relationshipId: relationshipId);
+    return BatchWriteOperation(ref, delete: true);
+  }
+
+  //
+  //
+  //
+
+  static Stream<Iterable<ModelRelationship>> dbQueryRelationshipsForAnyMembers({
+    required ServiceEnvironment serviceEnvironment,
+    required Set<String> memberPids,
+    Set<RelationshipDefType> defTypes = const {},
+    int limit = 100,
+  }) {
+    var a = serviceEnvironment.databaseQueryBroker.queryRelationshipsForAnyMembers(
+      databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+      memberPids: memberPids,
+      limit: limit,
+    );
+
+    if (defTypes.isNotEmpty) {
+      a = a.map((e) => e.where((e) => defTypes.contains(e.defType)));
+    }
+    return a;
+  }
+
+  //
+  //
+  //
+
+  static Stream<Iterable<ModelRelationship>> dbQueryRelationshipsForAllMembers({
+    required ServiceEnvironment serviceEnvironment,
+    required Set<String> memberPids,
+    Set<RelationshipDefType> defTypes = const {},
+    int limit = 100,
+  }) {
+    var a = serviceEnvironment.databaseQueryBroker.queryRelationshipsForAllMembers(
+      databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+      memberPids: memberPids,
+      limit: limit,
+    );
+
+    if (defTypes.isNotEmpty) {
+      a = a.map((e) => e.where((e) => defTypes.contains(e.defType)));
+    }
+    return a;
+  }
+
   //
   //
   //
@@ -127,12 +215,7 @@ final class RelationshipUtils {
   }) async {
     return [
       // Operation to delete the relationship document.
-      BatchWriteOperation(
-        Schema.relationshipsRef(
-          relationshipId: relationshipId,
-        ),
-        delete: true,
-      ),
+      dbDeleteRelationshipOperation(relationshipId: relationshipId),
       // Operations to delete the events collection associated with the relationship document.
       // ignore: invalid_use_of_visible_for_testing_member
       ...await serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
@@ -140,44 +223,6 @@ final class RelationshipUtils {
         collectionRef: Schema.relationshipEventsRef(relationshipId: relationshipId),
       ),
     ];
-  }
-
-  //
-  //
-  //
-
-  static Future<ModelRelationship?> getRelationship({
-    required ServiceEnvironment serviceEnvironment,
-    required String relationshipId,
-  }) async {
-    final genericModel = await serviceEnvironment.databaseServiceBroker.getModel(
-      Schema.relationshipsRef(relationshipId: relationshipId),
-    );
-    if (genericModel != null) {
-      final relationshipModel = ModelRelationship.from(genericModel);
-      return relationshipModel;
-    }
-    return null;
-  }
-
-  //
-  //
-  //
-
-  static Stream<Iterable<ModelRelationship>>? relationshipsStream(
-    ServiceEnvironment serviceEnvironment, {
-    String? userId,
-  }) {
-    userId = userId ?? serviceEnvironment.authServiceBroker.pCurrentUser.value?.userId;
-    assert(userId != null);
-    if (userId != null) {
-      final userPid = IdUtils.toUserPid(userId: userId);
-      return serviceEnvironment.databaseQueryBroker.queryRelationshipsForAnyMembers(
-        databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-        memberPids: {userPid},
-      );
-    }
-    return null;
   }
 
   //
@@ -281,29 +326,6 @@ final class RelationshipUtils {
       relationshipRef,
       model: relationshipModel,
     );
-  }
-
-  //
-  //
-  //
-
-  /// Queries all relationships on the database between the given [memberPids]
-  /// of any [defTypes].
-  static Future<Iterable<ModelRelationship>> queryRelationshipsBetween({
-    required ServiceEnvironment serviceEnvironment,
-    required Set<String> memberPids,
-    Set<RelationshipDefType> defTypes = const {},
-  }) async {
-    var a = await streamToFuture(
-      serviceEnvironment.databaseQueryBroker.queryRelationshipsForAllMembers(
-        databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-        memberPids: memberPids,
-      ),
-    );
-    if (defTypes.isNotEmpty) {
-      a = a.where((e) => defTypes.contains(e.defType)).toList();
-    }
-    return a;
   }
 
   //
