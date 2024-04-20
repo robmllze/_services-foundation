@@ -184,7 +184,43 @@ final class RelationshipUtils {
   //
   //
 
-  static Future<void> createRelationship({
+  static Future<void> addMembers({
+    required ServiceEnvironment serviceEnvironment,
+    required ModelRelationship relationship,
+    required Set<String> memberPids,
+  }) async {
+    final relationshipId = relationship.id;
+    if (relationshipId != null) {
+      final ref = Schema.relationshipsRef(relationshipId: relationshipId);
+      (relationship.memberPids ??= {}).addAll(memberPids);
+      await serviceEnvironment.databaseServiceBroker.updateModel(
+        relationship,
+        ref,
+      );
+    }
+  }
+
+  //
+  //
+  //
+
+  static Future<void> removeMembers({
+    required ServiceEnvironment serviceEnvironment,
+    required ModelRelationship relationship,
+    required Set<String> memberPids,
+  }) async {
+    final relationshipId = relationship.id;
+    if (relationshipId != null) {
+      final ref = Schema.relationshipsRef(relationshipId: relationshipId);
+      (relationship.memberPids ??= {}).removeAll(memberPids);
+      await serviceEnvironment.databaseServiceBroker.updateModel(
+        relationship,
+        ref,
+      );
+    }
+  }
+
+  static Future<void> writeNewRelationship({
     required ServiceEnvironment serviceEnvironment,
     required String newRelationshipId,
     required String senderPid,

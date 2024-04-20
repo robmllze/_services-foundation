@@ -52,14 +52,14 @@ class RelationshipMemberService<TModel extends Model,
   //
 
   void _init() {
-    this.relationshipService.pValue.addListener(this._listener);
+    this.relationshipService.pValue.addListener(this.listener);
   }
 
   //
   //
   //
 
-  void _listener() async {
+  void listener() async {
     final relationships = this.relationshipService.pValue.value?.where((e) {
           final defType = e.defType;
           return this.defTypes.contains(defType);
@@ -72,6 +72,15 @@ class RelationshipMemberService<TModel extends Model,
     await this._addMembers(memberPids);
     await this._removeMembers(memberPids);
     this._currentMemberPids = memberPids;
+
+    // Include all relationships concerning the current members to the provided
+    // relationship pool.
+    this.relationshipService.addMembers(
+          this
+              .currentMemberPids
+              .where((e) => this.memberPidPrefixes.contains(IdUtils.getPrefix(e)))
+              .toSet(),
+        );
   }
 
   //

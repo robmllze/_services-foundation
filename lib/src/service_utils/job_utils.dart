@@ -17,7 +17,30 @@ final class JobUtils {
   //
   //
 
-  static Future<void> createNewJob({
+  JobUtils._();
+
+  //
+  //
+  //
+
+  // static bool isRelationshipCreator({
+  //   required Iterable<ModelRelationship> relationshipPool,
+  //   required String currentUserPid,
+  //   required String jobPid,
+  // }) {
+  //   final organizationRelationship = relationshipPool.filterByDefType(
+  //     defTypes: {RelationshipDefType.JOB_AND_PROJECT},
+  //   ).filterByAnyMember(memberPids: {jobPid}).firstOrNull;
+  //   final createdByPid = organizationRelationship?.createdByPid;
+  //   final isCreator = currentUserPid == createdByPid;
+  //   return isCreator;
+  // }
+
+  //
+  //
+  //
+
+  static Future<(ModelJob, ModelJobPub, ModelRelationship)> createNewJob({
     required ServiceEnvironment serviceEnvironment,
     required String userPid,
     required String projectPid,
@@ -27,23 +50,29 @@ final class JobUtils {
     final now = DateTime.now();
     final jobId = IdUtils.newId();
     final jobPid = IdUtils.toJobPid(jobId: jobId);
+    final userId = IdUtils.toUserId(userPid: userPid);
     final job = ModelJob(
+      createdAt: now,
+      createdById: userId,
       id: jobPid,
       pid: jobPid,
-      createdAt: now,
     );
-    final jobPub = ModelProjectPub(
-      id: jobPid,
-      projectId: jobId,
-      openedAt: now,
+    final jobPub = ModelJobPub(
+      createdAt: now,
+      createdByPid: userPid,
+      description: description,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
-      description: description,
+      id: jobPid,
+      jobId: jobId,
+      openedAt: now,
     );
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
-      id: relationshipId,
+      createdAt: now,
+      createdByPid: userPid,
       defType: RelationshipDefType.JOB_AND_PROJECT,
+      id: relationshipId,
       memberPids: {
         userPid,
         jobPid,
@@ -67,13 +96,14 @@ final class JobUtils {
         ),
       ],
     );
+    return (job, jobPub, relationship);
   }
 
   //
   //
   //
 
-  static Future<Iterable<BatchWriteOperation>> getLazyDeleteJobsOperations({
+  static Future<Iterable<BatchWriteOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
     required Iterable<String> jobPids,
     required Iterable<ModelRelationship> relationshipPool,

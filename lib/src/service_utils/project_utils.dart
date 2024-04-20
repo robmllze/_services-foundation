@@ -17,7 +17,30 @@ final class ProjectUtils {
   //
   //
 
-  static Future<void> createNewProject({
+  ProjectUtils._();
+
+  //
+  //
+  //
+
+  // static bool isRelationshipCreator({
+  //   required Iterable<ModelRelationship> relationshipPool,
+  //   required String currentUserPid,
+  //   required String projectPid,
+  // }) {
+  //   final organizationRelationship = relationshipPool.filterByDefType(
+  //     defTypes: {RelationshipDefType.ORGANIZATION_AND_PROJECT},
+  //   ).filterByAnyMember(memberPids: {projectPid}).firstOrNull;
+  //   final createdByPid = organizationRelationship?.createdByPid;
+  //   final isCreator = currentUserPid == createdByPid;
+  //   return isCreator;
+  // }
+
+  //
+  //
+  //
+
+  static Future<(ModelProject, ModelProjectPub, ModelRelationship)> createNewProject({
     required ServiceEnvironment serviceEnvironment,
     required String userPid,
     required String organizationPid,
@@ -27,12 +50,16 @@ final class ProjectUtils {
     final now = DateTime.now();
     final projectId = IdUtils.newId();
     final projectPid = IdUtils.toProjectPid(projectId: projectId);
+    final userId = IdUtils.toUserId(userPid: userPid);
     final project = ModelProject(
+      createdAt: now,
+      createdById: userId,
       id: projectId,
       pid: projectPid,
-      createdAt: now,
     );
     final projectPub = ModelProjectPub(
+      createdAt: now,
+      createdByPid: userPid,
       id: projectPid,
       projectId: projectId,
       openedAt: now,
@@ -42,6 +69,8 @@ final class ProjectUtils {
     );
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
+      createdAt: now,
+      createdByPid: userPid,
       id: relationshipId,
       defType: RelationshipDefType.ORGANIZATION_AND_PROJECT,
       memberPids: {
@@ -67,13 +96,14 @@ final class ProjectUtils {
         ),
       ],
     );
+    return (project, projectPub, relationship);
   }
 
   //
   //
   //
 
-  static Future<Iterable<BatchWriteOperation>> getLazyDeleteProjectsOperations({
+  static Future<Iterable<BatchWriteOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
     required Iterable<String> projectPids,
     required Iterable<ModelRelationship> relationshipPool,
@@ -114,7 +144,7 @@ final class ProjectUtils {
           Schema.projectPubsRef(projectPid: projectPid),
           delete: true,
         ),
-      ...await JobUtils.getLazyDeleteJobsOperations(
+      ...await JobUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,
         jobPids: jobPids,
         relationshipPool: relationshipPool,

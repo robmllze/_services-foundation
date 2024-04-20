@@ -20,7 +20,7 @@ class EventService extends CollectionServiceInterface<ModelEvent> {
   EventService({
     required super.serviceEnvironment,
     required super.ref,
-    required super.limit,
+    required super.streamLimit,
   });
 
   //

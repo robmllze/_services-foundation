@@ -23,7 +23,25 @@ final class OrganizationUtils {
   //
   //
 
-  static Future<void> createNewOrganization({
+  // static bool isRelationshipCreator({
+  //   required Iterable<ModelRelationship> relationshipPool,
+  //   required String currentUserPid,
+  //   required String organizationPid,
+  // }) {
+  //   final organizationRelationship = relationshipPool.filterByDefType(
+  //     defTypes: {RelationshipDefType.ORGANIZATION_AND_USER},
+  //   ).filterByAnyMember(memberPids: {organizationPid}).firstOrNull;
+  //   final createdByPid = organizationRelationship?.createdByPid;
+  //   final isCreator = currentUserPid == createdByPid;
+  //   return isCreator;
+  // }
+
+  //
+  //
+  //
+
+  static Future<(ModelOrganization, ModelOrganizationPub, ModelRelationship)>
+      createNewOrganization({
     required ServiceEnvironment serviceEnvironment,
     required String userPid,
     required String displayName,
@@ -32,27 +50,29 @@ final class OrganizationUtils {
     final now = DateTime.now();
     final organizationId = IdUtils.newId();
     final organizationPid = IdUtils.toOrganizationPid(organizationId: organizationId);
+    final userId = IdUtils.toUserId(userPid: userPid);
     final organization = ModelOrganization(
+      createdAt: now,
+      createdById: userId,
       id: organizationId,
       pid: organizationPid,
-      createdAt: now,
     );
     final organizationPub = ModelOrganizationPub(
-      id: organizationPid,
-      organizationId: organizationId,
-      openedAt: now,
+      createdAt: now,
+      createdByPid: userPid,
+      description: description,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
-      description: description,
+      id: organizationPid,
+      openedAt: now,
+      organizationId: organizationId,
     );
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
-      id: relationshipId,
+      createdAt: now,
+      createdByPid: userPid,
       defType: RelationshipDefType.ORGANIZATION_AND_USER,
-      def: ModelUserAndOrgRelDef(
-        userPid: userPid,
-        organizationPid: organizationPid,
-      ).toGenericModel(),
+      id: relationshipId,
       memberPids: {
         userPid,
         organizationPid,
@@ -75,13 +95,14 @@ final class OrganizationUtils {
         ),
       ],
     );
+    return (organization, organizationPub, relationship);
   }
 
   //
   //
   //
 
-  static Future<Iterable<BatchWriteOperation>> getLazyDeleteOrganizationsOperations({
+  static Future<Iterable<BatchWriteOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
     required Set<String> organizationPids,
     required Iterable<ModelRelationship> relationshipPool,
@@ -123,7 +144,7 @@ final class OrganizationUtils {
           Schema.organizationPubsRef(organizationPid: organizationPid),
           delete: true,
         ),
-      ...await ProjectUtils.getLazyDeleteProjectsOperations(
+      ...await ProjectUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,
         projectPids: projectPids,
         relationshipPool: relationshipPool,

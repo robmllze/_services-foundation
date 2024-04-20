@@ -8,6 +8,8 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
+import 'package:flutter/foundation.dart';
+
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -17,7 +19,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
   //
 
-  final String userPid;
+  final int eventServicesStreamLimit;
 
   //
   //
@@ -25,9 +27,11 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
 
   RelationshipService({
     required super.serviceEnvironment,
-    required super.limit,
-    required this.userPid,
-  }) : super(ref: Schema.relationshipsRef());
+    required super.streamLimit,
+    required this.eventServicesStreamLimit,
+    required Set<String> initialPids,
+  })  : this._memberPids = initialPids,
+        super(ref: Schema.relationshipsRef());
 
   //
   //
@@ -36,13 +40,40 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   final pEventServicePool = Pod<Map<String, EventService>>({});
   var _currentRelationshipIds = <String>{};
 
+  Set<String> _memberPids;
+
+  void addMembers(Set<String> memberPids) {
+    this.setMembers({
+      ...this.getMembers(),
+      ...memberPids,
+    });
+  }
+
+  void setMembers(Set<String> memberPids) {
+    final equals = setEquals(this._memberPids, memberPids);
+    if (!equals) {
+      this._memberPids = memberPids;
+      this.restartStream();
+    }
+  }
+
+  Set<String> getMembers() => this._memberPids;
+
   //
   //
   //
 
   @override
   Future<void> initService() async {
-    this.cancelSubscriptions();
+    this.restartStream();
+  }
+
+  //
+  //
+  //
+
+  void restartStream() {
+    this.cancelSubscription();
     super.subscription = this.stream().listen((rels) async {
       final updatedRelationshipIds = rels.map((rel) => rel.id).nonNulls.toSet();
       await this._addRelationships(updatedRelationshipIds);
@@ -80,7 +111,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
         ref: Schema.relationshipEventsRef(
           relationshipId: relationshipId,
         ),
-        limit: 80,
+        streamLimit: this.eventServicesStreamLimit,
       );
       futureServicesToAdd.add(
         eventsService.initService().then((_) {
@@ -118,7 +149,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
     await this.pEventServicePool.update(
           (e) => e
             ..removeWhere(
-              (final relationshipId, final eventService) {
+              (relationshipId, eventService) {
                 final remove = relationshipIdsToRemove.contains(relationshipId);
                 if (remove) {
                   eventService.dispose();
@@ -139,9 +170,10 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   @override
   Stream<Iterable<ModelRelationship>> stream() {
     return this.serviceEnvironment.databaseQueryBroker.queryRelationshipsForAnyMembers(
-      databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-      memberPids: {this.userPid},
-    );
+          databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+          memberPids: this.getMembers(),
+          limit: this.streamLimit,
+        );
   }
 
   //
