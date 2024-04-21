@@ -229,7 +229,7 @@ final class RelationshipUtils {
   //
   //
 
-  static Future<void> addMembers({
+  static Future<void> dbAddMembers({
     required ServiceEnvironment serviceEnvironment,
     required ModelRelationship relationship,
     required Set<String> memberPids,
@@ -249,7 +249,7 @@ final class RelationshipUtils {
   //
   //
 
-  static Future<void> removeMembers({
+  static Future<void> dbRemoveMembers({
     required ServiceEnvironment serviceEnvironment,
     required ModelRelationship relationship,
     required Set<String> memberPids,
