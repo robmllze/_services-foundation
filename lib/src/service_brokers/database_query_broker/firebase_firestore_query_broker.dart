@@ -190,18 +190,16 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
 
   @visibleForTesting
   @override
-  Future<Iterable<BatchWriteOperation>> getLazyDeleteCollectionOperations({
+  Future<Iterable<BatchOperation>> getLazyDeleteCollectionOperations({
     required DatabaseServiceInterface databaseServiceBroker,
     required DataRef collectionRef,
   }) async {
-    final result = <BatchWriteOperation>[];
+    final result = <BatchOperation>[];
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collection = firebaseFirestore.collection(collectionRef.collectionPath!);
     final stream = collection.snapshots().asyncMap((e) async {
       for (final doc in e.docs) {
-        doc.reference.id;
-        final ref = collectionRef.copyWith(id: doc.id);
-        result.add(BatchWriteOperation(ref, delete: true));
+        result.add(DeleteOperation(ref: collectionRef.copyWith(id: doc.id)));
       }
     });
     await streamToFuture(stream);

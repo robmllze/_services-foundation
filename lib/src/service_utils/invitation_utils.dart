@@ -23,12 +23,12 @@ final class InvitationUtils {
   //
   //
 
-  static Future<ModelInvitation> dbGetInvitation({
+  static Future<ModelInvitation> dbReadInvitation({
     required ServiceEnvironment serviceEnvironment,
     required String invitationId,
   }) async {
     final ref = Schema.invitationsRef(invitationId: invitationId);
-    final genericModel = await serviceEnvironment.databaseServiceBroker.getModel(ref);
+    final genericModel = await serviceEnvironment.databaseServiceBroker.readModel(ref);
     final model = ModelInvitation.from(genericModel);
     return model;
   }

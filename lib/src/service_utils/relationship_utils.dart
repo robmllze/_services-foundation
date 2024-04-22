@@ -23,54 +23,6 @@ final class RelationshipUtils {
   //
   //
 
-  // --- ModelRelationship CRUD ---
-
-  // Create.
-  static BatchWriteOperation<ModelRelationship> dbCreateRelationshipOperation({
-    required ModelRelationship relationship,
-  }) {
-    final ref = Schema.relationshipsRef(relationshipId: relationship.id!);
-    return BatchWriteOperation(ref, model: relationship, mergeExisting: true);
-  }
-
-  // Read.
-  static Future<ModelRelationship?> dbReadRelationship({
-    required ServiceEnvironment serviceEnvironment,
-    required String relationshipId,
-  }) async {
-    final ref = Schema.relationshipsRef(relationshipId: relationshipId);
-    final genericModel = await serviceEnvironment.databaseServiceBroker.getModel(ref);
-    if (genericModel != null) {
-      return ModelRelationship.from(genericModel);
-    }
-    return null;
-  }
-
-  // Update.
-  static BatchWriteOperation<ModelRelationship> dbUpdateRelationshipOperation({
-    required ModelRelationship relationship,
-  }) {
-    final ref = Schema.relationshipsRef(relationshipId: relationship.id!);
-    return BatchWriteOperation(
-      ref,
-      model: relationship,
-      mergeExisting: false,
-      overwriteExisting: false,
-    );
-  }
-
-  // Delete.
-  static BatchWriteOperation<ModelRelationship> dbDeleteRelationshipOperation({
-    required String relationshipId,
-  }) {
-    final ref = Schema.relationshipsRef(relationshipId: relationshipId);
-    return BatchWriteOperation(ref, delete: true);
-  }
-
-  //
-  //
-  //
-
   static Stream<Iterable<ModelRelationship>> dbQueryRelationshipsForAnyMembers({
     required ServiceEnvironment serviceEnvironment,
     required Set<String> memberPids,
@@ -193,7 +145,7 @@ final class RelationshipUtils {
     final currentUserId = serviceEnvironment.currentUser?.userId;
     assert(currentUserId != null);
     if (currentUserId != null) {
-      await serviceEnvironment.databaseServiceBroker.setModel(
+      await serviceEnvironment.databaseServiceBroker.createOrUpdateModel(
         ModelRelationship(
           whenDisabled: {
             currentUserId: DateTime.now(),
@@ -209,13 +161,13 @@ final class RelationshipUtils {
   //
 
   @visibleForTesting
-  static Future<Iterable<BatchWriteOperation>> getLazyDeleteRelationshipOperations({
+  static Future<Iterable<BatchOperation>> getLazyDeleteRelationshipOperations({
     required ServiceEnvironment serviceEnvironment,
     required String relationshipId,
   }) async {
     return [
       // Operation to delete the relationship document.
-      dbDeleteRelationshipOperation(relationshipId: relationshipId),
+      DeleteOperation(ref: Schema.relationshipsRef(relationshipId: relationshipId)),
       // Operations to delete the events collection associated with the relationship document.
       // ignore: invalid_use_of_visible_for_testing_member
       ...await serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
@@ -265,7 +217,7 @@ final class RelationshipUtils {
     }
   }
 
-  static Future<void> writeNewRelationship({
+  static Future<void> dbCreateNewRelationship({
     required ServiceEnvironment serviceEnvironment,
     required String newRelationshipId,
     required String senderPid,
@@ -287,7 +239,7 @@ final class RelationshipUtils {
     final relationshipRef = Schema.relationshipsRef(
       relationshipId: newRelationshipId,
     );
-    await serviceEnvironment.databaseServiceBroker.setModel(
+    await serviceEnvironment.databaseServiceBroker.createOrUpdateModel(
       relationshipModel,
       relationshipRef,
     );
@@ -297,7 +249,25 @@ final class RelationshipUtils {
   //
   //
 
-  static BatchWriteOperation<ModelRelationship> getCreateRelationshipOperation({
+  static ModelRelationship createNewRelationship({
+    required Set<String> memberPids,
+    required RelationshipDefType defType,
+    GenericModel? def,
+  }) {
+    return ModelRelationship(
+      id: IdUtils.newId(),
+      defType: defType,
+      def: def,
+      memberPids: memberPids,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  //
+  //
+  //
+
+  static CreateOperation getCreateRelationshipOperation({
     required String relationshipId,
     required String senderPid,
     required String receiverPid,
@@ -319,30 +289,9 @@ final class RelationshipUtils {
       },
     );
 
-    final relationshipRef = Schema.relationshipsRef(
-      relationshipId: relationshipId,
-    );
-    return BatchWriteOperation<ModelRelationship>(
-      relationshipRef,
+    return CreateOperation(
+      ref: Schema.relationshipsRef(relationshipId: relationshipId),
       model: relationshipModel,
-    );
-  }
-
-  //
-  //
-  //
-
-  static ModelRelationship createNewRelationship({
-    required Set<String> memberPids,
-    required RelationshipDefType defType,
-    GenericModel? def,
-  }) {
-    return ModelRelationship(
-      id: IdUtils.newId(),
-      defType: defType,
-      def: def,
-      memberPids: memberPids,
-      createdAt: DateTime.now(),
     );
   }
 }

@@ -23,99 +23,40 @@ final class UserUtils {
   //
   //
 
-  // --- ModelUser CRUD ---
-
-  // Create.
-  static BatchWriteOperation dbCreateUserOperation({
-    required ModelUser user,
-  }) {
-    final ref = Schema.usersRef(userId: user.id!);
-    return BatchWriteOperation(ref, mergeExisting: true);
-  }
-
-  // Read.
-  static Future<ModelUser?> dbReadUser({
+  static Future<void> dbCreateNewUserData({
     required ServiceEnvironment serviceEnvironment,
+    required String displayName,
+    required String email,
     required String userId,
   }) async {
-    final ref = Schema.usersRef(userId: userId);
-    final genericModel = await serviceEnvironment.databaseServiceBroker.getModel(ref);
-    if (genericModel != null) {
-      return ModelUser.from(genericModel);
-    }
-    return null;
-  }
-
-  // Update.
-  static BatchWriteOperation dbUpdateUserOperation({
-    required ModelUser user,
-  }) {
-    final ref = Schema.usersRef(userId: user.id!);
-    return BatchWriteOperation(
-      ref,
-      mergeExisting: false,
-      overwriteExisting: false,
-    );
-  }
-
-  // Delete.
-  static BatchWriteOperation dbDeleteUserOperation({
-    required String userId,
-  }) {
-    final ref = Schema.usersRef(userId: userId);
-    return BatchWriteOperation(ref, delete: true);
+    final now = DateTime.now();
+    final userPid = IdUtils.toUserPid(userId: userId);
+    await serviceEnvironment.databaseServiceBroker.runBatchOperations([
+      CreateOperation(
+        ref: Schema.usersRef(userId: userId),
+        model: ModelUser(
+          id: userId,
+          pid: userPid,
+          createdAt: now,
+        ),
+      ),
+      CreateOperation(
+        ref: Schema.userPubsRef(userPid: userPid),
+        model: ModelUserPub(
+          id: userPid,
+          userId: userId,
+          displayName: displayName,
+          displayNameSearchable: displayName.toLowerCase(),
+          emailSearchable: email.toLowerCase(),
+          createdAt: now,
+        ),
+      ),
+    ]);
   }
 
   //
   //
   //
-
-  // --- ModelUserPub CRUD ---
-
-  // Create.
-  static BatchWriteOperation dbCreateUserPubOperation({
-    required ModelUserPub userPub,
-  }) {
-    final ref = Schema.userPubsRef(userPid: userPub.id!);
-    return BatchWriteOperation(
-      ref,
-      mergeExisting: false,
-      overwriteExisting: false,
-    );
-  }
-
-  // Read.
-  static Future<ModelUserPub?> dbReadUserPub({
-    required ServiceEnvironment serviceEnvironment,
-    required String userPid,
-  }) async {
-    final ref = Schema.userPubsRef(userPid: userPid);
-    final genericModel = await serviceEnvironment.databaseServiceBroker.getModel(ref);
-    if (genericModel != null) {
-      return ModelUserPub.from(genericModel);
-    }
-    return null;
-  }
-
-  // Update.
-  static BatchWriteOperation dbUpdateUserPubOperation({
-    required ModelUserPub userPub,
-  }) {
-    final ref = Schema.userPubsRef(userPid: userPub.id!);
-    return BatchWriteOperation(
-      ref,
-      mergeExisting: false,
-      overwriteExisting: false,
-    );
-  }
-
-  // Delete.
-  static BatchWriteOperation dbDeleteUserPubOperation({
-    required String userPid,
-  }) {
-    final ref = Schema.userPubsRef(userPid: userPid);
-    return BatchWriteOperation(ref, delete: true);
-  }
 
   // Stream.
   static Stream<ModelUserPub?>? dbUserPubStream(

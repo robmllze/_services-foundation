@@ -35,9 +35,43 @@ class CacheServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> setModel(Model model, DataRef ref) async {
+  Future<void> createModel(Model model, DataRef ref) async {
+    final existingModel = await this.readModel(ref);
+    if (existingModel == null) {
+      final modelString = model.toJsonString();
+      await this.sharedPreferences.setString(ref.key, modelString);
+    } else {
+      throw Exception('Model already exists at $ref');
+    }
+  }
+
+  //
+  //
+  //
+
+  @override
+  Future<void> createOrUpdateModel(Model model, DataRef ref) async {
     final modelString = model.toJsonString();
     await this.sharedPreferences.setString(ref.key, modelString);
+  }
+
+  //
+  //
+  //
+
+  @override
+  Future<TModel?> readModel<TModel extends Model>(
+    DataRef ref, [
+    TModel? Function(Model? model)? convert,
+  ]) async {
+    final value = this.sharedPreferences.getString(ref.key);
+    if (value != null) {
+      final data = jsonDecode(value);
+      final genericModel = GenericModel(data: data);
+      final model = convert?.call(genericModel) ?? genericModel;
+      return model as TModel?;
+    }
+    return null;
   }
 
   //
@@ -48,19 +82,6 @@ class CacheServiceBroker extends DatabaseServiceInterface {
   Future<void> updateModel(Model model, DataRef ref) async {
     final modelString = model.toJsonString();
     await this.sharedPreferences.setString(ref.key, modelString);
-  }
-
-  //
-  //
-  //
-
-  @override
-  Future<GenericModel?> getModel(DataRef ref) async {
-    final value = this.sharedPreferences.getString(ref.key);
-    if (value != null) {
-      return GenericModel.fromJsonString(value);
-    }
-    return null;
   }
 
   //
@@ -88,19 +109,41 @@ class CacheServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> batchWrite(
-    Iterable<BatchWriteOperation> writes,
+  Future<Iterable<Model?>> runBatchOperations(
+    Iterable<BatchOperation> operations,
   ) async {
-    for (final write in writes) {
-      final dataRef = write.ref;
-      final model = write.model;
-      if (model != null) {
-        final modelString = model.toJsonString();
-        await this.sharedPreferences.setString(dataRef.key, modelString);
-      } else if (write.delete) {
-        await this.sharedPreferences.remove(dataRef.key);
+    final results = <Model?>[];
+    for (final operation in operations) {
+      final dataRef = operation.ref!;
+      // Read.
+      if (operation.read) {
+        final model = await this.readModel(dataRef);
+        results.add(model);
+        continue;
+      }
+      // Delete
+      if (operation.delete) {
+        await this.deleteModel(dataRef);
+        results.add(null);
+        continue;
+      }
+      final model = operation.model!;
+      // Create
+      if (operation.create) {
+        if (operation.update) {
+          await this.createOrUpdateModel(model, dataRef);
+        } else {
+          await this.createModel(model, dataRef);
+        }
+        results.add(model);
+      }
+      // Update
+      if (operation.update) {
+        await this.updateModel(model, dataRef);
+        results.add(model);
       }
     }
+    return results;
   }
 
   //

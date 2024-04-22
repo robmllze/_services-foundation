@@ -23,25 +23,7 @@ final class OrganizationUtils {
   //
   //
 
-  // static bool isRelationshipCreator({
-  //   required Iterable<ModelRelationship> relationshipPool,
-  //   required String currentUserPid,
-  //   required String organizationPid,
-  // }) {
-  //   final organizationRelationship = relationshipPool.filterByDefType(
-  //     defTypes: {RelationshipDefType.ORGANIZATION_AND_USER},
-  //   ).filterByAnyMember(memberPids: {organizationPid}).firstOrNull;
-  //   final createdByPid = organizationRelationship?.createdByPid;
-  //   final isCreator = currentUserPid == createdByPid;
-  //   return isCreator;
-  // }
-
-  //
-  //
-  //
-
-  static Future<(ModelOrganization, ModelOrganizationPub, ModelRelationship)>
-      createNewOrganization({
+  static Future<(ModelOrganization, ModelOrganizationPub, ModelRelationship)> dbNewOrganization({
     required ServiceEnvironment serviceEnvironment,
     required String userPid,
     required String displayName,
@@ -79,18 +61,18 @@ final class OrganizationUtils {
       },
     );
 
-    await serviceEnvironment.databaseServiceBroker.batchWrite(
+    await serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        BatchWriteOperation(
-          Schema.organizationsRef(organizationId: organizationId),
+        CreateOperation(
+          ref: Schema.organizationsRef(organizationId: organizationId),
           model: organization,
         ),
-        BatchWriteOperation(
-          Schema.organizationPubsRef(organizationPid: organizationPid),
+        CreateOperation(
+          ref: Schema.organizationPubsRef(organizationPid: organizationPid),
           model: organizationPub,
         ),
-        BatchWriteOperation(
-          Schema.relationshipsRef(relationshipId: relationshipId),
+        CreateOperation(
+          ref: Schema.relationshipsRef(relationshipId: relationshipId),
           model: relationship,
         ),
       ],
@@ -102,7 +84,7 @@ final class OrganizationUtils {
   //
   //
 
-  static Future<Iterable<BatchWriteOperation>> getLazyDeleteOperations({
+  static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
     required Set<String> organizationPids,
     required Iterable<ModelRelationship> relationshipPool,
@@ -135,14 +117,12 @@ final class OrganizationUtils {
           relationshipId: relationshipId,
         ),
       for (final organizationId in organizationIds)
-        BatchWriteOperation(
-          Schema.organizationsRef(organizationId: organizationId),
-          delete: true,
+        DeleteOperation(
+          ref: Schema.organizationsRef(organizationId: organizationId),
         ),
       for (final organizationPid in organizationPids)
-        BatchWriteOperation(
-          Schema.organizationPubsRef(organizationPid: organizationPid),
-          delete: true,
+        DeleteOperation(
+          ref: Schema.organizationPubsRef(organizationPid: organizationPid),
         ),
       ...await ProjectUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,

@@ -76,7 +76,7 @@ final class EventUtils {
     );
   }
 
-  static BatchWriteOperation<GenericModel> getArchiveEventOperation({
+  static CreateOrUpdateOperation getArchiveEventOperation({
     required String userPid,
     required DataRef eventsRef,
     bool archive = true,
@@ -108,7 +108,7 @@ final class EventUtils {
     );
   }
 
-  static BatchWriteOperation<GenericModel> getHideEventOperation({
+  static CreateOrUpdateOperation getHideEventOperation({
     required String userPid,
     required DataRef eventsRef,
     bool hide = true,
@@ -140,7 +140,7 @@ final class EventUtils {
     );
   }
 
-  static BatchWriteOperation<GenericModel> getLikeEventOperation({
+  static CreateOrUpdateOperation getLikeEventOperation({
     required String userPid,
     required String eventId,
     required DataRef eventsRef,
@@ -173,7 +173,7 @@ final class EventUtils {
     );
   }
 
-  static BatchWriteOperation<GenericModel> getReadEventOperation({
+  static CreateOrUpdateOperation getReadEventOperation({
     required String userPid,
     required DataRef eventsRef,
     bool read = true,
@@ -205,7 +205,7 @@ final class EventUtils {
     );
   }
 
-  static BatchWriteOperation<GenericModel> getReceiveEventOperation({
+  static CreateOrUpdateOperation getReceiveEventOperation({
     required String userPid,
     required DataRef eventsRef,
     bool receive = true,
@@ -241,14 +241,14 @@ final class EventUtils {
     );
   }
 
-  static BatchWriteOperation<GenericModel> getTagEventOperation({
+  static CreateOrUpdateOperation getTagEventOperation({
     required String userPid,
     required String eventTag,
     required DataRef eventsRef,
     required bool value,
   }) {
-    return BatchWriteOperation(
-      eventsRef,
+    return CreateOrUpdateOperation(
+      ref: eventsRef,
       model: GenericModel(
         data: {
           eventTag: {
@@ -268,15 +268,6 @@ final class EventUtils {
     required DataRef eventsRef,
   }) async {
     await serviceEnvironment.databaseServiceBroker.deleteModel(eventsRef);
-  }
-
-  static BatchWriteOperation<GenericModel> getDeleteEventOperation({
-    required DataRef eventsRef,
-  }) {
-    return BatchWriteOperation(
-      eventsRef,
-      delete: true,
-    );
   }
 
   //
@@ -302,13 +293,13 @@ final class EventUtils {
       def: eventDef.toGenericModel(),
       defType: eventDefType,
     );
-    await serviceEnvironment.databaseServiceBroker.setModel(
+    await serviceEnvironment.databaseServiceBroker.createOrUpdateModel(
       eventModel,
       eventsRef,
     );
   }
 
-  static BatchWriteOperation<ModelEvent> getSendEventOperation({
+  static CreateOrUpdateOperation getSendEventOperation({
     required String senderPid,
     required String receiverPid,
     required String eventId,
@@ -323,8 +314,8 @@ final class EventUtils {
       def: eventDef.toGenericModel(),
       defType: eventDefType,
     );
-    return BatchWriteOperation<ModelEvent>(
-      eventsRef,
+    return CreateOrUpdateOperation(
+      ref: eventsRef,
       model: eventModel,
     );
   }

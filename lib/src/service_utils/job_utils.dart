@@ -23,24 +23,7 @@ final class JobUtils {
   //
   //
 
-  // static bool isRelationshipCreator({
-  //   required Iterable<ModelRelationship> relationshipPool,
-  //   required String currentUserPid,
-  //   required String jobPid,
-  // }) {
-  //   final organizationRelationship = relationshipPool.filterByDefType(
-  //     defTypes: {RelationshipDefType.JOB_AND_PROJECT},
-  //   ).filterByAnyMember(memberPids: {jobPid}).firstOrNull;
-  //   final createdByPid = organizationRelationship?.createdByPid;
-  //   final isCreator = currentUserPid == createdByPid;
-  //   return isCreator;
-  // }
-
-  //
-  //
-  //
-
-  static Future<(ModelJob, ModelJobPub, ModelRelationship)> createNewJob({
+  static Future<(ModelJob, ModelJobPub, ModelRelationship)> dbNewJob({
     required ServiceEnvironment serviceEnvironment,
     required String userPid,
     required String projectPid,
@@ -80,18 +63,18 @@ final class JobUtils {
       },
     );
 
-    await serviceEnvironment.databaseServiceBroker.batchWrite(
+    await serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        BatchWriteOperation(
-          Schema.jobsRef(jobId: jobId),
+        CreateOperation(
+          ref: Schema.jobsRef(jobId: jobId),
           model: job,
         ),
-        BatchWriteOperation(
-          Schema.jobPubsRef(jobPid: jobPid),
+        CreateOperation(
+          ref: Schema.jobPubsRef(jobPid: jobPid),
           model: jobPub,
         ),
-        BatchWriteOperation(
-          Schema.relationshipsRef(relationshipId: relationshipId),
+        CreateOperation(
+          ref: Schema.relationshipsRef(relationshipId: relationshipId),
           model: relationship,
         ),
       ],
@@ -103,7 +86,7 @@ final class JobUtils {
   //
   //
 
-  static Future<Iterable<BatchWriteOperation>> getLazyDeleteOperations({
+  static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
     required Iterable<String> jobPids,
     required Iterable<ModelRelationship> relationshipPool,
@@ -129,14 +112,12 @@ final class JobUtils {
           relationshipId: relationshipId,
         ),
       for (final jobId in jobIds)
-        BatchWriteOperation(
-          Schema.jobsRef(jobId: jobId),
-          delete: true,
+        DeleteOperation(
+          ref: Schema.jobsRef(jobId: jobId),
         ),
       for (final jobPid in jobPids)
-        BatchWriteOperation(
-          Schema.jobPubsRef(jobPid: jobPid),
-          delete: true,
+        DeleteOperation(
+          ref: Schema.jobPubsRef(jobPid: jobPid),
         ),
     };
   }

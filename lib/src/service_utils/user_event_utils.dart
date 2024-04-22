@@ -41,7 +41,7 @@ final class UserEventUtils {
     );
   }
 
-  static BatchWriteOperation<GenericModel> getArchiveEventOperation({
+  static CreateOrUpdateOperation getArchiveEventOperation({
     required String userPid,
     required String eventId,
     bool archive = true,
@@ -79,7 +79,7 @@ final class UserEventUtils {
     );
   }
 
-  static BatchWriteOperation<GenericModel> getHideEventOperation({
+  static CreateOrUpdateOperation getHideEventOperation({
     required String userPid,
     required String eventId,
     bool hide = true,
@@ -235,7 +235,7 @@ final class UserEventUtils {
   //
   //
 
-  static BatchWriteOperation<ModelEvent> getSendEventOperation({
+  static CreateOrUpdateOperation getSendEventOperation({
     required String senderPid,
     required String receiverPid,
     required String eventId,

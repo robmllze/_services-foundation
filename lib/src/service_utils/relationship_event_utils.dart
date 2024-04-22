@@ -223,7 +223,7 @@ final class RelationshipEventUtils {
   //
   //
 
-  static BatchWriteOperation<ModelEvent> getSendEventOperation({
+  static CreateOrUpdateOperation getSendEventOperation({
     required String senderPid,
     required String receiverPid,
     required String relationshipId,

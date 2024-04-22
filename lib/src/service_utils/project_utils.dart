@@ -23,24 +23,7 @@ final class ProjectUtils {
   //
   //
 
-  // static bool isRelationshipCreator({
-  //   required Iterable<ModelRelationship> relationshipPool,
-  //   required String currentUserPid,
-  //   required String projectPid,
-  // }) {
-  //   final organizationRelationship = relationshipPool.filterByDefType(
-  //     defTypes: {RelationshipDefType.ORGANIZATION_AND_PROJECT},
-  //   ).filterByAnyMember(memberPids: {projectPid}).firstOrNull;
-  //   final createdByPid = organizationRelationship?.createdByPid;
-  //   final isCreator = currentUserPid == createdByPid;
-  //   return isCreator;
-  // }
-
-  //
-  //
-  //
-
-  static Future<(ModelProject, ModelProjectPub, ModelRelationship)> createNewProject({
+  static Future<(ModelProject, ModelProjectPub, ModelRelationship)> dbNewProject({
     required ServiceEnvironment serviceEnvironment,
     required String userPid,
     required String organizationPid,
@@ -80,18 +63,18 @@ final class ProjectUtils {
       },
     );
 
-    await serviceEnvironment.databaseServiceBroker.batchWrite(
+    await serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        BatchWriteOperation(
-          Schema.projectsRef(projectId: projectId),
+        CreateOperation(
+          ref: Schema.projectsRef(projectId: projectId),
           model: project,
         ),
-        BatchWriteOperation(
-          Schema.projectPubsRef(projectPid: projectPid),
+        CreateOperation(
+          ref: Schema.projectPubsRef(projectPid: projectPid),
           model: projectPub,
         ),
-        BatchWriteOperation(
-          Schema.relationshipsRef(relationshipId: relationshipId),
+        CreateOperation(
+          ref: Schema.relationshipsRef(relationshipId: relationshipId),
           model: relationship,
         ),
       ],
@@ -103,7 +86,7 @@ final class ProjectUtils {
   //
   //
 
-  static Future<Iterable<BatchWriteOperation>> getLazyDeleteOperations({
+  static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
     required Iterable<String> projectPids,
     required Iterable<ModelRelationship> relationshipPool,
@@ -135,14 +118,12 @@ final class ProjectUtils {
           relationshipId: relationshipId,
         ),
       for (final projectId in projectIds)
-        BatchWriteOperation(
-          Schema.projectsRef(projectId: projectId),
-          delete: true,
+        DeleteOperation(
+          ref: Schema.projectsRef(projectId: projectId),
         ),
       for (final projectPid in projectPids)
-        BatchWriteOperation(
-          Schema.projectPubsRef(projectPid: projectPid),
-          delete: true,
+        DeleteOperation(
+          ref: Schema.projectPubsRef(projectPid: projectPid),
         ),
       ...await JobUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,
