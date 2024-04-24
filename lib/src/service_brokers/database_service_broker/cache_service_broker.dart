@@ -97,17 +97,8 @@ class CacheServiceBroker extends DatabaseServiceInterface {
   //
   //
 
-  @override
-  Future<void> runTransaction(
-    Future<void> Function(dynamic) transactionHandler,
-  ) async {
-    throw UnsupportedError('Not supported for SharedPreferences');
-  }
-
-  //
-  //
-  //
-
+  /// Executes all operations sequentially. Does not support batch operations
+  /// like Firestore.
   @override
   Future<Iterable<Model?>> runBatchOperations(
     Iterable<BatchOperation> operations,
@@ -144,30 +135,5 @@ class CacheServiceBroker extends DatabaseServiceInterface {
       }
     }
     return results;
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<GenericModel?> streamModel(
-    DataRef dataRef, [
-    Future<void> Function(GenericModel?)? onUpdate,
-  ]) {
-    throw UnsupportedError('Not supported for SharedPreferences');
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<GenericModel>> streamModelCollection(
-    DataRef ref, {
-    Future<void> Function(Iterable<GenericModel>)? onUpdate,
-    int limit = 1000,
-  }) {
-    throw UnsupportedError('Not supported for SharedPreferences');
   }
 }

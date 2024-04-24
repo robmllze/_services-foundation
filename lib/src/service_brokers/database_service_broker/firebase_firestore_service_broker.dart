@@ -97,11 +97,9 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> runTransaction(
-    Future<void> Function(dynamic) transactionHandler,
+    Future<void> Function(dynamic transaction) transactionHandler,
   ) async {
-    await this.firebaseFirestore.runTransaction((transaction) async {
-      await transactionHandler(transaction);
-    });
+    await this.firebaseFirestore.runTransaction(transactionHandler);
   }
 
   //
@@ -166,7 +164,7 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   @override
   Stream<GenericModel?> streamModel(
     DataRef dataRef, [
-    Future<void> Function(GenericModel?)? onUpdate,
+    Future<void> Function(GenericModel? update)? onUpdate,
   ]) {
     final docRef = this.firebaseFirestore.doc(dataRef.docPath);
     return docRef.snapshots().asyncMap((snapshot) async {
@@ -184,7 +182,7 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   @override
   Stream<Iterable<GenericModel>> streamModelCollection(
     DataRef ref, {
-    Future<void> Function(Iterable<GenericModel>)? onUpdate,
+    Future<void> Function(Iterable<GenericModel> update)? onUpdate,
     int limit = 1000,
   }) {
     final collectionRef = this.firebaseFirestore.collection(ref.collectionPath!).limit(limit);
@@ -195,4 +193,39 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
       return models;
     });
   }
+
+  //
+  //
+  //
+
+  @override
+  dynamic deleteFieldValue() => FieldValue.delete();
+
+  //
+  //
+  //
+
+  @override
+  dynamic incremementFieldValue([int i = 1]) => FieldValue.increment(i);
+
+  //
+  //
+  //
+
+  @override
+  dynamic decrementFieldValue([int i = 1]) => FieldValue.increment(-i);
+
+  //
+  //
+  //
+
+  @override
+  dynamic arrayUnionFieldValue(List elementsToAdd) => FieldValue.arrayUnion(elementsToAdd);
+
+  //
+  //
+  //
+
+  @override
+  dynamic arrayRemoveFieldValue(List elementsToAdd) => FieldValue.arrayRemove(elementsToAdd);
 }
