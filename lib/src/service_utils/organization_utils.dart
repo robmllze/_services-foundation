@@ -84,6 +84,7 @@ final class OrganizationUtils {
   //
   //
 
+  @visibleForTesting
   static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
     required Set<String> organizationPids,
@@ -111,7 +112,6 @@ final class OrganizationUtils {
     // Return operations to delete everything associated with organizationPids.
     return {
       for (final relationshipId in associatedRelationshipPool.allIds())
-        // ignore: invalid_use_of_visible_for_testing_member
         ...await RelationshipUtils.getLazyDeleteRelationshipOperations(
           serviceEnvironment: serviceEnvironment,
           relationshipId: relationshipId,

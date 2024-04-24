@@ -169,7 +169,6 @@ final class RelationshipUtils {
       // Operation to delete the relationship document.
       DeleteOperation(ref: Schema.relationshipsRef(relationshipId: relationshipId)),
       // Operations to delete the events collection associated with the relationship document.
-      // ignore: invalid_use_of_visible_for_testing_member
       ...await serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
         databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
         collectionRef: Schema.relationshipEventsRef(relationshipId: relationshipId),

@@ -86,6 +86,7 @@ final class JobUtils {
   //
   //
 
+  @visibleForTesting
   static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
     required Iterable<String> jobPids,
@@ -106,7 +107,6 @@ final class JobUtils {
     // Return operations to delete everything associated with jobPids.
     return {
       for (final relationshipId in associatedRelationshipPool.allIds())
-        // ignore: invalid_use_of_visible_for_testing_member
         ...await RelationshipUtils.getLazyDeleteRelationshipOperations(
           serviceEnvironment: serviceEnvironment,
           relationshipId: relationshipId,
