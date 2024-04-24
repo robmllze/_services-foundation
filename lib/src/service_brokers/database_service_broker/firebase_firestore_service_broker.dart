@@ -163,10 +163,10 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
 
   @override
   Stream<GenericModel?> streamModel(
-    DataRef dataRef, [
+    DataRef ref, [
     Future<void> Function(GenericModel? update)? onUpdate,
   ]) {
-    final docRef = this.firebaseFirestore.doc(dataRef.docPath);
+    final docRef = this.firebaseFirestore.doc(ref.docPath);
     return docRef.snapshots().asyncMap((snapshot) async {
       final modelData = snapshot.data();
       final model = modelData != null ? GenericModel(data: modelData) : null;
@@ -227,5 +227,5 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  dynamic arrayRemoveFieldValue(List elementsToAdd) => FieldValue.arrayRemove(elementsToAdd);
+  dynamic arrayRemoveFieldValue(List elementsToRemove) => FieldValue.arrayRemove(elementsToRemove);
 }
