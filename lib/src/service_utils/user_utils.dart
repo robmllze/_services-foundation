@@ -23,35 +23,41 @@ final class UserUtils {
   //
   //
 
-  static Future<void> dbCreateNewUserData({
+  static Future<(ModelUser, ModelUserPub)> dbNewUser({
     required ServiceEnvironment serviceEnvironment,
     required String displayName,
     required String email,
     required String userId,
   }) async {
     final now = DateTime.now();
-    final userPid = IdUtils.toUserPid(userId: userId);
+    final userId = serviceEnvironment.authServiceBroker.pCurrentUser.value!.userId;
+    final pidSeed = userId; // IdUtility.generateUuidV4C();
+    final userPid = IdUtility(seed: pidSeed).idToUserPid(userId: userId);
+    final user = ModelUser(
+      id: userId,
+      pid: userPid,
+      pidSeed: pidSeed,
+      createdAt: now,
+    );
+    final userPub = ModelUserPub(
+      id: userPid,
+      userId: userId,
+      displayName: displayName,
+      displayNameSearchable: displayName.toLowerCase(),
+      emailSearchable: email.toLowerCase(),
+      createdAt: now,
+    );
     await serviceEnvironment.databaseServiceBroker.runBatchOperations([
       CreateOperation(
         ref: Schema.usersRef(userId: userId),
-        model: ModelUser(
-          id: userId,
-          pid: userPid,
-          createdAt: now,
-        ),
+        model: user,
       ),
       CreateOperation(
         ref: Schema.userPubsRef(userPid: userPid),
-        model: ModelUserPub(
-          id: userPid,
-          userId: userId,
-          displayName: displayName,
-          displayNameSearchable: displayName.toLowerCase(),
-          emailSearchable: email.toLowerCase(),
-          createdAt: now,
-        ),
+        model: userPub,
       ),
     ]);
+    return (user, userPub);
   }
 
   //

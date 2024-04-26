@@ -78,7 +78,7 @@ class RelationshipMemberService<TModel extends Model,
     this.relationshipService.addMembers(
           this
               .currentMemberPids
-              .where((e) => this.memberPidPrefixes.contains(IdUtils.getPrefix(e)))
+              .where((e) => this.memberPidPrefixes.contains(IdUtility.getPrefix(e)))
               .toSet(),
         );
   }

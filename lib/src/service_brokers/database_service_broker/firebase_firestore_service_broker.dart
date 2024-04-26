@@ -19,7 +19,6 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   //
   //
 
-  @visibleForTesting
   final FirebaseFirestore firebaseFirestore;
 
   //

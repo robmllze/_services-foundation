@@ -25,24 +25,26 @@ final class JobUtils {
 
   static Future<(ModelJob, ModelJobPub, ModelRelationship)> dbNewJob({
     required ServiceEnvironment serviceEnvironment,
+    required String userId,
     required String userPid,
     required String projectPid,
     required String displayName,
     required String description,
   }) async {
     final now = DateTime.now();
-    final jobId = IdUtils.newId();
-    final jobPid = IdUtils.toJobPid(jobId: jobId);
-    final userId = IdUtils.toUserId(userPid: userPid);
+    final pidSeed = IdUtility.newUuidV4();
+    final jobId = IdUtility.newUuidV4();
+    final jobPid = IdUtility(seed: pidSeed).idToJobPid(jobId: jobId);
     final job = ModelJob(
       createdAt: now,
-      createdById: userId,
+      creatorId: userId,
       id: jobPid,
       pid: jobPid,
+      pidSeed: pidSeed,
     );
     final jobPub = ModelJobPub(
       createdAt: now,
-      createdByPid: userPid,
+      creatorPid: userPid,
       description: description,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
@@ -50,10 +52,10 @@ final class JobUtils {
       jobId: jobId,
       openedAt: now,
     );
-    final relationshipId = IdUtils.newRelationshipId();
+    final relationshipId = IdUtility.newRelationshipId();
     final relationship = ModelRelationship(
       createdAt: now,
-      createdByPid: userPid,
+      creatorPid: userPid,
       defType: RelationshipDefType.JOB_AND_PROJECT,
       id: relationshipId,
       memberPids: {
@@ -89,16 +91,14 @@ final class JobUtils {
   @visibleForTesting
   static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
+    required Iterable<String>? jobIds,
     required Iterable<String> jobPids,
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
     // Ensure jobPids contains valid pids.
-    final temp = jobPids.where((pid) => IdUtils.isJobPid(pid));
+    final temp = jobPids.where((pid) => IdUtility.isJobPid(pid)).toList();
     assert(temp.length == jobPids.length, 'jobPids contains invalid pids.');
     jobPids = temp.toSet();
-
-    // Get all job ids associated with jobPids.
-    final jobIds = jobPids.map((pid) => IdUtils.toJobId(jobPid: pid));
 
     // Get all relationships associated with jobPids (JOB_AND_PROJECT, JOB_AND_USER).
     final associatedRelationshipPool =
@@ -111,10 +111,11 @@ final class JobUtils {
           serviceEnvironment: serviceEnvironment,
           relationshipId: relationshipId,
         ),
-      for (final jobId in jobIds)
-        DeleteOperation(
-          ref: Schema.jobsRef(jobId: jobId),
-        ),
+      if (jobIds != null)
+        for (final jobId in jobIds)
+          DeleteOperation(
+            ref: Schema.jobsRef(jobId: jobId),
+          ),
       for (final jobPid in jobPids)
         DeleteOperation(
           ref: Schema.jobPubsRef(jobPid: jobPid),
