@@ -98,28 +98,9 @@ final class OrganizationUtils {
   //
   //
 
-  Future<void> addOrganizationPubService({
-    required ServiceEnvironment serviceEnvironment,
-    required OrganizationMemberService organizationMemberService,
-    required ModelOrganizationPub organizationPub,
-  }) async {
-    final pid = organizationPub.id!;
-    final service = OrganizationPubService(
-      serviceEnvironment: serviceEnvironment,
-      id: pid,
-    );
-    await service.pValue.set(organizationPub);
-    await organizationMemberService.pMemberServicePool.update((e) => e..[pid] = service);
-  }
-
-  //
-  //
-  //
-
   @visibleForTesting
   static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
-    required Set<String>? organizationIds,
     required Set<String> organizationPids,
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
@@ -139,14 +120,23 @@ final class OrganizationUtils {
     final projectPids = organizationAssociatedMemberPids.where((pid) => IdUtils.isProjectPid(pid));
 
     // Fetch all associated PIDS.
-    final projectIds = (await serviceEnvironment.databaseQueryBroker
-            .streamProjectsByPids(
-              databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-              pids: projectPids,
-            )
-            .first)
-        .map((e) => e.id)
-        .nonNulls;
+    final organizationIds = (await serviceEnvironment.databaseQueryBroker
+                .streamOrganizationsByPids(
+                  databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+                  pids: organizationPids,
+                )
+                .firstOrNull)
+            ?.map((e) => e.id)
+            .nonNulls
+            .toSet() ??
+        {};
+
+    printBlue('organizationIds: $organizationIds');
+
+    // assert(
+    //   organizationIds.length == organizationPids.length,
+    //   'organizationIds length does not match organizationPids length.',
+    // );
 
     // Return operations to delete everything associated with organizationPids.
     return {
@@ -155,18 +145,16 @@ final class OrganizationUtils {
           serviceEnvironment: serviceEnvironment,
           relationshipId: relationshipId,
         ),
-      if (organizationIds != null)
-        for (final organizationId in organizationIds)
-          DeleteOperation(
-            ref: Schema.organizationsRef(organizationId: organizationId),
-          ),
+      for (final organizationId in organizationIds)
+        DeleteOperation(
+          ref: Schema.organizationsRef(organizationId: organizationId),
+        ),
       for (final organizationPid in organizationPids)
         DeleteOperation(
           ref: Schema.organizationPubsRef(organizationPid: organizationPid),
         ),
       ...await ProjectUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,
-        projectIds: projectIds,
         projectPids: projectPids,
         relationshipPool: relationshipPool,
       ),

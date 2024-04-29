@@ -99,28 +99,9 @@ final class ProjectUtils {
   //
   //
 
-  Future<void> addProjectPubService({
-    required ServiceEnvironment serviceEnvironment,
-    required ProjectMemberService projectMemberService,
-    required ModelProjectPub projectPub,
-  }) async {
-    final pid = projectPub.id!;
-    final service = ProjectPubService(
-      serviceEnvironment: serviceEnvironment,
-      id: pid,
-    );
-    await service.pValue.set(projectPub);
-    await projectMemberService.pMemberServicePool.update((e) => e..[pid] = service);
-  }
-
-  //
-  //
-  //
-
   @visibleForTesting
   static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
-    required Iterable<String>? projectIds,
     required Iterable<String> projectPids,
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
@@ -140,14 +121,23 @@ final class ProjectUtils {
     final jobPids = projectAssociatedMemberPids.where((pid) => IdUtils.isJobPid(pid));
 
     // Fetch all associated PIDS.
-    final jobIds = (await serviceEnvironment.databaseQueryBroker
-            .streamJobsByPids(
-              databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-              pids: jobPids,
-            )
-            .first)
-        .map((e) => e.id)
-        .nonNulls;
+    final projectIds = (await serviceEnvironment.databaseQueryBroker
+                .streamProjectsByPids(
+                  databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+                  pids: projectPids,
+                )
+                .firstOrNull)
+            ?.map((e) => e.id)
+            .nonNulls
+            .toSet() ??
+        {};
+
+    printBlue('projectIds: $projectIds');
+
+    assert(
+      projectIds.length == projectPids.length,
+      'projectIds length does not match projectPids length.',
+    );
 
     // Return operations to delete everything associated with projectPids.
     return {
@@ -156,18 +146,16 @@ final class ProjectUtils {
           serviceEnvironment: serviceEnvironment,
           relationshipId: relationshipId,
         ),
-      if (projectIds != null)
-        for (final projectId in projectIds)
-          DeleteOperation(
-            ref: Schema.projectsRef(projectId: projectId),
-          ),
+      for (final projectId in projectIds)
+        DeleteOperation(
+          ref: Schema.projectsRef(projectId: projectId),
+        ),
       for (final projectPid in projectPids)
         DeleteOperation(
           ref: Schema.projectPubsRef(projectPid: projectPid),
         ),
       ...await JobUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,
-        jobIds: jobIds,
         jobPids: jobPids,
         relationshipPool: relationshipPool,
       ),

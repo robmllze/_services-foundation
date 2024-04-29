@@ -46,7 +46,7 @@ final class JobUtils {
     final job = ModelJob(
       createdAt: now,
       creatorId: userId,
-      id: jobPid,
+      id: jobId,
       pid: jobPid,
       seedId: seedId,
     );
@@ -102,7 +102,6 @@ final class JobUtils {
   @visibleForTesting
   static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
-    required Iterable<String>? jobIds,
     required Iterable<String> jobPids,
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
@@ -115,6 +114,25 @@ final class JobUtils {
     final associatedRelationshipPool =
         relationshipPool.filterByAnyMember(memberPids: jobPids).toSet();
 
+    // Fetch all associated PIDS.
+    final jobIds = (await serviceEnvironment.databaseQueryBroker
+                .streamJobsByPids(
+                  databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+                  pids: jobPids,
+                )
+                .firstOrNull)
+            ?.map((e) => e.id)
+            .nonNulls
+            .toSet() ??
+        {};
+
+    printBlue('jobIds: $jobIds');
+
+    assert(
+      jobIds.length == jobPids.length,
+      'jobIds length does not match jobPids length.',
+    );
+
     // Return operations to delete everything associated with jobPids.
     return {
       for (final relationshipId in associatedRelationshipPool.allIds())
@@ -122,11 +140,10 @@ final class JobUtils {
           serviceEnvironment: serviceEnvironment,
           relationshipId: relationshipId,
         ),
-      if (jobIds != null)
-        for (final jobId in jobIds)
-          DeleteOperation(
-            ref: Schema.jobsRef(jobId: jobId),
-          ),
+      for (final jobId in jobIds)
+        DeleteOperation(
+          ref: Schema.jobsRef(jobId: jobId),
+        ),
       for (final jobPid in jobPids)
         DeleteOperation(
           ref: Schema.jobPubsRef(jobPid: jobPid),
