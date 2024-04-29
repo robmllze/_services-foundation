@@ -31,7 +31,7 @@ final class RelationshipUtils {
   }) {
     var a = serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
       databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-      memberPids: memberPids,
+      pids: memberPids,
       limit: limit ?? memberPids.length,
     );
 
@@ -53,7 +53,7 @@ final class RelationshipUtils {
   }) {
     var a = serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
       databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
-      memberPids: memberPids,
+      pids: memberPids,
       limit: limit ?? memberPids.length,
     );
 

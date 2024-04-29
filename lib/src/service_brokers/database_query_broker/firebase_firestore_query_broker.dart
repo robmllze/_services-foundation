@@ -106,14 +106,17 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelUserPub>> streamUserPubsByPids({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> pids,
+    required Iterable<String> pids,
   }) {
     databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.userPubsRef().collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
-    final snapshots =
-        collection.limit(pids.length).where(ModelUserPub.K_ID, arrayContainsAny: pids).snapshots();
+    final pidSet = pids.toSet();
+    final snapshots = collection
+        .limit(pidSet.length)
+        .where(ModelUserPub.K_ID, arrayContainsAny: pidSet)
+        .snapshots();
     final results = snapshots.map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
     return results;
   }
@@ -125,15 +128,16 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelUserPub>> streamUserPubsByEmails({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> emails,
+    required Iterable<String> emails,
   }) {
     databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.userPubsRef().collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
-    final searchableEmails = emails.map((e) => e.toLowerCase());
+    final emailSet = emails.toSet();
+    final searchableEmails = emailSet.map((e) => e.toLowerCase());
     final results = collection
-        .limit(emails.length)
+        .limit(emailSet.length)
         .where(ModelUserPub.K_EMAIL_SEARCHABLE, arrayContainsAny: searchableEmails)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
@@ -147,16 +151,17 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelRelationship>> streamRelationshipsForAnyMembers({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> memberPids,
+    required Iterable<String> pids,
     int? limit,
   }) {
     databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
+    final pidSet = pids.toSet();
     final relationships = collection
-        .where(ModelRelationship.K_MEMBER_PIDS, arrayContainsAny: memberPids)
-        .limit(limit ?? memberPids.length)
+        .where(ModelRelationship.K_MEMBER_PIDS, arrayContainsAny: pidSet)
+        .limit(limit ?? pidSet.length)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
     return relationships;
@@ -169,16 +174,17 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelRelationship>> streamRelationshipsForAllMembers({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> memberPids,
+    required Iterable<String> pids,
     int? limit,
   }) {
     final firebaseFirestore =
         (databaseServiceBroker as FirebaseFirestoreServiceBroker).firebaseFirestore;
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
+    final pidSet = pids.toSet();
     final relationships = collection
-        .where(ModelRelationship.K_MEMBER_PIDS, arrayContains: memberPids)
-        .limit(limit ?? memberPids.length)
+        .where(ModelRelationship.K_MEMBER_PIDS, arrayContains: pidSet)
+        .limit(limit ?? pidSet.length)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
     return relationships;
@@ -215,17 +221,18 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelUser>> streamUsersByPids({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> pids,
+    required Iterable<String> pids,
   }) {
     databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.usersRef().collectionPath!;
+    final pidSet = pids.toSet();
     final snapshots = firebaseFirestore
         .collection(collectionPath)
-        .limit(pids.length)
+        .limit(pidSet.length)
         .where(
           ModelJob.K_PID,
-          arrayContainsAny: pids,
+          arrayContainsAny: pidSet,
         )
         .snapshots();
     final results = snapshots.map((e) => e.docs.map((e) => ModelUser.fromJson(e.data())));
@@ -239,17 +246,18 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelOrganization>> streamOrganizationsByPids({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> pids,
+    required Iterable<String> pids,
   }) {
     databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.organizationsRef().collectionPath!;
+    final pidSet = pids.toSet();
     final snapshots = firebaseFirestore
         .collection(collectionPath)
-        .limit(pids.length)
+        .limit(pidSet.length)
         .where(
           ModelOrganization.K_PID,
-          arrayContainsAny: pids,
+          arrayContainsAny: pidSet,
         )
         .snapshots();
     final results = snapshots.map((e) => e.docs.map((e) => ModelOrganization.fromJson(e.data())));
@@ -263,17 +271,18 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelProject>> streamProjectsByPids({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> pids,
+    required Iterable<String> pids,
   }) {
     databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.projectsRef().collectionPath!;
+    final pidSet = pids.toSet();
     final snapshots = firebaseFirestore
         .collection(collectionPath)
-        .limit(pids.length)
+        .limit(pidSet.length)
         .where(
           ModelProject.K_PID,
-          arrayContainsAny: pids,
+          arrayContainsAny: pidSet,
         )
         .snapshots();
     final results = snapshots.map((e) => e.docs.map((e) => ModelProject.fromJson(e.data())));
@@ -287,17 +296,18 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelJob>> streamJobsByPids({
     required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> pids,
+    required Iterable<String> pids,
   }) {
     databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.jobsRef().collectionPath!;
+    final pidSet = pids.toSet();
     final snapshots = firebaseFirestore
         .collection(collectionPath)
-        .limit(pids.length)
+        .limit(pidSet.length)
         .where(
           ModelJob.K_PID,
-          arrayContainsAny: pids,
+          arrayContainsAny: pidSet,
         )
         .snapshots();
 

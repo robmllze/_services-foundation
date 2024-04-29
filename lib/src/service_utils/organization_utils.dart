@@ -138,6 +138,16 @@ final class OrganizationUtils {
     // Get all project ids/pids associated with organizationPids.
     final projectPids = organizationAssociatedMemberPids.where((pid) => IdUtils.isProjectPid(pid));
 
+    // Fetch all associated PIDS.
+    final projectIds = (await serviceEnvironment.databaseQueryBroker
+            .streamProjectsByPids(
+              databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+              pids: projectPids,
+            )
+            .first)
+        .map((e) => e.id)
+        .nonNulls;
+
     // Return operations to delete everything associated with organizationPids.
     return {
       for (final relationshipId in associatedRelationshipPool.allIds())
@@ -156,7 +166,7 @@ final class OrganizationUtils {
         ),
       ...await ProjectUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,
-        projectIds: null,
+        projectIds: projectIds,
         projectPids: projectPids,
         relationshipPool: relationshipPool,
       ),

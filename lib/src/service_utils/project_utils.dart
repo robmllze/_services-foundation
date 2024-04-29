@@ -139,6 +139,16 @@ final class ProjectUtils {
     // Get all job ids/pids associated with projectPids.
     final jobPids = projectAssociatedMemberPids.where((pid) => IdUtils.isJobPid(pid));
 
+    // Fetch all associated PIDS.
+    final jobIds = (await serviceEnvironment.databaseQueryBroker
+            .streamJobsByPids(
+              databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
+              pids: jobPids,
+            )
+            .first)
+        .map((e) => e.id)
+        .nonNulls;
+
     // Return operations to delete everything associated with projectPids.
     return {
       for (final relationshipId in associatedRelationshipPool.allIds())
@@ -157,7 +167,7 @@ final class ProjectUtils {
         ),
       ...await JobUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,
-        jobIds: null,
+        jobIds: jobIds,
         jobPids: jobPids,
         relationshipPool: relationshipPool,
       ),
