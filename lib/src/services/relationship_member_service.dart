@@ -87,6 +87,20 @@ class RelationshipMemberService<TModel extends Model,
   //
   //
 
+  Future<void> instantAdd(TModel model) async {
+    final pid = model.id!;
+    final service = this.serviceInstantiator(
+      relationshipService.serviceEnvironment,
+      pid,
+    );
+    await service.pValue.set(model);
+    await this.pMemberServicePool.update((e) => e..[pid] = service);
+  }
+
+  //
+  //
+  //
+
   Future<void> _add(Set<String> updatedMemberPids) async {
     final memberPidsToAdd = getSetDifference(
       this._currentMemberPids,

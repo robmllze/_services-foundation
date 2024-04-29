@@ -23,14 +23,19 @@ final class JobUtils {
   //
   //
 
-  static Future<(ModelJob, ModelJobPub, ModelRelationship)> dbNewJob({
+  static (
+    Future<void>,
+    ModelJob,
+    ModelJobPub,
+    ModelRelationship,
+  ) dbNewJob({
     required ServiceEnvironment serviceEnvironment,
     required String userId,
     required String userPid,
     required String projectPid,
     required String displayName,
     required String description,
-  }) async {
+  }) {
     final now = DateTime.now();
     final seedId = IdUtils.newUuidV4();
     final jobId = IdUtils.newUuidV4();
@@ -66,13 +71,12 @@ final class JobUtils {
         projectPid,
       },
     );
-
-    await serviceEnvironment.databaseServiceBroker.runBatchOperations(
+    final future = serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        // CreateOperation(
-        //   ref: Schema.jobsRef(jobId: jobId),
-        //   model: job,
-        // ),
+        CreateOperation(
+          ref: Schema.jobsRef(jobId: jobId),
+          model: job,
+        ),
         CreateOperation(
           ref: Schema.jobPubsRef(jobPid: jobPid),
           model: jobPub,
@@ -83,7 +87,12 @@ final class JobUtils {
         ),
       ],
     );
-    return (job, jobPub, relationship);
+    return (
+      future,
+      job,
+      jobPub,
+      relationship,
+    );
   }
 
   //

@@ -23,13 +23,18 @@ final class OrganizationUtils {
   //
   //
 
-  static Future<(ModelOrganization, ModelOrganizationPub, ModelRelationship)> dbNewOrganization({
+  static (
+    Future<void>,
+    ModelOrganization,
+    ModelOrganizationPub,
+    ModelRelationship,
+  ) dbNewOrganization({
     required ServiceEnvironment serviceEnvironment,
     required String userId,
     required String userPid,
     required String displayName,
     required String description,
-  }) async {
+  }) {
     final now = DateTime.now();
     final seedId = IdUtils.newUuidV4();
     final organizationId = IdUtils.newUuidV4();
@@ -53,6 +58,7 @@ final class OrganizationUtils {
       id: organizationPid,
       openedAt: now,
     );
+
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
       createdAt: now,
@@ -64,13 +70,12 @@ final class OrganizationUtils {
         organizationPid,
       },
     );
-
-    await serviceEnvironment.databaseServiceBroker.runBatchOperations(
+    final future = serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        // CreateOperation(
-        //   ref: Schema.organizationsRef(organizationId: organizationId),
-        //   model: organization,
-        // ),
+        CreateOperation(
+          ref: Schema.organizationsRef(organizationId: organizationId),
+          model: organization,
+        ),
         CreateOperation(
           ref: Schema.organizationPubsRef(organizationPid: organizationPid),
           model: organizationPub,
@@ -81,7 +86,30 @@ final class OrganizationUtils {
         ),
       ],
     );
-    return (organization, organizationPub, relationship);
+    return (
+      future,
+      organization,
+      organizationPub,
+      relationship,
+    );
+  }
+
+  //
+  //
+  //
+
+  Future<void> addOrganizationPubService({
+    required ServiceEnvironment serviceEnvironment,
+    required OrganizationMemberService organizationMemberService,
+    required ModelOrganizationPub organizationPub,
+  }) async {
+    final pid = organizationPub.id!;
+    final service = OrganizationPubService(
+      serviceEnvironment: serviceEnvironment,
+      id: pid,
+    );
+    await service.pValue.set(organizationPub);
+    await organizationMemberService.pMemberServicePool.update((e) => e..[pid] = service);
   }
 
   //

@@ -37,6 +37,19 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
   //
 
+  Future<void> instantAdd(ModelRelationship relationship) async {
+    final newRelationshipId = relationship.id;
+    if (newRelationshipId != null) {
+      this._currentRelationshipIds.add(newRelationshipId);
+      await super.pValue.update((e) => [...?e, relationship]);
+      this._memberPids.addAll(relationship.memberPids ?? {});
+    }
+  }
+
+  //
+  //
+  //
+
   final pEventServicePool = Pod<Map<String, EventService>>({});
   var _currentRelationshipIds = <String>{};
 

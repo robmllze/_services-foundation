@@ -8,8 +8,6 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'dart:io';
-
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -25,14 +23,19 @@ final class ProjectUtils {
   //
   //
 
-  static Future<(ModelProject, ModelProjectPub, ModelRelationship)> dbNewProject({
+  static (
+    Future<void>,
+    ModelProject,
+    ModelProjectPub,
+    ModelRelationship,
+  ) dbNewProject({
     required ServiceEnvironment serviceEnvironment,
     required String userId,
     required String userPid,
     required String organizationPid,
     required String displayName,
     required String description,
-  }) async {
+  }) {
     final now = DateTime.now();
     final seedId = IdUtils.newUuidV4();
     final projectId = IdUtils.newUuidV4();
@@ -68,13 +71,12 @@ final class ProjectUtils {
         organizationPid,
       },
     );
-
-    await serviceEnvironment.databaseServiceBroker.runBatchOperations(
+    final future = serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        // CreateOperation(
-        //   ref: Schema.projectsRef(projectId: projectId),
-        //   model: project,
-        // ),
+        CreateOperation(
+          ref: Schema.projectsRef(projectId: projectId),
+          model: project,
+        ),
         CreateOperation(
           ref: Schema.projectPubsRef(projectPid: projectPid),
           model: projectPub,
@@ -85,7 +87,30 @@ final class ProjectUtils {
         ),
       ],
     );
-    return (project, projectPub, relationship);
+    return (
+      future,
+      project,
+      projectPub,
+      relationship,
+    );
+  }
+
+  //
+  //
+  //
+
+  Future<void> addProjectPubService({
+    required ServiceEnvironment serviceEnvironment,
+    required ProjectMemberService projectMemberService,
+    required ModelProjectPub projectPub,
+  }) async {
+    final pid = projectPub.id!;
+    final service = ProjectPubService(
+      serviceEnvironment: serviceEnvironment,
+      id: pid,
+    );
+    await service.pValue.set(projectPub);
+    await projectMemberService.pMemberServicePool.update((e) => e..[pid] = service);
   }
 
   //
