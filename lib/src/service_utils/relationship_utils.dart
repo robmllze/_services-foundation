@@ -23,16 +23,16 @@ final class RelationshipUtils {
   //
   //
 
-  static Stream<Iterable<ModelRelationship>> dbQueryRelationshipsForAnyMembers({
+  static Stream<Iterable<ModelRelationship>> dbStreamRelationshipsForAnyMembers({
     required ServiceEnvironment serviceEnvironment,
     required Set<String> memberPids,
     Set<RelationshipDefType> defTypes = const {},
-    int limit = 100,
+    int? limit,
   }) {
-    var a = serviceEnvironment.databaseQueryBroker.queryRelationshipsForAnyMembers(
+    var a = serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
       databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
       memberPids: memberPids,
-      limit: limit,
+      limit: limit ?? memberPids.length,
     );
 
     if (defTypes.isNotEmpty) {
@@ -45,16 +45,16 @@ final class RelationshipUtils {
   //
   //
 
-  static Stream<Iterable<ModelRelationship>> dbQueryRelationshipsForAllMembers({
+  static Stream<Iterable<ModelRelationship>> dbStreamRelationshipsForAllMembers({
     required ServiceEnvironment serviceEnvironment,
     required Set<String> memberPids,
     Set<RelationshipDefType> defTypes = const {},
-    int limit = 100,
+    int? limit,
   }) {
-    var a = serviceEnvironment.databaseQueryBroker.queryRelationshipsForAllMembers(
+    var a = serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
       databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
       memberPids: memberPids,
-      limit: limit,
+      limit: limit ?? memberPids.length,
     );
 
     if (defTypes.isNotEmpty) {

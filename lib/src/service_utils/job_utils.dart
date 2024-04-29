@@ -23,19 +23,6 @@ final class JobUtils {
   //
   //
 
-  Future<ModelJob> dbFetchJob({
-    required ServiceEnvironment serviceEnvironment,
-    required String jobPid,
-    required DateTime createdAt,
-    required String createdBy,
-  }) async {
-    serviceEnvironment.databaseQueryBroker.queryUserPubsByPids(databaseServiceBroker: databaseServiceBroker, pids: pids)
-  }
-
-  //
-  //
-  //
-
   static Future<(ModelJob, ModelJobPub, ModelRelationship)> dbNewJob({
     required ServiceEnvironment serviceEnvironment,
     required String userId,

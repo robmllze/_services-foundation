@@ -27,7 +27,7 @@ dependencies:
   _service_interfaces:
     path: ../_service_interfaces
 
-  xyz_gen_annotations: ^0.22.0
+  xyz_gen_annotations: ^0.23.0
   xyz_pod: ^0.29.0
   xyz_utils: ^0.52.0
 

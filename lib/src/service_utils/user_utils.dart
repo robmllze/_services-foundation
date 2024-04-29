@@ -23,6 +23,7 @@ final class UserUtils {
   //
   //
 
+  @visibleForTesting
   static Future<(ModelUser, ModelUserPub)> dbNewUser({
     required ServiceEnvironment serviceEnvironment,
     required String displayName,
@@ -57,22 +58,5 @@ final class UserUtils {
       ),
     ]);
     return (user, userPub);
-  }
-
-  //
-  //
-  //
-
-  // Stream.
-  static Stream<ModelUserPub?>? dbUserPubStream({
-    required ServiceEnvironment serviceEnvironment,
-    required String userPid,
-  }) {
-    final userPubPath = Schema.userPubsRef(userPid: userPid);
-    final userPubDataStream = serviceEnvironment.databaseServiceBroker.streamModel(userPubPath);
-    final userPubModelStream = userPubDataStream.map((e) {
-      return e != null ? ModelUserPub.fromJson(e.toJson()) : null;
-    });
-    return userPubModelStream;
   }
 }

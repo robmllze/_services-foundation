@@ -9,14 +9,14 @@
 //.title~
 
 import 'package:async/async.dart' show StreamZip;
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart' show StringCharacters;
 
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-final class FirebaseFirestoreQueryBroker extends _StreamByPids {
+final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   //
   //
   //
@@ -29,26 +29,17 @@ final class FirebaseFirestoreQueryBroker extends _StreamByPids {
 
   FirebaseFirestoreQueryBroker._();
 
-  @override
-  Stream<Iterable<ModelUserPub>> streamUserPubsByPids({
-    required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> pids,
-  }) {
-    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
-    final collectionPath = Schema.userPubsRef().collectionPath!;
-    final collection = firebaseFirestore.collection(collectionPath);
-    final snapshots =
-        collection.limit(pids.length).where(ModelUserPub.K_ID, arrayContainsAny: pids).snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
-    return results;
-  }
+  //
+  //
+  //
 
   @override
-  Stream<Iterable<ModelUserPub>> queryUserPubsByNameOrEmail({
+  Stream<Iterable<ModelUserPub>> streamUserPubsByNameOrEmailQuery({
     required DatabaseServiceInterface databaseServiceBroker,
     required String nameOrEmailQuery,
     int limit = 10,
   }) {
+    databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.userPubsRef().collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
@@ -96,26 +87,47 @@ final class FirebaseFirestoreQueryBroker extends _StreamByPids {
 
       final combinedStream = StreamZip([stream1, stream2]).map((e) {
         return e.reduce((a, b) {
-          return [...a, ...b].where((e) => e.deletedAt == null);
+          final c = [...a, ...b].where((e) => e.deletedAt == null);
+          final d = Model.removeDuplicateIds(c);
+          return d;
         }).toSet();
       });
 
-      try {
-        // 7. Filter the matches that are marked as deleted.
-        final matchesNotDeleted = matchesDuplicatesRemoved.where((e) => e.deletedAt == null);
-        // 8. Return the results.
-        return matchesNotDeleted;
-      } catch (_) {}
+      return combinedStream;
     }
     // 8. No results.
-    return [];
+    return const Stream.empty();
   }
 
+  //
+  //
+  //
+
   @override
-  Stream<Iterable<ModelUserPub>> streamUserPubsByEmail({
+  Stream<Iterable<ModelUserPub>> streamUserPubsByPids({
+    required DatabaseServiceInterface databaseServiceBroker,
+    required Set<String> pids,
+  }) {
+    databaseServiceBroker as FirebaseFirestoreServiceBroker;
+    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
+    final collectionPath = Schema.userPubsRef().collectionPath!;
+    final collection = firebaseFirestore.collection(collectionPath);
+    final snapshots =
+        collection.limit(pids.length).where(ModelUserPub.K_ID, arrayContainsAny: pids).snapshots();
+    final results = snapshots.map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
+    return results;
+  }
+
+  //
+  //
+  //
+
+  @override
+  Stream<Iterable<ModelUserPub>> streamUserPubsByEmails({
     required DatabaseServiceInterface databaseServiceBroker,
     required Set<String> emails,
   }) {
+    databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.userPubsRef().collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
@@ -129,40 +141,44 @@ final class FirebaseFirestoreQueryBroker extends _StreamByPids {
   }
 
   //
-  // Relationships.
+  //
   //
 
   @override
   Stream<Iterable<ModelRelationship>> streamRelationshipsForAnyMembers({
     required DatabaseServiceInterface databaseServiceBroker,
     required Set<String> memberPids,
-    int maxRelationshipsPerMember = 10,
+    int? limit,
   }) {
+    databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
-    final limit = memberPids.length * maxRelationshipsPerMember;
     final relationships = collection
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContainsAny: memberPids)
-        .limit(limit)
+        .limit(limit ?? memberPids.length)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
     return relationships;
   }
 
+  //
+  //
+  //
+
   @override
   Stream<Iterable<ModelRelationship>> streamRelationshipsForAllMembers({
     required DatabaseServiceInterface databaseServiceBroker,
     required Set<String> memberPids,
-    int maxRelationshipsPerMember = 10,
+    int? limit,
   }) {
-    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
+    final firebaseFirestore =
+        (databaseServiceBroker as FirebaseFirestoreServiceBroker).firebaseFirestore;
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
-    final limit = memberPids.length * maxRelationshipsPerMember;
     final relationships = collection
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContains: memberPids)
-        .limit(limit)
+        .limit(limit ?? memberPids.length)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
     return relationships;
@@ -179,6 +195,7 @@ final class FirebaseFirestoreQueryBroker extends _StreamByPids {
     required DataRef collectionRef,
   }) async {
     final result = <BatchOperation>[];
+    databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = collectionRef.collectionPath!;
     final collection = firebaseFirestore.collection(collectionPath);
@@ -190,19 +207,41 @@ final class FirebaseFirestoreQueryBroker extends _StreamByPids {
     await streamToFuture(stream);
     return result;
   }
-}
 
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-abstract final class _StreamByPids extends DatabaseQueryInterface {
   //
   //
   //
 
+  @override
+  Stream<Iterable<ModelUser>> streamUsersByPids({
+    required DatabaseServiceInterface databaseServiceBroker,
+    required Set<String> pids,
+  }) {
+    databaseServiceBroker as FirebaseFirestoreServiceBroker;
+    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
+    final collectionPath = Schema.usersRef().collectionPath!;
+    final snapshots = firebaseFirestore
+        .collection(collectionPath)
+        .limit(pids.length)
+        .where(
+          ModelJob.K_PID,
+          arrayContainsAny: pids,
+        )
+        .snapshots();
+    final results = snapshots.map((e) => e.docs.map((e) => ModelUser.fromJson(e.data())));
+    return results;
+  }
+
+  //
+  //
+  //
+
+  @override
   Stream<Iterable<ModelOrganization>> streamOrganizationsByPids({
     required DatabaseServiceInterface databaseServiceBroker,
     required Set<String> pids,
   }) {
+    databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.organizationsRef().collectionPath!;
     final snapshots = firebaseFirestore
@@ -221,10 +260,12 @@ abstract final class _StreamByPids extends DatabaseQueryInterface {
   //
   //
 
+  @override
   Stream<Iterable<ModelProject>> streamProjectsByPids({
     required DatabaseServiceInterface databaseServiceBroker,
     required Set<String> pids,
   }) {
+    databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.projectsRef().collectionPath!;
     final snapshots = firebaseFirestore
@@ -243,10 +284,12 @@ abstract final class _StreamByPids extends DatabaseQueryInterface {
   //
   //
 
+  @override
   Stream<Iterable<ModelJob>> streamJobsByPids({
     required DatabaseServiceInterface databaseServiceBroker,
     required Set<String> pids,
   }) {
+    databaseServiceBroker as FirebaseFirestoreServiceBroker;
     final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
     final collectionPath = Schema.jobsRef().collectionPath!;
     final snapshots = firebaseFirestore
@@ -261,33 +304,4 @@ abstract final class _StreamByPids extends DatabaseQueryInterface {
     final results = snapshots.map((e) => e.docs.map((e) => ModelJob.fromJson(e.data())));
     return results;
   }
-
-  //
-  //
-  //
-
-  Stream<Iterable<ModelUser>> streamUsersByPids({
-    required DatabaseServiceInterface databaseServiceBroker,
-    required Set<String> pids,
-  }) {
-    final firebaseFirestore = databaseServiceBroker.firebaseFirestore;
-    final collectionPath = Schema.usersRef().collectionPath!;
-    final snapshots = firebaseFirestore
-        .collection(collectionPath)
-        .limit(pids.length)
-        .where(
-          ModelJob.K_PID,
-          arrayContainsAny: pids,
-        )
-        .snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelUser.fromJson(e.data())));
-    return results;
-  }
-}
-
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-extension _FirebaseFirestoreOnDatabaseServiceInterfaceExtension on DatabaseServiceInterface {
-  FirebaseFirestore get firebaseFirestore =>
-      (this as FirebaseFirestoreServiceBroker).firebaseFirestore;
 }
