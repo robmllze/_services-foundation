@@ -72,7 +72,7 @@ final class RelationshipUtils {
   }) {
     return relationship.extractMemberPids(
       memberPidPrefixes: {
-        IdUtility.USER_PID_PREFIX,
+        IdUtils.USER_PID_PREFIX,
       },
     );
   }
@@ -82,7 +82,7 @@ final class RelationshipUtils {
   }) {
     return relationship.extractMemberPids(
       memberPidPrefixes: {
-        IdUtility.ORGANIZATION_PID_PPREFIX,
+        IdUtils.ORGANIZATION_PID_PPREFIX,
       },
     );
   }
@@ -92,7 +92,7 @@ final class RelationshipUtils {
   }) {
     return relationship.extractMemberPids(
       memberPidPrefixes: {
-        IdUtility.PROJECT_PID_PPREFIX,
+        IdUtils.PROJECT_PID_PPREFIX,
       },
     );
   }
@@ -102,7 +102,7 @@ final class RelationshipUtils {
   }) {
     return relationship.extractMemberPids(
       memberPidPrefixes: {
-        IdUtility.JOB_PID_PPREFIX,
+        IdUtils.JOB_PID_PPREFIX,
       },
     );
   }
@@ -254,7 +254,7 @@ final class RelationshipUtils {
     required RelationshipDefType defType,
     GenericModel? def,
   }) {
-    final relationshipId = IdUtility.newRelationshipId();
+    final relationshipId = IdUtils.newRelationshipId();
     final now = DateTime.now();
     return ModelRelationship(
       id: relationshipId,

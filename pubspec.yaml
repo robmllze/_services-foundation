@@ -27,7 +27,7 @@ dependencies:
   _service_interfaces:
     path: ../_service_interfaces
 
-  xyz_gen_annotations: ^0.21.0
+  xyz_gen_annotations: ^0.22.0
   xyz_pod: ^0.29.0
   xyz_utils: ^0.52.0
 
@@ -36,6 +36,8 @@ dependencies:
   firebase_storage: ^11.6.10
   firebase_core: ^2.27.1
   shared_preferences: ^2.2.2
+
+  async: any
   meta: any
 
 ## -----------------------------------------------------------------------------

@@ -31,16 +31,18 @@ final class OrganizationUtils {
     required String description,
   }) async {
     final now = DateTime.now();
-    final pidSeed = IdUtility.newUuidV4();
-    final organizationId = IdUtility.newUuidV4();
-    final organizationPid =
-        IdUtility(seed: pidSeed).idToOrganizationPid(organizationId: organizationId);
+    final seedId = IdUtils.newUuidV4();
+    final organizationId = IdUtils.newUuidV4();
+    final organizationPid = IdUtils.idToOrganizationPid(
+      seedId: seedId,
+      organizationId: organizationId,
+    );
     final organization = ModelOrganization(
       createdAt: now,
       creatorId: userId,
       id: organizationId,
       pid: organizationPid,
-      pidSeed: pidSeed,
+      seedId: seedId,
     );
     final organizationPub = ModelOrganizationPub(
       createdAt: now,
@@ -50,9 +52,8 @@ final class OrganizationUtils {
       displayNameSearchable: displayName.toLowerCase(),
       id: organizationPid,
       openedAt: now,
-      organizationId: organizationId,
     );
-    final relationshipId = IdUtility.newRelationshipId();
+    final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
       createdAt: now,
       creatorPid: userPid,
@@ -66,10 +67,10 @@ final class OrganizationUtils {
 
     await serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        CreateOperation(
-          ref: Schema.organizationsRef(organizationId: organizationId),
-          model: organization,
-        ),
+        // CreateOperation(
+        //   ref: Schema.organizationsRef(organizationId: organizationId),
+        //   model: organization,
+        // ),
         CreateOperation(
           ref: Schema.organizationPubsRef(organizationPid: organizationPid),
           model: organizationPub,
@@ -95,7 +96,7 @@ final class OrganizationUtils {
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
     // Ensure organizationPids contains valid pids.
-    final temp = organizationPids.where((pid) => IdUtility.isOrganizationPid(pid)).toSet();
+    final temp = organizationPids.where((pid) => IdUtils.isOrganizationPid(pid)).toSet();
     assert(temp.length == organizationPids.length, 'organizationPids contains invalid pids.');
     organizationPids = temp;
 
@@ -107,8 +108,7 @@ final class OrganizationUtils {
     final organizationAssociatedMemberPids = associatedRelationshipPool.allMemberPids();
 
     // Get all project ids/pids associated with organizationPids.
-    final projectPids =
-        organizationAssociatedMemberPids.where((pid) => IdUtility.isProjectPid(pid));
+    final projectPids = organizationAssociatedMemberPids.where((pid) => IdUtils.isProjectPid(pid));
 
     // Return operations to delete everything associated with organizationPids.
     return {

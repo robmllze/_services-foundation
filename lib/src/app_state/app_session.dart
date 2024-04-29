@@ -36,7 +36,7 @@ abstract class AppSession {
   //
 
   @mustCallSuper
-  FutureOr<void> startSession(UserInterface currentUser) async {
+  FutureOr<void> startSession(AuthUser currentAuthUser) async {
     // assert(
     //   !this._didStart,
     //   'The session has already been started.',

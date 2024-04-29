@@ -31,17 +31,16 @@ final class UserUtils {
   }) async {
     final now = DateTime.now();
     final userId = serviceEnvironment.authServiceBroker.pCurrentUser.value!.userId;
-    final pidSeed = userId; // IdUtility.generateUuidV4C();
-    final userPid = IdUtility(seed: pidSeed).idToUserPid(userId: userId);
+    final seedId = IdUtils.newUuidV4();
+    final userPid = IdUtils.idToUserPid(seedId: seedId, userId: userId);
     final user = ModelUser(
       id: userId,
       pid: userPid,
-      pidSeed: pidSeed,
+      seedId: seedId,
       createdAt: now,
     );
     final userPub = ModelUserPub(
       id: userPid,
-      userId: userId,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
       emailSearchable: email.toLowerCase(),
@@ -65,20 +64,15 @@ final class UserUtils {
   //
 
   // Stream.
-  static Stream<ModelUserPub?>? dbUserPubStream(
-    ServiceEnvironment serviceEnvironment, {
-    String? userPid,
+  static Stream<ModelUserPub?>? dbUserPubStream({
+    required ServiceEnvironment serviceEnvironment,
+    required String userPid,
   }) {
-    userPid = userPid ?? serviceEnvironment.authServiceBroker.pCurrentUser.value?.userPid;
-    assert(userPid != null);
-    if (userPid != null) {
-      final userPubPath = Schema.userPubsRef(userPid: userPid);
-      final userPubDataStream = serviceEnvironment.databaseServiceBroker.streamModel(userPubPath);
-      final userPubModelStream = userPubDataStream.map((e) {
-        return e != null ? ModelUserPub.fromJson(e.toJson()) : null;
-      });
-      return userPubModelStream;
-    }
-    return null;
+    final userPubPath = Schema.userPubsRef(userPid: userPid);
+    final userPubDataStream = serviceEnvironment.databaseServiceBroker.streamModel(userPubPath);
+    final userPubModelStream = userPubDataStream.map((e) {
+      return e != null ? ModelUserPub.fromJson(e.toJson()) : null;
+    });
+    return userPubModelStream;
   }
 }

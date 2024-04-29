@@ -23,6 +23,19 @@ final class JobUtils {
   //
   //
 
+  Future<ModelJob> dbFetchJob({
+    required ServiceEnvironment serviceEnvironment,
+    required String jobPid,
+    required DateTime createdAt,
+    required String createdBy,
+  }) async {
+    serviceEnvironment.databaseQueryBroker.queryUserPubsByPids(databaseServiceBroker: databaseServiceBroker, pids: pids)
+  }
+
+  //
+  //
+  //
+
   static Future<(ModelJob, ModelJobPub, ModelRelationship)> dbNewJob({
     required ServiceEnvironment serviceEnvironment,
     required String userId,
@@ -32,15 +45,18 @@ final class JobUtils {
     required String description,
   }) async {
     final now = DateTime.now();
-    final pidSeed = IdUtility.newUuidV4();
-    final jobId = IdUtility.newUuidV4();
-    final jobPid = IdUtility(seed: pidSeed).idToJobPid(jobId: jobId);
+    final seedId = IdUtils.newUuidV4();
+    final jobId = IdUtils.newUuidV4();
+    final jobPid = IdUtils.idToJobPid(
+      seedId: seedId,
+      jobId: jobId,
+    );
     final job = ModelJob(
       createdAt: now,
       creatorId: userId,
       id: jobPid,
       pid: jobPid,
-      pidSeed: pidSeed,
+      seedId: seedId,
     );
     final jobPub = ModelJobPub(
       createdAt: now,
@@ -49,10 +65,9 @@ final class JobUtils {
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
       id: jobPid,
-      jobId: jobId,
       openedAt: now,
     );
-    final relationshipId = IdUtility.newRelationshipId();
+    final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
       createdAt: now,
       creatorPid: userPid,
@@ -67,10 +82,10 @@ final class JobUtils {
 
     await serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        CreateOperation(
-          ref: Schema.jobsRef(jobId: jobId),
-          model: job,
-        ),
+        // CreateOperation(
+        //   ref: Schema.jobsRef(jobId: jobId),
+        //   model: job,
+        // ),
         CreateOperation(
           ref: Schema.jobPubsRef(jobPid: jobPid),
           model: jobPub,
@@ -96,7 +111,7 @@ final class JobUtils {
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
     // Ensure jobPids contains valid pids.
-    final temp = jobPids.where((pid) => IdUtility.isJobPid(pid)).toList();
+    final temp = jobPids.where((pid) => IdUtils.isJobPid(pid)).toList();
     assert(temp.length == jobPids.length, 'jobPids contains invalid pids.');
     jobPids = temp.toSet();
 

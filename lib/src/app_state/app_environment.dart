@@ -70,9 +70,9 @@ abstract class AppEnvironment<TAppSession extends AppSession> {
   //
   //
 
-  void onFreshLogin(UserInterface currentUser);
+  void onFreshLogin(AuthUser currentAuthUser);
 
-  void onLogin(UserInterface currentUser);
+  void onLogin(AuthUser currentAuthUser);
 
   void onFreshLogout();
 

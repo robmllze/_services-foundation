@@ -139,8 +139,8 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 extension UserToUserInterfaceExtension on User {
-  UserInterface toUserInterface() {
-    return UserInterface(
+  AuthUser toUserInterface() {
+    return AuthUser(
       userId: this.uid,
       email: this.email!,
     );
