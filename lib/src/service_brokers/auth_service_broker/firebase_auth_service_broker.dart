@@ -75,10 +75,19 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required String email,
     required String password,
   }) async {
-    await this.firebaseAuth.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+    try {
+      await this.firebaseAuth.signInWithEmailAndPassword(
+            email: email,
+            password: password,
+          );
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-credential':
+          throw const InvalidCredentialException();
+        default:
+          rethrow;
+      }
+    }
   }
 
   //
@@ -90,10 +99,19 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required String email,
     required String password,
   }) async {
-    await this.firebaseAuth.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+    try {
+      await this.firebaseAuth.createUserWithEmailAndPassword(
+            email: email,
+            password: password,
+          );
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          throw const EmailAlreadyInUseException();
+        default:
+          rethrow;
+      }
+    }
   }
 
   //
