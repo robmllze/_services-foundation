@@ -44,13 +44,15 @@ final class ProjectUtils {
       projectId: projectId,
     );
     final project = ModelProject(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userId,
       id: projectId,
       pid: projectPid,
       seed: seed,
     );
     final projectPub = ModelProjectPub(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userPid,
       whenOpened: {userPid: now},
       id: projectPid,
       displayName: displayName,
@@ -59,7 +61,8 @@ final class ProjectUtils {
     );
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userPid,
       id: relationshipId,
       defType: RelationshipDefType.ORGANIZATION_AND_PROJECT,
       memberPids: {
@@ -120,7 +123,6 @@ final class ProjectUtils {
     // Fetch all associated PIDS.
     final projectIds = (await serviceEnvironment.databaseQueryBroker
                 .streamProjectsByPids(
-                  databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
                   pids: projectPids,
                 )
                 .firstOrNull)

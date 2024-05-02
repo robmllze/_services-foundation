@@ -44,13 +44,15 @@ final class JobUtils {
       jobId: jobId,
     );
     final job = ModelJob(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userId,
       id: jobId,
       pid: jobPid,
       seed: seed,
     );
     final jobPub = ModelJobPub(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userPid,
       whenOpened: {userPid: now},
       description: description,
       displayName: displayName,
@@ -59,7 +61,8 @@ final class JobUtils {
     );
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userPid,
       defType: RelationshipDefType.JOB_AND_PROJECT,
       id: relationshipId,
       memberPids: {
@@ -114,7 +117,6 @@ final class JobUtils {
     // Fetch all associated PIDS.
     final jobIds = (await serviceEnvironment.databaseQueryBroker
                 .streamJobsByPids(
-                  databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
                   pids: jobPids,
                 )
                 .firstOrNull)

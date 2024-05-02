@@ -19,7 +19,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
   //
 
-  final int eventServicesStreamLimit;
+  int? eventServicesStreamLimit;
 
   //
   //
@@ -183,7 +183,6 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   @override
   Stream<Iterable<ModelRelationship>> stream() {
     return this.serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
-          databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
           pids: this.getMembers(),
           limit: this.streamLimit,
         );

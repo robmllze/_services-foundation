@@ -30,7 +30,6 @@ final class RelationshipUtils {
     int? limit,
   }) {
     var a = serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
-      databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
       pids: memberPids,
       limit: limit ?? memberPids.length,
     );
@@ -52,7 +51,6 @@ final class RelationshipUtils {
     int? limit,
   }) {
     var a = serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
-      databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
       pids: memberPids,
       limit: limit ?? memberPids.length,
     );
@@ -170,7 +168,6 @@ final class RelationshipUtils {
       DeleteOperation(ref: Schema.relationshipsRef(relationshipId: relationshipId)),
       // Operations to delete the events collection associated with the relationship document.
       ...await serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
-        databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
         collectionRef: Schema.relationshipEventsRef(relationshipId: relationshipId),
       ),
     ];
@@ -257,7 +254,8 @@ final class RelationshipUtils {
     final relationshipId = IdUtils.newRelationshipId();
     final now = DateTime.now();
     return ModelRelationship(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userPid,
       id: relationshipId,
       defType: defType,
       def: def,

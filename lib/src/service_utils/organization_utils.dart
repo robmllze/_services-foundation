@@ -43,13 +43,15 @@ final class OrganizationUtils {
       organizationId: organizationId,
     );
     final organization = ModelOrganization(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userId,
       id: organizationId,
       pid: organizationPid,
       seed: seed,
     );
     final organizationPub = ModelOrganizationPub(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userPid,
       description: description,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
@@ -58,7 +60,8 @@ final class OrganizationUtils {
 
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
-      whenCreated: {userPid: now},
+      createdAt: now,
+      createdBy: userPid,
       defType: RelationshipDefType.ORGANIZATION_AND_USER,
       id: relationshipId,
       memberPids: {
@@ -118,7 +121,6 @@ final class OrganizationUtils {
     // Fetch all associated PIDS.
     final organizationIds = (await serviceEnvironment.databaseQueryBroker
                 .streamOrganizationsByPids(
-                  databaseServiceBroker: serviceEnvironment.databaseServiceBroker,
                   pids: organizationPids,
                 )
                 .firstOrNull)

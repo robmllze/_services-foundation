@@ -30,7 +30,9 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
   final databaseServiceBroker = FirebaseFirestoreServiceBroker(
     firebaseFirestore: firebaseFirestore,
   );
-  final databaseQueryBroker = FirebaseFirestoreQueryBroker.instance;
+  final databaseQueryBroker = FirebaseFirestoreQueryBroker(
+    firebaseFirestore: firebaseFirestore,
+  );
   final functionsServiceBroker = FirebaseFunctionsServiceBroker(
     region: functionsRegion,
     projectId: firebaseOptions.projectId,

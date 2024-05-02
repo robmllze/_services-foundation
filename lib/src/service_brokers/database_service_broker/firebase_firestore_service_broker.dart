@@ -161,43 +161,6 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<GenericModel?> streamModel(
-    DataRef ref, [
-    Future<void> Function(GenericModel? update)? onUpdate,
-  ]) {
-    final docRef = this.firebaseFirestore.doc(ref.docPath);
-    return docRef.snapshots().asyncMap((snapshot) async {
-      final modelData = snapshot.data();
-      final model = modelData != null ? GenericModel(data: modelData) : null;
-      await onUpdate?.call(model);
-      return model;
-    });
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<GenericModel>> streamModelCollection(
-    DataRef ref, {
-    Future<void> Function(Iterable<GenericModel> update)? onUpdate,
-    int limit = 1000,
-  }) {
-    final collectionRef = this.firebaseFirestore.collection(ref.collectionPath!).limit(limit);
-    return collectionRef.snapshots().asyncMap((querySnapshot) async {
-      final modelsData = querySnapshot.docs.map((e) => e.data());
-      final models = modelsData.map((modelData) => GenericModel(data: modelData));
-      await onUpdate?.call(models);
-      return models;
-    });
-  }
-
-  //
-  //
-  //
-
-  @override
   dynamic deleteFieldValue() => FieldValue.delete();
 
   //
