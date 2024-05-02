@@ -48,8 +48,8 @@ final class UserUtils {
       createdAt: now,
       id: userPid,
       displayName: displayName,
-      displayNameSearchable: displayName.toLowerCase(),
-      emailSearchable: email.toLowerCase(),
+      displayNameSearchable: displayName,
+      email: email,
     );
     final future = serviceEnvironment.databaseServiceBroker.runBatchOperations([
       CreateOperation(

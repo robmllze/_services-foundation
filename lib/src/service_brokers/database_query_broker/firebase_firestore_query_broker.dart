@@ -100,15 +100,15 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       final stream1 = _getBaseQuery(collection, limit: limit)
           // Where the email contains the query.
           .where(
-            ModelUserPub.K_EMAIL_SEARCHABLE,
+            ModelUserPub.K_EMAIL,
             isGreaterThanOrEqualTo: searchableQuery,
           )
           .where(
-            ModelUserPub.K_EMAIL_SEARCHABLE,
+            ModelUserPub.K_EMAIL,
             isLessThan: b,
           )
           .orderBy(
-            ModelUserPub.K_EMAIL_SEARCHABLE,
+            ModelUserPub.K_EMAIL,
           )
           .snapshots()
           .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
@@ -173,7 +173,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = this.firebaseFirestore.collection(collectionPath);
     final emailSet = emails.nullIfEmpty?.map((e) => e.toLowerCase()).toSet();
     final results = _getBaseQuery(collection, limit: emailSet?.length)
-        .where(ModelUserPub.K_EMAIL_SEARCHABLE, whereIn: emailSet)
+        .where(ModelUserPub.K_EMAIL, whereIn: emailSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
     return results;

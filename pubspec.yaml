@@ -29,7 +29,7 @@ dependencies:
 
   xyz_gen_annotations: ^0.24.1
   xyz_pod: ^0.29.0
-  xyz_utils: ^0.52.0
+  xyz_utils: ^0.53.0
 
   cloud_firestore: ^4.15.9
   firebase_auth: ^4.17.9
