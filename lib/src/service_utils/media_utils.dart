@@ -31,17 +31,19 @@ final class MediaUtils {
     ModelMediaEntry,
   ) dbNewMedia({
     required ServiceEnvironment serviceEnvironment,
+    // required String fileName,
+    // required Uri url,
     required String createdBy,
   }) {
     final now = DateTime.now();
     final id = IdUtils.newUuidV4();
-
     final media = ModelMediaEntry(
       id: id,
       createdAt: now,
       createdBy: createdBy,
-      title: 'test',
-      titleSearchable: 'test'.toLowerCase(),
+      // title: fileName,
+      // titleSearchable: fileName.replaceAll(r'^\w', '') .toLowerCase(),
+      // url: url,
     );
     final future = serviceEnvironment.databaseServiceBroker.runBatchOperations([
       CreateOperation(
