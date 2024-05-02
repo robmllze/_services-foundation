@@ -44,25 +44,22 @@ final class JobUtils {
       jobId: jobId,
     );
     final job = ModelJob(
-      createdAt: now,
-      creatorId: userId,
+      whenCreated: {userPid: now},
       id: jobId,
       pid: jobPid,
       seed: seed,
     );
     final jobPub = ModelJobPub(
-      createdAt: now,
-      creatorPid: userPid,
+      whenCreated: {userPid: now},
+      whenOpened: {userPid: now},
       description: description,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
       id: jobPid,
-      openedAt: now,
     );
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
-      createdAt: now,
-      creatorPid: userPid,
+      whenCreated: {userPid: now},
       defType: RelationshipDefType.JOB_AND_PROJECT,
       id: relationshipId,
       memberPids: {

@@ -53,7 +53,7 @@ final class EventUtils {
   ) {
     return (eventModels?.toList()
       ?..sort((a, b) {
-        return a.firstSent!.compareTo(b.firstSent!);
+        return a.sentAt!.compareTo(b.sentAt!);
       }));
   }
 
@@ -285,7 +285,7 @@ final class EventUtils {
   }) async {
     final eventModel = ModelEvent(
       id: eventId,
-      pids: {
+      memberPids: {
         senderPid,
         if (receiverPid != null) receiverPid,
       },
@@ -309,7 +309,7 @@ final class EventUtils {
   }) {
     final eventModel = ModelEvent(
       id: eventId,
-      pids: {senderPid, receiverPid},
+      memberPids: {senderPid, receiverPid},
       whenSent: {senderPid: DateTime.now()},
       def: eventDef.toGenericModel(),
       defType: eventDefType,

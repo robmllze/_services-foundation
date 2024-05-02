@@ -249,7 +249,7 @@ final class RelationshipUtils {
   //
 
   static ModelRelationship createNewRelationship({
-    required String creatorPid,
+    required String userPid,
     required Set<String> memberPids,
     required RelationshipDefType defType,
     GenericModel? def,
@@ -257,15 +257,11 @@ final class RelationshipUtils {
     final relationshipId = IdUtils.newRelationshipId();
     final now = DateTime.now();
     return ModelRelationship(
+      whenCreated: {userPid: now},
       id: relationshipId,
       defType: defType,
       def: def,
       memberPids: memberPids,
-      createdAt: now,
-      creatorPid: creatorPid,
-      whenEnabled: {
-        creatorPid: now,
-      },
     );
   }
 
@@ -277,7 +273,7 @@ final class RelationshipUtils {
     required String relationshipId,
     required String senderPid,
     required String receiverPid,
-    required DateTime dateSent,
+    required DateTime sentAt,
     required Model? def,
     required RelationshipDefType? defType,
   }) {
@@ -290,8 +286,8 @@ final class RelationshipUtils {
         receiverPid,
       },
       whenEnabled: {
-        receiverPid: dateSent,
-        senderPid: dateSent,
+        receiverPid: sentAt,
+        senderPid: sentAt,
       },
     );
 

@@ -39,17 +39,17 @@ final class UserUtils {
     final seed = IdUtils.newUuidV4();
     final userPid = IdUtils.idToUserPid(seed: seed, userId: userId);
     final user = ModelUser(
+      whenCreated: {userPid: now},
       id: userId,
       pid: userPid,
       seed: seed,
-      createdAt: now,
     );
     final userPub = ModelUserPub(
+      whenCreated: {userPid: now},
       id: userPid,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
       emailSearchable: email.toLowerCase(),
-      createdAt: now,
     );
     final future = serviceEnvironment.databaseServiceBroker.runBatchOperations([
       CreateOperation(

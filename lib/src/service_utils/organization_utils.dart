@@ -43,26 +43,22 @@ final class OrganizationUtils {
       organizationId: organizationId,
     );
     final organization = ModelOrganization(
-      createdAt: now,
-      creatorId: userId,
+      whenCreated: {userPid: now},
       id: organizationId,
       pid: organizationPid,
       seed: seed,
     );
     final organizationPub = ModelOrganizationPub(
-      createdAt: now,
-      creatorPid: userPid,
+      whenCreated: {userPid: now},
       description: description,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
       id: organizationPid,
-      openedAt: now,
     );
 
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
-      createdAt: now,
-      creatorPid: userPid,
+      whenCreated: {userPid: now},
       defType: RelationshipDefType.ORGANIZATION_AND_USER,
       id: relationshipId,
       memberPids: {

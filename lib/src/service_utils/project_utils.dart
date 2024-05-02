@@ -44,25 +44,22 @@ final class ProjectUtils {
       projectId: projectId,
     );
     final project = ModelProject(
-      createdAt: now,
-      creatorId: userId,
+      whenCreated: {userPid: now},
       id: projectId,
       pid: projectPid,
       seed: seed,
     );
     final projectPub = ModelProjectPub(
-      createdAt: now,
-      creatorPid: userPid,
+      whenCreated: {userPid: now},
+      whenOpened: {userPid: now},
       id: projectPid,
-      openedAt: now,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
       description: description,
     );
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
-      createdAt: now,
-      creatorPid: userPid,
+      whenCreated: {userPid: now},
       id: relationshipId,
       defType: RelationshipDefType.ORGANIZATION_AND_PROJECT,
       memberPids: {
