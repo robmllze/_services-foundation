@@ -36,12 +36,12 @@ final class UserUtils {
   }) {
     final now = DateTime.now();
     final userId = serviceEnvironment.authServiceBroker.pCurrentUser.value!.userId;
-    final seedId = IdUtils.newUuidV4();
-    final userPid = IdUtils.idToUserPid(seedId: seedId, userId: userId);
+    final seed = IdUtils.newUuidV4();
+    final userPid = IdUtils.idToUserPid(seed: seed, userId: userId);
     final user = ModelUser(
       id: userId,
       pid: userPid,
-      seedId: seedId,
+      seed: seed,
       createdAt: now,
     );
     final userPub = ModelUserPub(

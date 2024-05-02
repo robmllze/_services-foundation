@@ -36,10 +36,10 @@ final class OrganizationUtils {
     required String description,
   }) {
     final now = DateTime.now();
-    final seedId = IdUtils.newUuidV4();
+    final seed = IdUtils.newUuidV4();
     final organizationId = IdUtils.newUuidV4();
     final organizationPid = IdUtils.idToOrganizationPid(
-      seedId: seedId,
+      seed: seed,
       organizationId: organizationId,
     );
     final organization = ModelOrganization(
@@ -47,7 +47,7 @@ final class OrganizationUtils {
       creatorId: userId,
       id: organizationId,
       pid: organizationPid,
-      seedId: seedId,
+      seed: seed,
     );
     final organizationPub = ModelOrganizationPub(
       createdAt: now,

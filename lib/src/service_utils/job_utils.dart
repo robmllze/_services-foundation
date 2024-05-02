@@ -37,10 +37,10 @@ final class JobUtils {
     required String description,
   }) {
     final now = DateTime.now();
-    final seedId = IdUtils.newUuidV4();
+    final seed = IdUtils.newUuidV4();
     final jobId = IdUtils.newUuidV4();
     final jobPid = IdUtils.idToJobPid(
-      seedId: seedId,
+      seed: seed,
       jobId: jobId,
     );
     final job = ModelJob(
@@ -48,7 +48,7 @@ final class JobUtils {
       creatorId: userId,
       id: jobId,
       pid: jobPid,
-      seedId: seedId,
+      seed: seed,
     );
     final jobPub = ModelJobPub(
       createdAt: now,

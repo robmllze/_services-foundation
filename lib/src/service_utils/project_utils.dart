@@ -37,10 +37,10 @@ final class ProjectUtils {
     required String description,
   }) {
     final now = DateTime.now();
-    final seedId = IdUtils.newUuidV4();
+    final seed = IdUtils.newUuidV4();
     final projectId = IdUtils.newUuidV4();
     final projectPid = IdUtils.idToProjectPid(
-      seedId: seedId,
+      seed: seed,
       projectId: projectId,
     );
     final project = ModelProject(
@@ -48,7 +48,7 @@ final class ProjectUtils {
       creatorId: userId,
       id: projectId,
       pid: projectPid,
-      seedId: seedId,
+      seed: seed,
     );
     final projectPub = ModelProjectPub(
       createdAt: now,
@@ -131,8 +131,6 @@ final class ProjectUtils {
             .nonNulls
             .toSet() ??
         {};
-
-    printBlue('projectIds: $projectIds');
 
     assert(
       projectIds.length == projectPids.length,
