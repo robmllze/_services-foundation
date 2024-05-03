@@ -11,6 +11,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 import '/_common.dart';
 
@@ -38,11 +39,16 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
     projectId: firebaseOptions.projectId,
     authServiceBroker: authServiceBroker,
   );
+  final fileServiceBroker = FirebaseStorageServiceBroker(
+    databaseService: databaseServiceBroker,
+    firebaseStorage: FirebaseStorage.instance,
+  );
   final serviceEnvironment = ServiceEnvironment(
     authServiceBroker: authServiceBroker,
     databaseServiceBroker: databaseServiceBroker,
     databaseQueryBroker: databaseQueryBroker,
     functionsServiceBroker: functionsServiceBroker,
+    fileServiceBroker: fileServiceBroker,
   );
   return serviceEnvironment;
 }

@@ -327,19 +327,19 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<ModelMediaEntry>> streamMediaByCreatorId({
+  Stream<Iterable<ModelFileEntry>> streamFileByCreatorId({
     required Set<String> createdByAny,
     int? limit,
   }) {
-    final collectionPath = Schema.mediaRef().collectionPath!;
+    final collectionPath = Schema.fileRef().collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
     final snapshots = _getBaseQuery(collection, limit: limit)
         .where(
-          ModelMediaEntry.K_CREATED_BY,
+          ModelFileEntry.K_CREATED_BY,
           whereIn: createdByAny,
         )
         .snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelMediaEntry.fromJson(e.data())));
+    final results = snapshots.map((e) => e.docs.map((e) => ModelFileEntry.fromJson(e.data())));
     return results;
   }
 }

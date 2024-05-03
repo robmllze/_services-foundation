@@ -12,7 +12,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class MediaService extends CollectionServiceInterface<ModelMediaEntry> {
+class FileService extends CollectionServiceInterface<ModelFileEntry> {
   //
   //
   //
@@ -23,7 +23,7 @@ class MediaService extends CollectionServiceInterface<ModelMediaEntry> {
   //
   //
 
-  MediaService({
+  FileService({
     required this.createdBy,
     required super.serviceEnvironment,
     required super.ref,
@@ -36,7 +36,7 @@ class MediaService extends CollectionServiceInterface<ModelMediaEntry> {
 
   @override
   dynamic fromJson(Map<String, dynamic> modelData) {
-    return ModelMediaEntry.fromJson(modelData);
+    return ModelFileEntry.fromJson(modelData);
   }
 
   //
@@ -44,14 +44,10 @@ class MediaService extends CollectionServiceInterface<ModelMediaEntry> {
   //
 
   @override
-  Stream<Iterable<ModelMediaEntry>> stream() {
-    final s = this.serviceEnvironment.databaseQueryBroker.streamMediaByCreatorId(
+  Stream<Iterable<ModelFileEntry>> stream() {
+    return super.serviceEnvironment.databaseQueryBroker.streamFileByCreatorId(
           createdByAny: this.createdBy,
           limit: this.streamLimit,
         );
-    return s.map((e) {
-      print(e);
-      return e;
-    });
   }
 }
