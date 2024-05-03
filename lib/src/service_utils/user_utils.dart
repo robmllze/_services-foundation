@@ -24,11 +24,11 @@ final class UserUtils {
   //
 
   @visibleForTesting
-  static (
-    Future<void>,
-    ModelUser,
-    ModelUserPub,
-  ) dbNewUser({
+  static ({
+    Future<void> future,
+    ModelUser user,
+    ModelUserPub userPub,
+  }) dbNewUser({
     required ServiceEnvironment serviceEnvironment,
     required String displayName,
     required String email,
@@ -62,9 +62,9 @@ final class UserUtils {
       ),
     ]);
     return (
-      future,
-      user,
-      userPub,
+      future: future,
+      user: user,
+      userPub: userPub,
     );
   }
 }
