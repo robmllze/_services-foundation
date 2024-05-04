@@ -145,6 +145,7 @@ final class RelationshipUtils {
     if (currentUserId != null) {
       await serviceEnvironment.databaseServiceBroker.createOrUpdateModel(
         ModelRelationship(
+          id: relationshipId,
           whenDisabled: {
             currentUserId: DateTime.now(),
           },

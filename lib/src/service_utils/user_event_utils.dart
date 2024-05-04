@@ -268,7 +268,6 @@ final class UserEventUtils {
     final eventId = IdUtils.newEventId();
     final relationshipId = IdUtils.newRelationshipId();
     final eventDef = ModelConnectionRequestDef(
-      id: eventId,
       relationshipId: relationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
@@ -295,7 +294,7 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final eventDef = ModelConnectionRequestAcceptedDef(
-      id: eventId,
+      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -321,7 +320,7 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final eventDef = ModelConnectionRequestRejectedDef(
-      id: eventId,
+      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -347,7 +346,7 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final eventDef = ModelRelChangedDef(
-      id: eventId,
+      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -373,7 +372,7 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final eventDef = ModelRelDisabledDef(
-      id: eventId,
+      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -399,7 +398,7 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final eventDef = ModelRelRemovedDef(
-      id: eventId,
+      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );

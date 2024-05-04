@@ -132,7 +132,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       final combinedStream = StreamZip([stream1, stream2]).map((e) {
         return e.reduce((a, b) {
           final c = [...a, ...b].where((e) => e.deletedAt == null);
-          final d = Model.removeDuplicateIds(c);
+          final d = Model.removeDuplicateProperties(c, 'id');
           return d;
         }).toSet();
       });

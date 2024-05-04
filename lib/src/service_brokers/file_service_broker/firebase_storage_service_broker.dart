@@ -77,11 +77,11 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   //
 
   @override
-  Future<void> uploadFile(
-    DataRef ref,
-    Uint8List bytes, {
+  Future<void> uploadFile({
+    required DataRef ref,
+    required Uint8List bytes,
+    required String createdBy,
     List<String>? falsePath,
-    String? createdBy,
   }) async {
     final now = DateTime.now();
     final storagePath = ref.docPath;
@@ -91,7 +91,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
     final size = task.metadata?.size;
     final name = task.metadata?.name;
     final fileEntry = ModelFileEntry(
-      id: ref.id,
+      id: ref.id!,
       createdAt: now,
       createdBy: createdBy,
       storagePath: storagePath,
