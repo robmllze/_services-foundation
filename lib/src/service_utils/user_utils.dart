@@ -82,20 +82,42 @@ final class UserUtils {
     required Iterable<ModelOrganizationPub> organizationPubPool,
     required Iterable<ModelProjectPub> projectPubPool,
   }) async {
-    // ----
-
-    final relationshipIds =
+    // Get all relationship IDs created by userPid within the relationshipPool.
+    final createdByRelationshipIds =
         relationshipPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
 
-    final relationships0 = relationshipIds.map(
+    // Create delete operations for all relationships created by userPid.
+    final createdByRelationshipDeleteOperations = createdByRelationshipIds.map(
       (id) => DeleteOperation(
         ref: Schema.relationshipsRef(relationshipId: id),
       ),
     );
 
+    // Get all relationship IDs where userPid is a member of but not the creator
+    // within the relationshipPool.
+    final memberOfRelationshipIds = relationshipPool
+        .where(
+          (e) =>
+              !createdByRelationshipIds.contains(e.id) && e.memberPids?.contains(userPid) == true,
+        )
+        .map((e) => e.id)
+        .nonNulls;
+
+    // Create remove member operations for all relationships where userPid is a
+    // member of.
+    final memberOfRelationshipDeleteOperations = memberOfRelationshipIds.map(
+      (id) => RelationshipUtils.getLazyRemoveMembersOperation(
+        serviceEnvironment: serviceEnvironment,
+        relationshipId: id,
+        memberPids: {userPid},
+      ),
+    );
+
+    // Get all PIDs for organization pubs created by userPid within the organizationPubPool.
     final organizationPids =
         organizationPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
 
+    // Fetch all organization IDs corresponding to the organizationPids.
     final organizationIds = (await serviceEnvironment.databaseQueryBroker
                 .streamOrganizationsByPids(pids: organizationPids)
                 .firstOrNull)
@@ -103,27 +125,25 @@ final class UserUtils {
             .nonNulls ??
         [];
 
-    final organizations0 = organizationIds.map(
-      (id) => DeleteOperation(
-        ref: Schema.organizationsRef(organizationId: id),
-      ),
-    );
-
-    final organizationPubs0 = organizationPids.map(
+    // Create delete operations for all organization pubs created by userPid.
+    final organizationPubDeleteOperations = organizationPids.map(
       (id) => DeleteOperation(
         ref: Schema.organizationPubsRef(organizationPid: id),
       ),
     );
 
-    final projectPids =
-        projectPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
-
-    final projectPubs0 = projectPids.map(
+    // Create delete operations for all organizations created by userPid.
+    final organizationDeleteOperations = organizationIds.map(
       (id) => DeleteOperation(
-        ref: Schema.projectPubsRef(projectPid: id),
+        ref: Schema.organizationsRef(organizationId: id),
       ),
     );
 
+    // Get all PIDs fpr project pubs created by userPid within the projectPubPool.
+    final projectPids =
+        projectPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
+
+    // Fetch all project IDs corresponding to the projectPids.
     final projectIds = (await serviceEnvironment.databaseQueryBroker
                 .streamProjectsByPids(pids: projectPids)
                 .firstOrNull)
@@ -131,52 +151,47 @@ final class UserUtils {
             .nonNulls ??
         [];
 
-    final projects0 = projectIds.map(
+    // Create delete operations for all project pubs created by userPid.
+    final projectPubsDeleteOperations = projectPids.map(
+      (id) => DeleteOperation(
+        ref: Schema.projectPubsRef(projectPid: id),
+      ),
+    );
+
+    // Create delete operations for all projects created by userPid.
+    final projectDeleteOperations = projectIds.map(
       (id) => DeleteOperation(
         ref: Schema.projectsRef(projectId: id),
       ),
     );
 
+    // Get all PIDs for jobs created by userPid within the jobPubPool.
     final jobPids = jobPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
 
-    final jobPubs0 = jobPids.map(
-      (id) => DeleteOperation(
-        ref: Schema.jobPubsRef(jobPid: id),
-      ),
-    );
-
+    // Fetch all job IDs corresponding to the jobPids.
     final jobIds =
         (await serviceEnvironment.databaseQueryBroker.streamJobsByPids(pids: jobPids).firstOrNull)
                 ?.map((e) => e.id)
                 .nonNulls ??
             [];
 
-    final jobs0 = jobIds.map(
+    // Create delete operations for all job pubs created by userPid.
+    final jobPubsDeleteOperations = jobPids.map(
+      (id) => DeleteOperation(
+        ref: Schema.jobPubsRef(jobPid: id),
+      ),
+    );
+
+    // Create delete operations for all jobs created by userPid.
+    final jobsDeleteOperations = jobIds.map(
       (id) => DeleteOperation(
         ref: Schema.jobsRef(jobId: id),
       ),
     );
 
-    // ----
-
-    // Get all relationships not created by the user but where the user is a member.
-
-    final relationships1 = relationshipPool
-        .where((e) => !relationshipIds.contains(e.id))
-        .map((e) => e.id)
-        .nonNulls
-        .map(
-          (id) => RelationshipUtils.getLazyRemoveMembersOperation(
-            serviceEnvironment: serviceEnvironment,
-            relationshipId: id,
-            memberPids: {userPid},
-          ),
-        );
-
-    // ----
-
-    final events0 = (await Future.wait(
-          relationshipIds.map(
+    // Create delete operations for all events within relationships created by userPid.
+    final relationshipEventDeleteOperations = (await Future.wait(
+          createdByRelationshipIds.map(
             (id) => serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
               collectionRef: Schema.relationshipEventsRef(relationshipId: id),
             ),
@@ -185,41 +200,42 @@ final class UserUtils {
             .tryReduce((a, b) => [...a, ...b]) ??
         [];
 
-    // ----
-
+    // Create a delete operation for the user document.
     final deleteUserOperation = DeleteOperation(
       ref: Schema.usersRef(userId: userId),
     );
 
+    // Create a delete operation for the user pub document.
     final deleteUserPubOperation = DeleteOperation(
       ref: Schema.userPubsRef(userPid: userPid),
     );
 
-    // ----
-
+    // Run all operations in a batch.
     await serviceEnvironment.databaseServiceBroker.runBatchOperations([
-      ...relationships0,
-      ...organizations0,
-      ...organizationPubs0,
-      ...projects0,
-      ...projectPubs0,
-      ...jobs0,
-      ...jobPubs0,
-      ...relationships1,
-      ...events0,
+      ...createdByRelationshipDeleteOperations,
+      ...organizationDeleteOperations,
+      ...organizationPubDeleteOperations,
+      ...projectDeleteOperations,
+      ...projectPubsDeleteOperations,
+      ...jobsDeleteOperations,
+      ...jobPubsDeleteOperations,
+      ...memberOfRelationshipDeleteOperations,
+      ...relationshipEventDeleteOperations,
       deleteUserOperation,
       deleteUserPubOperation,
     ]);
 
-    // ---
-
+    // Get IDs for all files created by userPid within the filePool.
     final fileIds = filePool.where((e) => e.createdBy == userPid).map((e) => e.id);
-    final files0 = fileIds.map(
-      (id) {
-        final ref = Schema.fileRef(fileId: id);
-        return serviceEnvironment.fileServiceBroker.deleteFile(ref);
-      },
+
+    // Delete all files created by userPid.
+    await Future.wait(
+      fileIds.map(
+        (id) {
+          final ref = Schema.fileRef(fileId: id);
+          return serviceEnvironment.fileServiceBroker.deleteFile(ref);
+        },
+      ),
     );
-    await Future.wait(files0);
   }
 }

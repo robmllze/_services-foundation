@@ -277,6 +277,7 @@ final class RelationshipUtils {
   //
   //
 
+  @visibleForTesting
   static UpdateOperation getLazyRemoveMembersOperation({
     required ServiceEnvironment serviceEnvironment,
     required String relationshipId,
