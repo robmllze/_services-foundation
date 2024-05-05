@@ -72,7 +72,8 @@ final class UserUtils {
   //
   //
 
-  static Future<void> dbDeleteUser({
+  @visibleForTesting
+  static Future<void> dbLazyDeleteUser({
     required ServiceEnvironment serviceEnvironment,
     required String userId,
     required String userPid,
