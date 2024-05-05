@@ -10,6 +10,7 @@
 
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import '/_common.dart';
@@ -78,29 +79,38 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
 
   @override
   Future<void> uploadFile({
-    required DataRef ref,
-    required Uint8List bytes,
-    required String createdBy,
-    List<String>? falsePath,
+    required PlatformFile file,
+    String? createdBy,
+    String? title,
+    String? description,
   }) async {
+    final fileId = IdUtils.newUuidV4();
+    final ref = Schema.fileRef(fileId: fileId);
     final now = DateTime.now();
     final storagePath = ref.docPath;
     final storageRef = this.firebaseStorage.ref(storagePath);
-    final task = await storageRef.putData(bytes);
-    final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
-    final size = task.metadata?.size;
-    final name = task.metadata?.name;
-    final fileEntry = ModelFileEntry(
+    final fileEntry1 = ModelFileEntry(
       id: ref.id!,
       createdAt: now,
       createdBy: createdBy,
       storagePath: storagePath,
-      size: size,
-      name: name,
-      downloadUrl: downloadUrl,
-      falsePath: falsePath,
+      title: title,
+      searchableTitle: title,
+      extension: file.extension,
+      description: description,
+      size: file.size,
+      name: file.name,
+      falsePath: [file.path!],
     );
-    await databaseService.createModel(fileEntry, ref);
+    await databaseService.createModel(fileEntry1, ref);
+    final task = await storageRef.putData(file.bytes!);
+    final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
+    final fileEntry2 = ModelFileEntry(
+      size: task.metadata?.size,
+      name: task.metadata?.name,
+      downloadUrl: downloadUrl,
+    );
+    await databaseService.updateModel(fileEntry2, ref);
   }
 
   //
