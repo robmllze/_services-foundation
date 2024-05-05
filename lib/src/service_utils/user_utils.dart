@@ -76,12 +76,10 @@ final class UserUtils {
     required ServiceEnvironment serviceEnvironment,
     required String userId,
     required String userPid,
+    required Iterable<ModelFileEntry> filePool,
     required Iterable<ModelRelationship> relationshipPool,
-    required Iterable<ModelJob>? jobPool,
     required Iterable<ModelJobPub> jobPubPool,
-    required Iterable<ModelOrganization>? organizationPool,
     required Iterable<ModelOrganizationPub> organizationPubPool,
-    required Iterable<ModelProject> ? projectPool,
     required Iterable<ModelProjectPub> projectPubPool,
   }) async {
     // ----
@@ -95,54 +93,67 @@ final class UserUtils {
       ),
     );
 
-    final organizationIds =
-        organizationPool?.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
+    final organizationPids =
+        organizationPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
 
-    final organizations0 = organizationIds?.map(
+    final organizationIds = (await serviceEnvironment.databaseQueryBroker
+                .streamOrganizationsByPids(pids: organizationPids)
+                .firstOrNull)
+            ?.map((e) => e.id)
+            .nonNulls ??
+        [];
+
+    final organizations0 = organizationIds.map(
       (id) => DeleteOperation(
         ref: Schema.organizationsRef(organizationId: id),
       ),
     );
 
-    final organizationPubIds =
-        organizationPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
-
-    final organizationPubs0 = organizationPubIds.map(
+    final organizationPubs0 = organizationPids.map(
       (id) => DeleteOperation(
         ref: Schema.organizationPubsRef(organizationPid: id),
       ),
     );
 
-    final projectIds = projectPool?.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
-
-    final projects0 = projectIds?.map(
-      (id) => DeleteOperation(
-        ref: Schema.projectsRef(projectId: id),
-      ),
-    );
-
-    final projectPubIds =
+    final projectPids =
         projectPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
 
-    final projectPubs0 = projectPubIds.map(
+    final projectPubs0 = projectPids.map(
       (id) => DeleteOperation(
         ref: Schema.projectPubsRef(projectPid: id),
       ),
     );
 
-    final jobIds = jobPool?.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
+    final projectIds = (await serviceEnvironment.databaseQueryBroker
+                .streamProjectsByPids(pids: projectPids)
+                .firstOrNull)
+            ?.map((e) => e.id)
+            .nonNulls ??
+        [];
 
-    final jobs0 = jobIds?.map(
+    final projects0 = projectIds.map(
       (id) => DeleteOperation(
-        ref: Schema.jobsRef(jobId: id),
+        ref: Schema.projectsRef(projectId: id),
       ),
     );
 
-    final jobPubIds = jobPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
+    final jobPids = jobPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
 
-    final jobPubs0 = jobPubIds.map(
+    final jobPubs0 = jobPids.map(
       (id) => DeleteOperation(
         ref: Schema.jobPubsRef(jobPid: id),
+      ),
+    );
+
+    final jobIds =
+        (await serviceEnvironment.databaseQueryBroker.streamJobsByPids(pids: jobPids).firstOrNull)
+                ?.map((e) => e.id)
+                .nonNulls ??
+            [];
+
+    final jobs0 = jobIds.map(
+      (id) => DeleteOperation(
+        ref: Schema.jobsRef(jobId: id),
       ),
     );
 
@@ -176,27 +187,39 @@ final class UserUtils {
 
     // ----
 
-    // Deletes the user document.
     final deleteUserOperation = DeleteOperation(
       ref: Schema.usersRef(userId: userId),
     );
-    // Deletes the user pub document.
+
     final deleteUserPubOperation = DeleteOperation(
       ref: Schema.userPubsRef(userPid: userPid),
     );
 
+    // ----
+
     await serviceEnvironment.databaseServiceBroker.runBatchOperations([
       ...relationships0,
-      ...?organizations0,
+      ...organizations0,
       ...organizationPubs0,
-      ...?projects0,
+      ...projects0,
       ...projectPubs0,
-      ...?jobs0,
+      ...jobs0,
       ...jobPubs0,
       ...relationships1,
       ...events0,
       deleteUserOperation,
       deleteUserPubOperation,
     ]);
+
+    // ---
+
+    final fileIds = filePool.where((e) => e.createdBy == userPid).map((e) => e.id);
+    final files0 = fileIds.map(
+      (id) {
+        final ref = Schema.fileRef(fileId: id);
+        return serviceEnvironment.fileServiceBroker.deleteFile(ref);
+      },
+    );
+    await Future.wait(files0);
   }
 }
