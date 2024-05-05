@@ -88,7 +88,12 @@ class RelationshipMemberService<TModel extends Model,
   //
 
   Future<void> instantAdd(TModel model) async {
-    final pid = model.id!;
+    String pid;
+    try {
+      pid = (model as dynamic).id!;
+    } catch (e) {
+      throw Exception('Model must have an "id" field.');
+    }
     final service = this.serviceInstantiator(
       relationshipService.serviceEnvironment,
       pid,

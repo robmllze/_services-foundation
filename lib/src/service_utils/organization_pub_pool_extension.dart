@@ -21,10 +21,10 @@ extension OrganizationPubPoolExtension on Iterable<ModelOrganizationPub> {
     required String? relationshipId,
     required Iterable<ModelRelationship>? relationshipPool,
   }) {
-    final relationship = ModelRelationship.fromPool(pool: relationshipPool, id: relationshipId);
+    final relationship = relationshipPool?.firstWhereOrNull((e) => e.id == relationshipId);
     if (relationship != null) {
       final pids = RelationshipUtils.extractOrganizationMemberPids(relationship: relationship);
-      final result = pids.map((pid) => ModelOrganizationPub.fromPool(pool: this, id: pid)).nonNulls;
+      final result = pids.map((pid) => this.firstWhereOrNull((e) => e.id == pid)).nonNulls;
       return result;
     } else {
       return [];

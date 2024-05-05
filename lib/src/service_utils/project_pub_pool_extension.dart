@@ -21,10 +21,10 @@ extension ProjectPubPoolExtension on Iterable<ModelProjectPub> {
     required String? relationshipId,
     required Iterable<ModelRelationship>? relationshipPool,
   }) {
-    final relationship = ModelRelationship.fromPool(pool: relationshipPool, id: relationshipId);
+    final relationship = relationshipPool?.firstWhereOrNull((e) => e.id == relationshipId);
     if (relationship != null) {
       final pids = RelationshipUtils.extractProjectMemberPids(relationship: relationship);
-      final result = pids.map((pid) => ModelProjectPub.fromPool(pool: this, id: pid)).nonNulls;
+      final result = pids.map((pid) => this.firstWhereOrNull((e) => e.id == pid)).nonNulls;
       return result;
     } else {
       return [];
