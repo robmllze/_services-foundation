@@ -100,14 +100,14 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
       description: description,
       size: file.size,
       name: file.name,
-      falsePath: [file.path!],
+      path: [],
     );
     await databaseService.createModel(fileEntry1, ref);
     final task = await storageRef.putData(file.bytes!);
     final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
     final fileEntry2 = ModelFileEntry(
-      size: task.metadata?.size,
-      name: task.metadata?.name,
+      // size: task.metadata?.size,
+      // name: task.metadata?.name,
       downloadUrl: downloadUrl,
     );
     await databaseService.updateModel(fileEntry2, ref);
