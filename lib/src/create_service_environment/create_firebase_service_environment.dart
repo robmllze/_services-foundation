@@ -49,6 +49,7 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
     databaseQueryBroker: databaseQueryBroker,
     functionsServiceBroker: functionsServiceBroker,
     fileServiceBroker: fileServiceBroker,
+    fieldValueBroker: FirebaseFieldValueBroker.instance,
   );
   return serviceEnvironment;
 }

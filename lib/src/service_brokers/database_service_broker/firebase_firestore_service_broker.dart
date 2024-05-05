@@ -155,39 +155,4 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
     await writeBatch?.commit();
     return results;
   }
-
-  //
-  //
-  //
-
-  @override
-  dynamic deleteFieldValue() => FieldValue.delete();
-
-  //
-  //
-  //
-
-  @override
-  dynamic incremementFieldValue([int i = 1]) => FieldValue.increment(i);
-
-  //
-  //
-  //
-
-  @override
-  dynamic decrementFieldValue([int i = 1]) => FieldValue.increment(-i);
-
-  //
-  //
-  //
-
-  @override
-  dynamic arrayUnionFieldValue(List elementsToAdd) => FieldValue.arrayUnion(elementsToAdd);
-
-  //
-  //
-  //
-
-  @override
-  dynamic arrayRemoveFieldValue(List elementsToRemove) => FieldValue.arrayRemove(elementsToRemove);
 }

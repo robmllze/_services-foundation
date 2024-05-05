@@ -65,7 +65,7 @@ class RelationshipMemberService<TModel extends Model,
           return this.defTypes.contains(defType);
         }) ??
         {};
-    final memberPids = RelationshipUtils.extractMemberPidsFromRelationships(
+    final memberPids = RelationshipUtils.extractMemberPids(
       relationshipPool: relationships,
       memberPidPrefixes: this.memberPidPrefixes,
     );

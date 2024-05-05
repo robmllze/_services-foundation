@@ -14,6 +14,7 @@ export 'service_brokers/auth_service_broker/firebase_auth_service_broker.dart';
 export 'service_brokers/database_query_broker/firebase_firestore_query_broker.dart';
 export 'service_brokers/database_service_broker/cache_service_broker.dart';
 export 'service_brokers/database_service_broker/firebase_firestore_service_broker.dart';
+export 'service_brokers/field_value_broker/firebase_field_value_broker.dart';
 export 'service_brokers/file_service_broker/firebase_storage_service_broker.dart';
 export 'service_brokers/functions_service_broker/firebase_functions_service_broker.dart';
 export 'service_utils/event_utils.dart';
