@@ -78,39 +78,46 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   //
 
   @override
-  Future<void> uploadFile({
+  ({
+    ModelFileEntry pendingUploadFile,
+    Future<ModelFileEntry> uploadedFile,
+  }) uploadFile({
     required PlatformFile file,
     String? createdBy,
     String? title,
     String? description,
-  }) async {
+    List<String>? definitionPath,
+  }) {
     final fileId = IdUtils.newUuidV4();
     final ref = Schema.fileRef(fileId: fileId);
     final now = DateTime.now();
     final storagePath = ref.docPath;
     final storageRef = this.firebaseStorage.ref(storagePath);
-    final fileEntry1 = ModelFileEntry(
+    final pendingUploadFile = ModelFileEntry(
       id: ref.id!,
       createdAt: now,
       createdBy: createdBy,
       storagePath: storagePath,
       title: title,
-      searchableTitle: title,
+      titleSearchable: title,
       extension: file.extension,
       description: description,
       size: file.size,
       name: file.name,
-      path: [],
+      definitionPath: definitionPath,
     );
-    await databaseService.createModel(fileEntry1, ref);
-    final task = await storageRef.putData(file.bytes!);
-    final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
-    final fileEntry2 = ModelFileEntry(
-      // size: task.metadata?.size,
-      // name: task.metadata?.name,
-      downloadUrl: downloadUrl,
+    final uploadedFile = () async {
+      await databaseService.createModel(pendingUploadFile, ref);
+      final task = await storageRef.putData(file.bytes!);
+      final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
+      final uploadedFile = ModelFileEntry.of(pendingUploadFile)..downloadUrl = downloadUrl;
+      await databaseService.updateModel(uploadedFile, ref);
+      return uploadedFile;
+    }();
+    return (
+      pendingUploadFile: pendingUploadFile,
+      uploadedFile: uploadedFile,
     );
-    await databaseService.updateModel(fileEntry2, ref);
   }
 
   //
