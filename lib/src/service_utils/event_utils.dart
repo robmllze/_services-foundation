@@ -282,13 +282,12 @@ final class EventUtils {
     required ServiceEnvironment serviceEnvironment,
     required String senderPid,
     String? receiverPid,
-    required String eventId,
     required DataRef eventsRef,
     required Model eventDef,
     required EventDefType eventDefType,
   }) async {
     final eventModel = ModelEvent(
-      id: eventId,
+      id: eventsRef.id!,
       memberPids: {
         senderPid,
         if (receiverPid != null) receiverPid,
@@ -307,13 +306,12 @@ final class EventUtils {
   static CreateOrUpdateOperation getSendEventOperation({
     required String senderPid,
     required String receiverPid,
-    required String eventId,
     required DataRef eventsRef,
     required Model eventDef,
     required EventDefType eventDefType,
   }) {
     final eventModel = ModelEvent(
-      id: eventId,
+      id: eventsRef.id!,
       memberPids: {senderPid, receiverPid},
       createdAt: DateTime.now(),
       createdBy: senderPid,

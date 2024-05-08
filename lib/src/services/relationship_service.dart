@@ -19,19 +19,33 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
   //
 
-  int? eventsPerRelationshipLimit;
-
-  //
-  //
-  //
-
   RelationshipService({
     required super.serviceEnvironment,
     required super.limit,
-    required this.eventsPerRelationshipLimit,
     required Set<String> initialPids,
   })  : this._memberPids = initialPids,
         super(ref: Schema.relationshipsRef());
+
+  //
+  //
+  //
+
+  var _currentRelationshipIds = <String>{};
+
+  Set<String> get memberPids => this._memberPids;
+  Set<String> _memberPids;
+
+  late final relationshipEvents = RelationshipEventServices(
+    limit: 100,
+    serviceEnvironment: this.serviceEnvironment,
+    getRef: Schema.relationshipEventsRef,
+  );
+
+  late final relationshipMessages = RelationshipEventServices(
+    limit: 20,
+    serviceEnvironment: this.serviceEnvironment,
+    getRef: Schema.relationshipMessagesRef,
+  );
 
   //
   //
@@ -44,16 +58,6 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
     this._currentRelationshipIds.add(id);
     this._memberPids.addAll(model.memberPids ?? {});
   }
-
-  //
-  //
-  //
-
-  final pEventServicePool = Pod<Map<String, EventService>>({});
-  var _currentRelationshipIds = <String>{};
-
-  Set<String> get memberPids => this._memberPids;
-  Set<String> _memberPids;
 
   //
   //
@@ -98,34 +102,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       updatedRelationshipIds,
     );
     Here().debugLog('Added relationships: $relationshipIdsToAdd');
-    await this._addEventServices(relationshipIdsToAdd);
-  }
-
-  //
-  //
-  //
-
-  Future<void> _addEventServices(Set<String> relationshipIdsToAdd) async {
-    final futureServicesToAdd = <Future<MapEntry<String, EventService>>>[];
-    for (final relationshipId in relationshipIdsToAdd) {
-      final eventsService = EventService(
-        serviceEnvironment: serviceEnvironment,
-        ref: Schema.relationshipEventsRef(
-          relationshipId: relationshipId,
-        ),
-        limit: this.eventsPerRelationshipLimit,
-      );
-      futureServicesToAdd.add(
-        eventsService.restartService().then((_) {
-          Here().debugLogStart(
-            'Added EventService for relationshipId: $relationshipId',
-          );
-          return MapEntry(relationshipId, eventsService);
-        }),
-      );
-    }
-    final servicesToAdd = await Future.wait(futureServicesToAdd);
-    await this.pEventServicePool.update((e) => e..addEntries(servicesToAdd));
+    await this.relationshipEvents.add(relationshipIdsToAdd);
+    await this.relationshipMessages.add(relationshipIdsToAdd);
   }
 
   //
@@ -138,31 +116,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       this._currentRelationshipIds,
     );
     Here().debugLog('Removed relationships: $relationshipIdsToRemove');
-    await this._removeEventServices(relationshipIdsToRemove);
-  }
-
-  //
-  //
-  //
-
-  Future<void> _removeEventServices(
-    Set<String> relationshipIdsToRemove,
-  ) async {
-    await this.pEventServicePool.update(
-          (e) => e
-            ..removeWhere(
-              (relationshipId, eventService) {
-                final remove = relationshipIdsToRemove.contains(relationshipId);
-                if (remove) {
-                  eventService.dispose();
-                  Here().debugLogStop(
-                    'Removed EventService for relationshipId: $relationshipId',
-                  );
-                }
-                return remove;
-              },
-            ),
-        );
+    await this.relationshipEvents.remove(relationshipIdsToRemove);
+    await this.relationshipMessages.remove(relationshipIdsToRemove);
   }
 
   //
@@ -183,10 +138,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
 
   @override
   void dispose() {
-    final eventServicePool = this.pEventServicePool.value.values;
-    for (final eventService in eventServicePool) {
-      eventService.dispose();
-    }
+    this.relationshipEvents.dispose();
+    this.relationshipMessages.dispose();
     super.dispose();
   }
 }
