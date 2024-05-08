@@ -27,7 +27,7 @@ class FileService extends CollectionServiceInterface<ModelFileEntry> {
     required this.createdBy,
     required super.serviceEnvironment,
     required super.ref,
-    required super.streamLimit,
+    required super.limit,
   });
 
   //
@@ -35,8 +35,8 @@ class FileService extends CollectionServiceInterface<ModelFileEntry> {
   //
 
   @override
-  dynamic fromJson(Map<String, dynamic> modelData) {
-    return ModelFileEntry.fromJson(modelData);
+  dynamic fromJson(Map<String, dynamic> data) {
+    return ModelFileEntry.fromJson(data);
   }
 
   //
@@ -44,10 +44,10 @@ class FileService extends CollectionServiceInterface<ModelFileEntry> {
   //
 
   @override
-  Stream<Iterable<ModelFileEntry>> stream() {
+  Stream<Iterable<ModelFileEntry>> stream([int? limit]) {
     return super.serviceEnvironment.databaseQueryBroker.streamFileByCreatorId(
           createdByAny: this.createdBy,
-          limit: this.streamLimit,
+          limit: limit,
         );
   }
 }

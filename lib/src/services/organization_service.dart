@@ -34,7 +34,7 @@ class OrganizationService extends DocumentServiceInterface<ModelOrganization> {
   //
 
   @override
-  ModelOrganization fromJson(Map<String, dynamic> modelData) {
-    return ModelOrganization.fromJson(modelData);
+  ModelOrganization fromJson(Map<String, dynamic> data) {
+    return ModelOrganization.fromJson(data);
   }
 }

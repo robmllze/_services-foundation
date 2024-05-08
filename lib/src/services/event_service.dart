@@ -20,15 +20,15 @@ class EventService extends CollectionServiceInterface<ModelEvent> {
   EventService({
     required super.serviceEnvironment,
     required super.ref,
-    required super.streamLimit,
-  });
+    required super.limit,
+  }) : super(descendByField: ModelEvent.K_CREATED_AT);
 
   //
   //
   //
 
   @override
-  dynamic fromJson(Map<String, dynamic> modelData) {
-    return ModelEvent.fromJson(modelData);
+  dynamic fromJson(Map<String, dynamic> data) {
+    return ModelEvent.fromJson(data);
   }
 }

@@ -34,7 +34,7 @@ class OrganizationPubService extends DocumentServiceInterface<ModelOrganizationP
   //
 
   @override
-  ModelOrganizationPub fromJson(Map<String, dynamic> modelData) {
-    return ModelOrganizationPub.fromJson(modelData);
+  ModelOrganizationPub fromJson(Map<String, dynamic> data) {
+    return ModelOrganizationPub.fromJson(data);
   }
 }

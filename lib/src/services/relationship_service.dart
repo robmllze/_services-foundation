@@ -19,7 +19,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
   //
 
-  int? eventServicesStreamLimit;
+  int? eventsPerRelationshipLimit;
 
   //
   //
@@ -27,8 +27,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
 
   RelationshipService({
     required super.serviceEnvironment,
-    required super.streamLimit,
-    required this.eventServicesStreamLimit,
+    required super.limit,
+    required this.eventsPerRelationshipLimit,
     required Set<String> initialPids,
   })  : this._memberPids = initialPids,
         super(ref: Schema.relationshipsRef());
@@ -37,13 +37,12 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
   //
 
-  Future<void> instantAdd(ModelRelationship relationship) async {
-    final newRelationshipId = relationship.id;
-    if (newRelationshipId != null) {
-      this._currentRelationshipIds.add(newRelationshipId);
-      await super.pValue.update((e) => [...?e, relationship]);
-      this._memberPids.addAll(relationship.memberPids ?? {});
-    }
+  @override
+  Future<void> instantAdd(ModelRelationship model) async {
+    await super.instantAdd(model);
+    final id = model.id!;
+    this._currentRelationshipIds.add(id);
+    this._memberPids.addAll(model.memberPids ?? {});
   }
 
   //
@@ -53,50 +52,40 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   final pEventServicePool = Pod<Map<String, EventService>>({});
   var _currentRelationshipIds = <String>{};
 
+  Set<String> get memberPids => this._memberPids;
   Set<String> _memberPids;
 
-  void addMembers(Set<String> memberPids) {
-    this.setMembers({
-      ...this.getMembers(),
-      ...memberPids,
+  //
+  //
+  //
+
+  /// Adds new members then restarts the relationsho service.
+  Future<void> addMembers(Set<String> memberPidsToAdd) async {
+    await this.setMembers({
+      ...this._memberPids,
+      ...memberPidsToAdd,
     });
   }
 
-  void setMembers(Set<String> memberPids) {
-    final equals = setEquals(this._memberPids, memberPids);
+  /// Sets the members then restarts the relationship service.
+  Future<void> setMembers(Set<String> newMemberPids) async {
+    final equals = setEquals(this._memberPids, newMemberPids);
     if (!equals) {
-      this._memberPids = memberPids;
-      this.restartStream();
+      this._memberPids = newMemberPids;
+      await this.restartService();
     }
   }
-
-  Set<String> getMembers() => this._memberPids;
 
   //
   //
   //
 
   @override
-  Future<void> initService() async {
-    this.restartStream();
-  }
-
-  //
-  //
-  //
-
-  void restartStream() {
-    this.cancelSubscription();
-    super.subscription = this.stream().listen((rels) async {
-      final updatedRelationshipIds = rels.map((rel) => rel.id).nonNulls.toSet();
-      await this._addRelationships(updatedRelationshipIds);
-      await this._removeRelationships(updatedRelationshipIds);
-      this._currentRelationshipIds = updatedRelationshipIds;
-      await super.pValue.set(rels);
-      if (this.completer.isCompleted == false) {
-        this.completer.complete(rels);
-      }
-    });
+  void onData(Iterable<ModelRelationship> data) async {
+    final updatedRelationshipIds = data.map((rel) => rel.id).nonNulls.toSet();
+    await this._addRelationships(updatedRelationshipIds);
+    await this._removeRelationships(updatedRelationshipIds);
+    this._currentRelationshipIds = updatedRelationshipIds;
   }
 
   //
@@ -108,15 +97,15 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       this._currentRelationshipIds,
       updatedRelationshipIds,
     );
-    Here().debugLog('Relationships to add: $relationshipIdsToAdd');
-    await this._onAddRelationships(relationshipIdsToAdd);
+    Here().debugLog('Added relationships: $relationshipIdsToAdd');
+    await this._addEventServices(relationshipIdsToAdd);
   }
 
   //
   //
   //
 
-  Future<void> _onAddRelationships(Set<String> relationshipIdsToAdd) async {
+  Future<void> _addEventServices(Set<String> relationshipIdsToAdd) async {
     final futureServicesToAdd = <Future<MapEntry<String, EventService>>>[];
     for (final relationshipId in relationshipIdsToAdd) {
       final eventsService = EventService(
@@ -124,10 +113,10 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
         ref: Schema.relationshipEventsRef(
           relationshipId: relationshipId,
         ),
-        streamLimit: this.eventServicesStreamLimit,
+        limit: this.eventsPerRelationshipLimit,
       );
       futureServicesToAdd.add(
-        eventsService.initService().then((_) {
+        eventsService.restartService().then((_) {
           Here().debugLogStart(
             'Added EventService for relationshipId: $relationshipId',
           );
@@ -148,15 +137,15 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       updatedRelationshipIds,
       this._currentRelationshipIds,
     );
-    Here().debugLog('Relationship to remove: $relationshipIdsToRemove');
-    await this._onRemoveRelationships(relationshipIdsToRemove);
+    Here().debugLog('Removed relationships: $relationshipIdsToRemove');
+    await this._removeEventServices(relationshipIdsToRemove);
   }
 
   //
   //
   //
 
-  Future<void> _onRemoveRelationships(
+  Future<void> _removeEventServices(
     Set<String> relationshipIdsToRemove,
   ) async {
     await this.pEventServicePool.update(
@@ -181,10 +170,10 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
 
   @override
-  Stream<Iterable<ModelRelationship>> stream() {
+  Stream<Iterable<ModelRelationship>> stream([int? limit]) {
     return this.serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
-          pids: this.getMembers(),
-          limit: this.streamLimit,
+          pids: this._memberPids,
+          limit: limit,
         );
   }
 
@@ -193,5 +182,11 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
 
   @override
-  dynamic fromJson(Map<String, dynamic> modelData) {}
+  void dispose() {
+    final eventServicePool = this.pEventServicePool.value.values;
+    for (final eventService in eventServicePool) {
+      eventService.dispose();
+    }
+    super.dispose();
+  }
 }

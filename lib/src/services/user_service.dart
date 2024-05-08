@@ -34,7 +34,7 @@ class UserService extends DocumentServiceInterface<ModelUser> {
   //
 
   @override
-  ModelUser fromJson(Map<String, dynamic> modelData) {
-    return ModelUser.fromJson(modelData);
+  ModelUser fromJson(Map<String, dynamic> data) {
+    return ModelUser.fromJson(data);
   }
 }

@@ -34,7 +34,7 @@ class JobPubService extends DocumentServiceInterface<ModelJobPub> {
   //
 
   @override
-  ModelJobPub fromJson(Map<String, dynamic> modelData) {
-    return ModelJobPub.fromJson(modelData);
+  ModelJobPub fromJson(Map<String, dynamic> data) {
+    return ModelJobPub.fromJson(data);
   }
 }

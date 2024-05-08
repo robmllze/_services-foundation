@@ -51,22 +51,28 @@ class RelationshipMemberService<TModel extends Model,
   //
   //
 
-  void _init() {
-    this.relationshipService.pValue.addListener(this.listener);
+  void _init() async {
+    // Refresh immediately.
+    await this.refresh();
+    // Refresh when the relationship pool changes.
+    this.relationshipService.pValue.addListener(this.refresh);
   }
 
   //
   //
   //
 
-  void listener() async {
-    final relationships = this.relationshipService.pValue.value?.where((e) {
+  /// Updates [pMemberServicePool] and [currentMemberPids] from the latest
+  /// relationship pool in [relationshipService].
+  @protected
+  Future<void> refresh() async {
+    final relationshipPool = this.relationshipService.pValue.value?.where((e) {
           final defType = e.defType;
           return this.defTypes.contains(defType);
         }) ??
         {};
     final memberPids = RelationshipUtils.extractMemberPids(
-      relationshipPool: relationships,
+      relationshipPool: relationshipPool,
       memberPidPrefixes: this.memberPidPrefixes,
     );
     await this._add(memberPids);
@@ -88,18 +94,13 @@ class RelationshipMemberService<TModel extends Model,
   //
 
   Future<void> instantAdd(TModel model) async {
-    String pid;
-    try {
-      pid = (model as dynamic).id!;
-    } catch (e) {
-      throw Exception('Model must have an "id" field.');
-    }
+    final modelId = model.id!;
     final service = this.serviceInstantiator(
       relationshipService.serviceEnvironment,
-      pid,
+      modelId,
     );
     await service.pValue.set(model);
-    await this.pMemberServicePool.update((e) => e..[pid] = service);
+    await this.pMemberServicePool.update((e) => e..[modelId] = service);
   }
 
   //
@@ -127,7 +128,7 @@ class RelationshipMemberService<TModel extends Model,
         memberPid,
       );
       futureServicesToAdd.add(
-        memberService.initService().then((_) {
+        memberService.restartService().then((_) {
           Here().debugLogStart(
             'Added service for memberPid: $memberPid',
           );
@@ -179,6 +180,10 @@ class RelationshipMemberService<TModel extends Model,
   //
 
   void dispose() {
+    final values = this.pMemberServicePool.value.values;
+    for (final value in values) {
+      value.dispose();
+    }
     this.pMemberServicePool.dispose();
   }
 }

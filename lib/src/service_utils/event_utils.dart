@@ -35,7 +35,7 @@ final class EventUtils {
             ?.where(
               (e) =>
                   (eventTypes.isEmpty || eventTypes.contains(e.defType)) &&
-                  (senderPid == null || e.whenSent?.keys.contains(senderPid) != true) &&
+                  (senderPid == null || e.createdBy != senderPid) &&
                   (!includeHidden && !e.isHidden) &&
                   (!includeArchived && !e.isArchived) &&
                   (!includeRead && !e.isRead),
@@ -52,8 +52,12 @@ final class EventUtils {
     Iterable<ModelEvent>? eventModels,
   ) {
     return (eventModels?.toList()
-      ?..sort((a, b) {
-        return a.sentAt!.compareTo(b.sentAt!);
+      ?..sort((e0, e1) {
+        final now = DateTime.now();
+        final d0 = e0.createdAt ?? now;
+        final d1 = e1.createdAt ?? now;
+        final n = d0.compareTo(d1);
+        return n;
       }));
   }
 
@@ -289,7 +293,8 @@ final class EventUtils {
         senderPid,
         if (receiverPid != null) receiverPid,
       },
-      whenSent: {senderPid: DateTime.now()},
+      createdAt: DateTime.now(),
+      createdBy: senderPid,
       def: eventDef.toGenericModel(),
       defType: eventDefType,
     );
@@ -310,7 +315,8 @@ final class EventUtils {
     final eventModel = ModelEvent(
       id: eventId,
       memberPids: {senderPid, receiverPid},
-      whenSent: {senderPid: DateTime.now()},
+      createdAt: DateTime.now(),
+      createdBy: senderPid,
       def: eventDef.toGenericModel(),
       defType: eventDefType,
     );

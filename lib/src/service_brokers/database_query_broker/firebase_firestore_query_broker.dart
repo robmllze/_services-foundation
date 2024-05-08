@@ -68,6 +68,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       descendByField: descendByField,
       limit: limit,
     ).snapshots();
+    snapshots.length.then((value) => print(value));
     final result = snapshots.asyncMap((querySnapshot) async {
       final modelsData = querySnapshot.docs.map((e) => e.data());
       final models = modelsData.map((modelData) => GenericModel(data: modelData));
@@ -96,7 +97,6 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       final b = searchableQuery.substring(0, searchableQuery.length - 1) +
           String.fromCharCode(searchableQuery.characters.last.codeUnits[0] + 1);
       // Get all user models whose emails start with the inputted text [a].
-
       final stream1 = _getBaseQuery(collection, limit: limit)
           // Where the email contains the query.
           .where(
@@ -106,9 +106,6 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
           .where(
             ModelUserPub.K_EMAIL,
             isLessThan: b,
-          )
-          .orderBy(
-            ModelUserPub.K_EMAIL,
           )
           .snapshots()
           .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
@@ -123,16 +120,13 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
             ModelUserPub.K_DISPLAY_NAME_SEARCHABLE,
             isLessThan: b,
           )
-          .orderBy(
-            ModelUserPub.K_DISPLAY_NAME_SEARCHABLE,
-          )
           .snapshots()
           .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
 
       final combinedStream = StreamZip([stream1, stream2]).map((e) {
         return e.reduce((a, b) {
           final c = [...a, ...b].where((e) => e.deletedAt == null);
-          final d = Model.removeDuplicateProperties(c, 'id');
+          final d = Model.removeDuplicateIds(c);
           return d;
         }).toSet();
       });

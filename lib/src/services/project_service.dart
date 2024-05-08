@@ -34,7 +34,7 @@ class ProjectService extends DocumentServiceInterface<ModelProject> {
   //
 
   @override
-  ModelProject fromJson(Map<String, dynamic> modelData) {
-    return ModelProject.fromJson(modelData);
+  ModelProject fromJson(Map<String, dynamic> data) {
+    return ModelProject.fromJson(data);
   }
 }

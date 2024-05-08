@@ -34,7 +34,7 @@ class JobService extends DocumentServiceInterface<ModelJob> {
   //
 
   @override
-  ModelJob fromJson(Map<String, dynamic> modelData) {
-    return ModelJob.fromJson(modelData);
+  ModelJob fromJson(Map<String, dynamic> data) {
+    return ModelJob.fromJson(data);
   }
 }
