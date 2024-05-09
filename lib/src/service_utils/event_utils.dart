@@ -25,7 +25,8 @@ final class EventUtils {
 
   static int getUnreadEventCount({
     required Iterable<ModelEvent>? eventPool,
-    String? senderPid,
+    Set<String?> blacklistCreatedBy = const {},
+    Set<String?> whitelistCreatedBy = const {},
     Set<EventDefType> eventTypes = const {},
     bool includeArchived = false,
     bool includeHidden = false,
@@ -35,7 +36,10 @@ final class EventUtils {
             ?.where(
               (e) =>
                   (eventTypes.isEmpty || eventTypes.contains(e.defType)) &&
-                  (senderPid == null || e.createdBy != senderPid) &&
+                  (blacklistCreatedBy.isEmpty ||
+                      blacklistCreatedBy.contains(e.createdBy) == false) &&
+                  (whitelistCreatedBy.isEmpty ||
+                      whitelistCreatedBy.contains(e.createdBy) == true) &&
                   (!includeHidden && !e.isHidden) &&
                   (!includeArchived && !e.isArchived) &&
                   (!includeRead && !e.isRead),
