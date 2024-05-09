@@ -39,9 +39,14 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
     projectId: firebaseOptions.projectId,
     authServiceBroker: authServiceBroker,
   );
+
+  const fieldValueBroker = FirebaseFieldValueBroker.instance;
+  final firebaseStorage = FirebaseStorage.instance;
+
   final fileServiceBroker = FirebaseStorageServiceBroker(
-    databaseService: databaseServiceBroker,
-    firebaseStorage: FirebaseStorage.instance,
+    databaseServiceBroker: databaseServiceBroker,
+    fieldValueBroker: fieldValueBroker,
+    firebaseStorage: firebaseStorage,
   );
   final serviceEnvironment = ServiceEnvironment(
     authServiceBroker: authServiceBroker,
@@ -49,7 +54,7 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
     databaseQueryBroker: databaseQueryBroker,
     functionsServiceBroker: functionsServiceBroker,
     fileServiceBroker: fileServiceBroker,
-    fieldValueBroker: FirebaseFieldValueBroker.instance,
+    fieldValueBroker: fieldValueBroker,
   );
   return serviceEnvironment;
 }
