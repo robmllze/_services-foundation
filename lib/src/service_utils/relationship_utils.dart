@@ -123,7 +123,7 @@ final class RelationshipUtils {
   }) {
     return relationship.extractMemberPids(
       memberPidPrefixes: {
-        IdUtils.ORGANIZATION_PID_PPREFIX,
+        IdUtils.ORGANIZATION_PID_PREFIX,
       },
     );
   }
@@ -137,7 +137,7 @@ final class RelationshipUtils {
   }) {
     return relationship.extractMemberPids(
       memberPidPrefixes: {
-        IdUtils.PROJECT_PID_PPREFIX,
+        IdUtils.PROJECT_PID_PREFIX,
       },
     );
   }
@@ -151,7 +151,7 @@ final class RelationshipUtils {
   }) {
     return relationship.extractMemberPids(
       memberPidPrefixes: {
-        IdUtils.JOB_PID_PPREFIX,
+        IdUtils.JOB_PID_PREFIX,
       },
     );
   }

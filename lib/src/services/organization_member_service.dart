@@ -22,7 +22,7 @@ class OrganizationMemberService
     required super.relationshipService,
     required super.defTypes,
   }) : super(
-          memberPidPrefixes: [IdUtils.ORGANIZATION_PID_PPREFIX],
+          memberPidPrefixes: [IdUtils.ORGANIZATION_PID_PREFIX],
           serviceInstantiator: (serviceEnvironment, memberPid) => OrganizationPubService(
             serviceEnvironment: serviceEnvironment,
             id: memberPid,

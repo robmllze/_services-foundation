@@ -21,7 +21,7 @@ class ProjectMemberService extends RelationshipMemberService<ModelProjectPub, Pr
     required super.relationshipService,
     required super.defTypes,
   }) : super(
-          memberPidPrefixes: [IdUtils.PROJECT_PID_PPREFIX],
+          memberPidPrefixes: [IdUtils.PROJECT_PID_PREFIX],
           serviceInstantiator: (serviceEnvironment, memberPid) => ProjectPubService(
             serviceEnvironment: serviceEnvironment,
             id: memberPid,

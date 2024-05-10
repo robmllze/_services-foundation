@@ -62,7 +62,7 @@ final class OrganizationUtils {
     final relationship = ModelRelationship(
       createdAt: now,
       createdBy: userPid,
-      defType: RelationshipDefType.ORGANIZATION_AND_USER,
+      defType: RelationshipDefType.USER_AND_ORGANIZATION,
       id: relationshipId,
       memberPids: {
         userPid,
