@@ -97,10 +97,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
     );
     if (relationshipIdsToAdd.isNotEmpty) {
       Here().debugLog('Added relationships: $relationshipIdsToAdd');
-      printPurple('BEGIN');
       this.eventServices.add(relationshipIdsToAdd);
       this.messageEventServices.add(relationshipIdsToAdd);
-      printPurple('END');
     }
   }
 
@@ -126,17 +124,10 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
 
   @override
   Stream<Iterable<ModelRelationship>> stream([int? limit]) {
-    return this
-        .serviceEnvironment
-        .databaseQueryBroker
-        .streamRelationshipsForAnyMembers(
+    return this.serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
           pids: this._memberPids,
           limit: limit,
-        )
-        .map((e) {
-      printRed('A:${e.length}');
-      return e;
-    });
+        );
   }
 
   //

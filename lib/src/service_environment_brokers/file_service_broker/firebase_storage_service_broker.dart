@@ -63,13 +63,27 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   //
 
   @override
-  Future<(Uint8List, ModelFileEntry)?> downloadFile(DataRef ref) async {
+  Future<(Uint8List, ModelFileEntry)?> downloadFileFromRef(DataRef ref) async {
     try {
       final fileEntry = ModelFileEntry.from(await this.databaseServiceBroker.readModel(ref));
+      final data = (await this.downloadFile(fileEntry))!;
+      return (data, fileEntry);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  //
+  //
+  //
+
+  @override
+  Future<Uint8List?> downloadFile(ModelFileEntry fileEntry) async {
+    try {
       final storagePath = fileEntry.storagePath!;
       final storageRef = this.firebaseStorage.ref(storagePath);
       final data = (await storageRef.getData())!;
-      return (data, fileEntry);
+      return data;
     } catch (_) {
       return null;
     }
