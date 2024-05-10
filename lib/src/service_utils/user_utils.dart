@@ -119,12 +119,16 @@ final class UserUtils {
         organizationPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
 
     // Fetch all organization IDs corresponding to the organizationPids.
-    final organizationIds = (await serviceEnvironment.databaseQueryBroker
-                .streamOrganizationsByPids(pids: organizationPids)
-                .firstOrNull)
-            ?.map((e) => e.id)
-            .nonNulls ??
-        [];
+    final organizationIds =
+        (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelOrganization>(
+              elements: organizationPids,
+              collectionRef: Schema.organizationsRef(),
+              fromJsonOrNull: ModelOrganization.fromJsonOrNull,
+              elementKeys: {ModelOrganization.K_PID},
+            ).firstOrNull)
+                ?.map((e) => e.id)
+                .nonNulls ??
+            [];
 
     // Create delete operations for all organization pubs created by userPid.
     final organizationPubDeleteOperations = organizationPids.map(
@@ -145,12 +149,16 @@ final class UserUtils {
         projectPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
 
     // Fetch all project IDs corresponding to the projectPids.
-    final projectIds = (await serviceEnvironment.databaseQueryBroker
-                .streamProjectsByPids(pids: projectPids)
-                .firstOrNull)
-            ?.map((e) => e.id)
-            .nonNulls ??
-        [];
+    final projectIds =
+        (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelProject>(
+              elements: projectPids,
+              collectionRef: Schema.projectsRef(),
+              fromJsonOrNull: ModelProject.fromJsonOrNull,
+              elementKeys: {ModelProject.K_PID},
+            ).firstOrNull)
+                ?.map((e) => e.id)
+                .nonNulls ??
+            [];
 
     // Create delete operations for all project pubs created by userPid.
     final projectPubsDeleteOperations = projectPids.map(
@@ -170,11 +178,15 @@ final class UserUtils {
     final jobPids = jobPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
 
     // Fetch all job IDs corresponding to the jobPids.
-    final jobIds =
-        (await serviceEnvironment.databaseQueryBroker.streamJobsByPids(pids: jobPids).firstOrNull)
-                ?.map((e) => e.id)
-                .nonNulls ??
-            [];
+    final jobIds = (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelJob>(
+          elements: jobPids,
+          collectionRef: Schema.jobsRef(),
+          fromJsonOrNull: ModelJob.fromJsonOrNull,
+          elementKeys: {ModelJob.K_PID},
+        ).firstOrNull)
+            ?.map((e) => e.id)
+            .nonNulls ??
+        [];
 
     // Create delete operations for all job pubs created by userPid.
     final jobPubsDeleteOperations = jobPids.map(

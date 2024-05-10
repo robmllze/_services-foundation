@@ -122,8 +122,11 @@ final class ProjectUtils {
 
     // Fetch all associated PIDS.
     final projectIds = (await serviceEnvironment.databaseQueryBroker
-                .streamProjectsByPids(
-                  pids: projectPids,
+                .streamByWhereInElements<ModelProject>(
+                  elements: projectPids,
+                  collectionRef: Schema.projectsRef(),
+                  fromJsonOrNull: ModelProject.fromJsonOrNull,
+                  elementKeys: {ModelProject.K_PID},
                 )
                 .firstOrNull)
             ?.map((e) => e.id)

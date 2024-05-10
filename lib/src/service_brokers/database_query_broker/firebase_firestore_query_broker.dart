@@ -62,12 +62,13 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     int? limit,
   }) {
     final collection = this.firebaseFirestore.collection(ref.collectionPath!);
-    final snapshots = _getBaseQuery(
-      collection,
-      ascendByField: ascendByField,
-      descendByField: descendByField,
-      limit: limit,
-    ).snapshots();
+    final snapshots = collection
+        .baseQuery(
+          ascendByField: ascendByField,
+          descendByField: descendByField,
+          limit: limit,
+        )
+        .snapshots();
     final result = snapshots.asyncMap((querySnapshot) async {
       final modelsData = querySnapshot.docs.map((e) => e.data());
       final models = modelsData.map((modelData) => GenericModel(data: modelData));
@@ -96,7 +97,8 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       final b = searchableQuery.substring(0, searchableQuery.length - 1) +
           String.fromCharCode(searchableQuery.characters.last.codeUnits[0] + 1);
       // Get all user models whose emails start with the inputted text [a].
-      final stream1 = _getBaseQuery(collection, limit: limit)
+      final stream1 = collection
+          .baseQuery(limit: limit)
           // Where the email contains the query.
           .where(
             ModelUserPub.K_EMAIL,
@@ -109,7 +111,8 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
           .snapshots()
           .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
       // Get all user models whose searchable names start with the inputted text [a].
-      final stream2 = _getBaseQuery(collection, limit: limit)
+      final stream2 = collection
+          .baseQuery(limit: limit)
           // Where the searchable name contains the query.
           .where(
             ModelUserPub.K_DISPLAY_NAME_SEARCHABLE,
@@ -141,34 +144,23 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<ModelUserPub>> streamUserPubsByPids({
-    required Iterable<String> pids,
+  Stream<Iterable<T>> streamByWhereInElements<T>({
+    required Iterable<String> elements,
+    required DataRef collectionRef,
+    required T? Function(Map<String, dynamic>? otherData) fromJsonOrNull,
+    required Set<String> elementKeys,
   }) {
-    final collectionPath = Schema.userPubsRef().collectionPath!;
+    final collectionPath = collectionRef.collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
-    final pidSet = pids.nullIfEmpty?.toSet();
-    final snapshots = _getBaseQuery(collection, limit: pidSet?.length)
-        .where(ModelUserPub.K_ID, whereIn: pidSet)
-        .snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
-    return results;
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<ModelUserPub>> streamUserPubsByEmails({
-    required Iterable<String> emails,
-  }) {
-    final collectionPath = Schema.userPubsRef().collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
-    final emailSet = emails.nullIfEmpty?.map((e) => e.toLowerCase()).toSet();
-    final results = _getBaseQuery(collection, limit: emailSet?.length)
-        .where(ModelUserPub.K_EMAIL, whereIn: emailSet)
+    final elementSet = elements.nullIfEmpty?.toSet();
+    var snapshots = collection.baseQuery(limit: elementSet?.length);
+    for (final elementKey in elementKeys) {
+      snapshots = snapshots.where(elementKey, whereIn: elementSet);
+    }
+    final results = snapshots
         .snapshots()
-        .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
+        .map((e) => e.docs.map((e) => fromJsonOrNull(e.data())))
+        .map((e) => e.where((e) => e != null).map((e) => e!));
     return results;
   }
 
@@ -184,7 +176,8 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
     final pidSet = pids.nullIfEmpty?.toSet();
-    final relationships = _getBaseQuery(collection, limit: limit)
+    final relationships = collection
+        .baseQuery(limit: limit)
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContainsAny: pidSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
@@ -203,7 +196,8 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
     final pidSet = pids.nullIfEmpty?.toSet();
-    final relationships = _getBaseQuery(collection, limit: limit)
+    final relationships = collection
+        .baseQuery(limit: limit)
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContains: pidSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
@@ -222,7 +216,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     final result = <BatchOperation>[];
     final collectionPath = collectionRef.collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
-    final stream = _getBaseQuery(collection).snapshots().asyncMap((e) async {
+    final stream = collection.baseQuery().snapshots().asyncMap((e) async {
       for (final doc in e.docs) {
         result.add(DeleteOperation(ref: collectionRef.copyWith(id: doc.id)));
       }
@@ -230,91 +224,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     await streamToFuture(stream);
     return result;
   }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<ModelUser>> streamUsersByPids({
-    required Iterable<String> pids,
-  }) {
-    final collectionPath = Schema.usersRef().collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
-    final pidSet = pids.nullIfEmpty?.toSet();
-    final snapshots = _getBaseQuery(collection, limit: pidSet?.length)
-        .where(
-          ModelJob.K_PID,
-          whereIn: pidSet,
-        )
-        .snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelUser.fromJson(e.data())));
-    return results;
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<ModelOrganization>> streamOrganizationsByPids({
-    required Iterable<String> pids,
-  }) {
-    final collectionPath = Schema.organizationsRef().collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
-    final pidSet = pids.nullIfEmpty?.toSet();
-    final snapshots = _getBaseQuery(collection, limit: pidSet?.length)
-        .where(
-          ModelOrganization.K_PID,
-          whereIn: pidSet,
-        )
-        .snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelOrganization.fromJson(e.data())));
-    return results;
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<ModelProject>> streamProjectsByPids({
-    required Iterable<String> pids,
-  }) {
-    final collectionPath = Schema.projectsRef().collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
-    final pidSet = pids.nullIfEmpty?.toSet();
-    final snapshots = _getBaseQuery(collection, limit: pidSet?.length)
-        .where(
-          ModelProject.K_PID,
-          whereIn: pidSet,
-        )
-        .snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelProject.fromJson(e.data())));
-    return results;
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<ModelJob>> streamJobsByPids({
-    required Iterable<String> pids,
-  }) {
-    final collectionPath = Schema.jobsRef().collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
-    final pidSet = pids.nullIfEmpty?.toSet();
-    final snapshots = _getBaseQuery(collection, limit: pidSet?.length)
-        .where(
-          ModelJob.K_PID,
-          whereIn: pidSet,
-        )
-        .snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelJob.fromJson(e.data())));
-    return results;
-  }
-
+  
   //
   //
   //
@@ -326,7 +236,8 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   }) {
     final collectionPath = Schema.fileRef().collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
-    final snapshots = _getBaseQuery(collection, limit: limit)
+    final snapshots = collection
+        .baseQuery(limit: limit)
         .where(
           ModelFileEntry.K_CREATED_BY,
           whereIn: createdByAny,
@@ -335,25 +246,4 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     final results = snapshots.map((e) => e.docs.map((e) => ModelFileEntry.fromJson(e.data())));
     return results;
   }
-}
-
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-Query<T> _getBaseQuery<T>(
-  CollectionReference<T> collection, {
-  Object? ascendByField,
-  Object? descendByField,
-  int? limit,
-}) {
-  Query<T> query = collection;
-  if (ascendByField != null) {
-    query = query.orderBy(ascendByField);
-  }
-  if (descendByField != null) {
-    query = query.orderBy(descendByField, descending: true);
-  }
-  if (limit != null && limit > 0) {
-    query = query.limit(limit);
-  }
-  return query;
 }

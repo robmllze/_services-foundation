@@ -115,11 +115,12 @@ final class JobUtils {
         relationshipPool.filterByAnyMember(memberPids: jobPids).toSet();
 
     // Fetch all associated PIDS.
-    final jobIds = (await serviceEnvironment.databaseQueryBroker
-                .streamJobsByPids(
-                  pids: jobPids,
-                )
-                .firstOrNull)
+    final jobIds = (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelJob>(
+          elements: jobPids,
+          collectionRef: Schema.jobsRef(),
+          fromJsonOrNull: ModelJob.fromJsonOrNull,
+          elementKeys: {ModelJob.K_PID},
+        ).firstOrNull)
             ?.map((e) => e.id)
             .nonNulls
             .toSet() ??

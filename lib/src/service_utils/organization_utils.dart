@@ -119,15 +119,17 @@ final class OrganizationUtils {
     final projectPids = organizationAssociatedMemberPids.where((pid) => IdUtils.isProjectPid(pid));
 
     // Fetch all associated PIDS.
-    final organizationIds = (await serviceEnvironment.databaseQueryBroker
-                .streamOrganizationsByPids(
-                  pids: organizationPids,
-                )
-                .firstOrNull)
-            ?.map((e) => e.id)
-            .nonNulls
-            .toSet() ??
-        {};
+    final organizationIds =
+        (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelOrganization>(
+              elements: organizationPids,
+              collectionRef: Schema.organizationsRef(),
+              fromJsonOrNull: ModelOrganization.fromJsonOrNull,
+              elementKeys: {ModelOrganization.K_PID},
+            ).firstOrNull)
+                ?.map((e) => e.id)
+                .nonNulls
+                .toSet() ??
+            {};
 
     printBlue('organizationIds: $organizationIds');
 
