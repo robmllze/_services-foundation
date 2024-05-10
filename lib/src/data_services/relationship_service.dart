@@ -35,16 +35,16 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   Set<String> get memberPids => this._memberPids;
   Set<String> _memberPids;
 
-  late final relationshipEvents = RelationshipEventServices(
+  late final eventServices = RelationshipEventServices(
     limit: 100,
     serviceEnvironment: this.serviceEnvironment,
     getRef: Schema.relationshipEventsRef,
   );
 
-  late final relationshipMessages = RelationshipEventServices(
+  late final messageEventServices = RelationshipEventServices(
     limit: 20,
     serviceEnvironment: this.serviceEnvironment,
-    getRef: Schema.relationshipMessagesRef,
+    getRef: Schema.relationshipMessageEventsRef,
   );
 
   //
@@ -109,8 +109,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
     );
     if (relationshipIdsToAdd.isNotEmpty) {
       Here().debugLogInfo('Added relationships: $relationshipIdsToAdd');
-      await this.relationshipEvents.add(relationshipIdsToAdd);
-      await this.relationshipMessages.add(relationshipIdsToAdd);
+      await this.eventServices.add(relationshipIdsToAdd);
+      await this.messageEventServices.add(relationshipIdsToAdd);
     }
   }
 
@@ -125,8 +125,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
     );
     if (relationshipIdsToRemove.isNotEmpty) {
       Here().debugLog('Removed relationships: $relationshipIdsToRemove');
-      await this.relationshipEvents.remove(relationshipIdsToRemove);
-      await this.relationshipMessages.remove(relationshipIdsToRemove);
+      await this.eventServices.remove(relationshipIdsToRemove);
+      await this.messageEventServices.remove(relationshipIdsToRemove);
     }
   }
 
@@ -148,8 +148,8 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
 
   @override
   void dispose() {
-    this.relationshipEvents.dispose();
-    this.relationshipMessages.dispose();
+    this.eventServices.dispose();
+    this.messageEventServices.dispose();
     super.dispose();
   }
 }

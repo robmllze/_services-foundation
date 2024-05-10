@@ -232,7 +232,7 @@ final class RelationshipUtils {
       ),
       // Operations to delete the messages collection associated with the relationship document.
       ...await serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
-        collectionRef: Schema.relationshipMessagesRef(relationshipId: relationshipId),
+        collectionRef: Schema.relationshipMessageEventsRef(relationshipId: relationshipId),
       ),
     ];
   }
