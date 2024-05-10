@@ -50,7 +50,7 @@ class CacheServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> createOrUpdateModel(Model model, DataRef ref) async {
+  Future<void> setModel(Model model, DataRef ref) async {
     final modelString = model.toJsonString();
     await this.sharedPreferences.setString(ref.key, modelString);
   }
@@ -122,7 +122,7 @@ class CacheServiceBroker extends DatabaseServiceInterface {
       // Create
       if (operation.create) {
         if (operation.update) {
-          await this.createOrUpdateModel(model, dataRef);
+          await this.setModel(model, dataRef);
         } else {
           await this.createModel(model, dataRef);
         }

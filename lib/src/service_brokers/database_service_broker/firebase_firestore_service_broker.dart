@@ -46,7 +46,7 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> createOrUpdateModel(Model model, DataRef ref) async {
+  Future<void> setModel(Model model, DataRef ref) async {
     final modelRef = this.firebaseFirestore.doc(ref.docPath);
     final modelData = model.toJson();
     await modelRef.set(modelData, SetOptions(merge: true));

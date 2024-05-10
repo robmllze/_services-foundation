@@ -301,7 +301,7 @@ final class EventUtils {
       def: eventDef.toGenericModel(),
       defType: eventDefType,
     );
-    await serviceEnvironment.databaseServiceBroker.createOrUpdateModel(
+    await serviceEnvironment.databaseServiceBroker.setModel(
       eventModel,
       eventsRef,
     );

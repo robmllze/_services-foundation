@@ -68,7 +68,6 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       descendByField: descendByField,
       limit: limit,
     ).snapshots();
-    snapshots.length.then((value) => print(value));
     final result = snapshots.asyncMap((querySnapshot) async {
       final modelsData = querySnapshot.docs.map((e) => e.data());
       final models = modelsData.map((modelData) => GenericModel(data: modelData));

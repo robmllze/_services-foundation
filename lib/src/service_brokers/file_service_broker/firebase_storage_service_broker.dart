@@ -15,7 +15,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 import '/_common.dart';
 
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ß░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 class FirebaseStorageServiceBroker extends FileServiceInterface {
   //
@@ -100,6 +100,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
     final pendingUploadFile = _createPendingUploadFile(
       file: file,
       fileRef: fileRef,
+      fileId: fileId,
       createdBy: currentUserPid,
       title: title,
       description: description,
@@ -128,12 +129,19 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   ({
     ModelFileEntry pendingUploadFile,
     Future<ModelFileEntry> uploadedFile,
-  }) uploadAvatar({
+  }) uploadPublicFile({
     required PlatformFile file,
-    required String currentUserPid,
+    required DataRef pubRef,
+    required String? fileId,
   }) {
+    fileId ??= IdUtils.newUuidV4();
+    final pid = pubRef.id!;
     final fileRef = DataRef(
-      collection: [...FileSchema.AVATAR_IMAGE, currentUserPid],
+      collection: [
+        ...FileSchema.AVATAR_IMAGE,
+        pid,
+        fileId,
+      ],
       id: file.name,
     );
     final storagePath = fileRef.docPath;
@@ -141,23 +149,35 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
     final pendingUploadFile = _createPendingUploadFile(
       file: file,
       fileRef: fileRef,
-      createdBy: currentUserPid,
+      fileId: fileId,
+      createdBy: pid,
       title: null,
       description: null,
       definitionPath: FileSchema.AVATAR_IMAGE,
     );
     final uploadedFile = () async {
-      final ref = Schema.userPubsRef(userPid: currentUserPid);
-      await this.databaseServiceBroker.updateModel(
-            ModelUserPub(avatar: pendingUploadFile),
-            ref,
+      await this.databaseServiceBroker.setModel(
+            GenericModel(
+              data: {
+                'files': {
+                  fileId: pendingUploadFile.toJson(),
+                },
+              },
+            ),
+            pubRef,
           );
       final task = await storageRef.putData(file.bytes!);
       final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
       final uploadedFile = ModelFileEntry.of(pendingUploadFile)..downloadUrl = downloadUrl;
-      await this.databaseServiceBroker.updateModel(
-            ModelUserPub(avatar: uploadedFile),
-            ref,
+      await this.databaseServiceBroker.setModel(
+            GenericModel(
+              data: {
+                'files': {
+                  fileId: uploadedFile.toJson(),
+                },
+              },
+            ),
+            pubRef,
           );
       return uploadedFile;
     }();
@@ -185,34 +205,39 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   //
 
   @override
-  Future<void> deleteAvatar({
-    required String currentUserPid,
+  Future<void> deletePublicFile({
+    required DataRef pubRef,
+    required String fileId,
   }) async {
-    final ref = Schema.userPubsRef(userPid: currentUserPid);
-    final userPub = ModelUserPub.from(await this.databaseServiceBroker.readModel(ref));
-    final fileEntry = userPub.avatar;
-    if (fileEntry != null) {
-      final storagePath = fileEntry.storagePath!;
+    final userPub = ModelUserPub.from(await this.databaseServiceBroker.readModel(pubRef));
+    final file = userPub.files?[fileId];
+    if (file != null) {
+      final storagePath = file.storagePath!;
       final storageRef = this.firebaseStorage.ref(storagePath);
       await storageRef.delete();
+      await this._deleteFileEntry(pubRef, fileId);
     }
-    await this._deleteAvatarField(currentUserPid);
   }
 
   //
   //
   //
 
-  Future<void> _deleteAvatarField(
-    String userPid,
+  Future<void> _deleteFileEntry(
+    DataRef pubRef,
+    String fileId,
   ) async {
-    final userPubUpdate = GenericModel(
+    final update = GenericModel(
       data: {
-        ModelUserPub.K_AVATAR: this.fieldValueBroker.deleteFieldValue(),
+        'files': {
+          fileId: this.fieldValueBroker.deleteFieldValue(),
+        },
       },
     );
-    final ref = Schema.userPubsRef(userPid: userPid);
-    await this.databaseServiceBroker.updateModel(userPubUpdate, ref);
+    await this.databaseServiceBroker.setModel(
+          update,
+          pubRef,
+        );
   }
 
   //
@@ -222,6 +247,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   static ModelFileEntry _createPendingUploadFile({
     required PlatformFile file,
     required DataRef fileRef,
+    required String fileId,
     String? createdBy,
     String? title,
     String? description,
@@ -230,7 +256,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
     final now = DateTime.now();
     final storagePath = fileRef.docPath;
     final pendingUploadFile = ModelFileEntry(
-      id: fileRef.id!,
+      id: fileId,
       createdAt: now,
       createdBy: createdBy,
       storagePath: storagePath,

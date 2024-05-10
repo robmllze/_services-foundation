@@ -43,7 +43,7 @@ final class RelationshipUtils {
     final ref = Schema.relationshipsRef(
       relationshipId: relationship.id!,
     );
-    await serviceEnvironment.databaseServiceBroker.createOrUpdateModel(
+    await serviceEnvironment.databaseServiceBroker.setModel(
       relationship,
       ref,
     );
@@ -202,7 +202,7 @@ final class RelationshipUtils {
     final currentUserId = serviceEnvironment.currentUser?.userId;
     assert(currentUserId != null);
     if (currentUserId != null) {
-      await serviceEnvironment.databaseServiceBroker.createOrUpdateModel(
+      await serviceEnvironment.databaseServiceBroker.setModel(
         ModelRelationship(
           id: relationshipId,
           whenDisabled: {
