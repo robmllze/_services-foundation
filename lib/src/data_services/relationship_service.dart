@@ -51,18 +51,6 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   //
   //
 
-  @override
-  Future<void> instantAdd(ModelRelationship model) async {
-    await super.instantAdd(model);
-    final id = model.id!;
-    this._currentRelationshipIds.add(id);
-    this._memberPids.addAll(model.memberPids ?? {});
-  }
-
-  //
-  //
-  //
-
   /// Adds new members then restarts the relationsho service.
   Future<void> addMembers(Set<String> memberPidsToAdd) async {
     await this.setMembers({
@@ -108,9 +96,11 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       updatedRelationshipIds,
     );
     if (relationshipIdsToAdd.isNotEmpty) {
-      Here().debugLogInfo('Added relationships: $relationshipIdsToAdd');
-      await this.eventServices.add(relationshipIdsToAdd);
-      await this.messageEventServices.add(relationshipIdsToAdd);
+      Here().debugLog('Added relationships: $relationshipIdsToAdd');
+      printPurple('BEGIN');
+      this.eventServices.add(relationshipIdsToAdd);
+      this.messageEventServices.add(relationshipIdsToAdd);
+      printPurple('END');
     }
   }
 
@@ -124,7 +114,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       this._currentRelationshipIds,
     );
     if (relationshipIdsToRemove.isNotEmpty) {
-      Here().debugLog('Removed relationships: $relationshipIdsToRemove');
+      Here().debugLogStop('Removed relationships: $relationshipIdsToRemove');
       await this.eventServices.remove(relationshipIdsToRemove);
       await this.messageEventServices.remove(relationshipIdsToRemove);
     }
@@ -136,10 +126,17 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
 
   @override
   Stream<Iterable<ModelRelationship>> stream([int? limit]) {
-    return this.serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
+    return this
+        .serviceEnvironment
+        .databaseQueryBroker
+        .streamRelationshipsForAnyMembers(
           pids: this._memberPids,
           limit: limit,
-        );
+        )
+        .map((e) {
+      printRed('A:${e.length}');
+      return e;
+    });
   }
 
   //

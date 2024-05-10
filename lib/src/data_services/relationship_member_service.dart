@@ -101,25 +101,6 @@ class RelationshipMemberService<TModel extends Model,
   //
   //
 
-  // TODO: Fix/redo this method.
-  Future<void> instantAdd(TModel member) async {
-    // final memberPid = member.id!;
-    // final memberService = this.serviceInstantiator(
-    //   relationshipService.serviceEnvironment,
-    //   memberPid,
-    // );
-    // await memberService.pValue.set(member);
-    // await memberService.restartService();
-    // Here().debugLogStart(
-    //   'Manually added service for memberPid: $memberPid',
-    // );
-    // await this.pMemberServicePool.update((e) => e..[memberPid] = memberService);
-  }
-
-  //
-  //
-  //
-
   Future<void> _add(Set<String> updatedMemberPids) async {
     final memberPidsToAdd = getSetDifference(
       this._currentMemberPids,

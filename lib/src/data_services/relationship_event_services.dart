@@ -45,27 +45,30 @@ class RelationshipEventServices {
   //
 
   Future<void> add(Set<String> relationshipIdsToAdd) async {
-    final futureServicesToAdd = <Future<MapEntry<String, EventService>>>[];
+    printPurple('111');
+    //final futureServicesToAdd = <Future<MapEntry<String, EventService>>>[];
     for (final relationshipId in relationshipIdsToAdd) {
       final ref = this.getRef(relationshipId: relationshipId);
-      final eventsService = EventService(
+      final eventService = EventService(
         serviceEnvironment: serviceEnvironment,
         ref: ref,
         limit: this.limit,
       );
+      await eventService.startService();
+      await this.pEventServicePool.update((e) => e..[relationshipId] = eventService);
+      printRed('Started EventService at ${ref.collectionPath}');
       // TODO: Think about this line:
       //eventsService.pValue.addListener(this.pEventServicePool.refresh);
-      futureServicesToAdd.add(
-        eventsService.startService().then((_) {
-          Here().debugLogStart(
-            'Added EventService for relationshipId: $relationshipId',
-          );
-          return MapEntry(relationshipId, eventsService);
-        }),
-      );
+      // futureServicesToAdd.add(
+      //   eventService.startService().then((_) {
+      //     Here().debugLogStart(
+      //       'Added EventService for relationshipId: $relationshipId',
+      //     );
+      //     return MapEntry(relationshipId, eventService);
+      //   }),
+      // );
     }
-    final servicesToAdd = await Future.wait(futureServicesToAdd);
-    await this.pEventServicePool.update((e) => e..addEntries(servicesToAdd));
+    //final servicesToAdd = await Future.wait(futureServicesToAdd);
   }
 
   //
