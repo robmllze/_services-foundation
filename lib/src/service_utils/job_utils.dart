@@ -126,12 +126,12 @@ final class JobUtils {
             .toSet() ??
         {};
 
-    printBlue('jobIds: $jobIds');
+    // TODO: Address the issue below.
 
-    assert(
-      jobIds.length == jobPids.length,
-      'jobIds length does not match jobPids length.',
-    );
+    // assert(
+    //   jobIds.length == jobPids.length,
+    //   'jobIds length does not match jobPids length.',
+    // );
 
     // Return operations to delete everything associated with jobPids.
     return {

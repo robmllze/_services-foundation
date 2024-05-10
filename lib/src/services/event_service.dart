@@ -42,7 +42,7 @@ class EventService extends CollectionServiceInterface<ModelEvent> {
     final tryLimit = (this.limit ?? minimum) + delta;
     final clampedLimit = math.min(math.max(tryLimit, minimum), maximum);
     if (clampedLimit != this.limit) {
-      await this.restartService(limit: clampedLimit);
+      await this.startService(limit: clampedLimit);
     }
   }
 

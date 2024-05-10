@@ -230,6 +230,10 @@ final class RelationshipUtils {
       ...await serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
         collectionRef: Schema.relationshipEventsRef(relationshipId: relationshipId),
       ),
+      // Operations to delete the messages collection associated with the relationship document.
+      ...await serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
+        collectionRef: Schema.relationshipMessagesRef(relationshipId: relationshipId),
+      ),
     ];
   }
 

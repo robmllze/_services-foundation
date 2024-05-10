@@ -76,7 +76,7 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
     final equals = setEquals(this._memberPids, newMemberPids);
     if (!equals) {
       this._memberPids = newMemberPids;
-      await this.restartService();
+      await this.startService();
     }
   }
 
@@ -87,9 +87,15 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
   @override
   void onData(Iterable<ModelRelationship> data) async {
     final updatedRelationshipIds = data.map((rel) => rel.id).nonNulls.toSet();
-    await this._addRelationships(updatedRelationshipIds);
-    await this._removeRelationships(updatedRelationshipIds);
-    this._currentRelationshipIds = updatedRelationshipIds;
+    final equals = listEquals(
+      updatedRelationshipIds.toList()..sort(),
+      this._currentRelationshipIds.toList()..sort(),
+    );
+    if (!equals) {
+      await this._addRelationships(updatedRelationshipIds);
+      await this._removeRelationships(updatedRelationshipIds);
+      this._currentRelationshipIds = updatedRelationshipIds;
+    }
   }
 
   //
@@ -101,9 +107,11 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       this._currentRelationshipIds,
       updatedRelationshipIds,
     );
-    Here().debugLog('Added relationships: $relationshipIdsToAdd');
-    await this.relationshipEvents.add(relationshipIdsToAdd);
-    await this.relationshipMessages.add(relationshipIdsToAdd);
+    if (relationshipIdsToAdd.isNotEmpty) {
+      Here().debugLogInfo('Added relationships: $relationshipIdsToAdd');
+      await this.relationshipEvents.add(relationshipIdsToAdd);
+      await this.relationshipMessages.add(relationshipIdsToAdd);
+    }
   }
 
   //
@@ -115,9 +123,11 @@ class RelationshipService extends CollectionServiceInterface<ModelRelationship> 
       updatedRelationshipIds,
       this._currentRelationshipIds,
     );
-    Here().debugLog('Removed relationships: $relationshipIdsToRemove');
-    await this.relationshipEvents.remove(relationshipIdsToRemove);
-    await this.relationshipMessages.remove(relationshipIdsToRemove);
+    if (relationshipIdsToRemove.isNotEmpty) {
+      Here().debugLog('Removed relationships: $relationshipIdsToRemove');
+      await this.relationshipEvents.remove(relationshipIdsToRemove);
+      await this.relationshipMessages.remove(relationshipIdsToRemove);
+    }
   }
 
   //

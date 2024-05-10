@@ -8,6 +8,8 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
+import 'package:flutter/foundation.dart';
+
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -75,32 +77,43 @@ class RelationshipMemberService<TModel extends Model,
       relationshipPool: relationshipPool,
       memberPidPrefixes: this.memberPidPrefixes,
     );
-    await this._add(memberPids);
-    await this._remove(memberPids);
-    this._currentMemberPids = memberPids;
+    final equals = listEquals(
+      memberPids.toList()..sort(),
+      this._currentMemberPids.toList()..sort(),
+    );
+    if (!equals) {
+      await this._add(memberPids);
+      await this._remove(memberPids);
+      this._currentMemberPids = memberPids;
 
-    // Include all relationships concerning the current members to the provided
-    // relationship pool.
-    this.relationshipService.addMembers(
-          this
-              .currentMemberPids
-              .where((e) => this.memberPidPrefixes.contains(IdUtils.getPrefix(e)))
-              .toSet(),
-        );
+      // Include all relationships concerning the current members to the provided
+      // relationship pool.
+      this.relationshipService.addMembers(
+            this
+                .currentMemberPids
+                .where((e) => this.memberPidPrefixes.contains(IdUtils.getPrefix(e)))
+                .toSet(),
+          );
+    }
   }
 
   //
   //
   //
 
-  Future<void> instantAdd(TModel model) async {
-    final modelId = model.id!;
-    final service = this.serviceInstantiator(
-      relationshipService.serviceEnvironment,
-      modelId,
-    );
-    await service.pValue.set(model);
-    await this.pMemberServicePool.update((e) => e..[modelId] = service);
+  // TODO: Fix/redo this method.
+  Future<void> instantAdd(TModel member) async {
+    // final memberPid = member.id!;
+    // final memberService = this.serviceInstantiator(
+    //   relationshipService.serviceEnvironment,
+    //   memberPid,
+    // );
+    // await memberService.pValue.set(member);
+    // await memberService.restartService();
+    // Here().debugLogStart(
+    //   'Manually added service for memberPid: $memberPid',
+    // );
+    // await this.pMemberServicePool.update((e) => e..[memberPid] = memberService);
   }
 
   //
@@ -112,8 +125,10 @@ class RelationshipMemberService<TModel extends Model,
       this._currentMemberPids,
       updatedMemberPids,
     );
-    Here().debugLog('Members to add: $memberPidsToAdd');
-    await this.addMembers(memberPidsToAdd);
+    if (memberPidsToAdd.isNotEmpty) {
+      Here().debugLog('Members to add: $memberPidsToAdd');
+      await this.addMembers(memberPidsToAdd);
+    }
   }
 
   //
@@ -121,23 +136,25 @@ class RelationshipMemberService<TModel extends Model,
   //
 
   Future<void> addMembers(Set<String> memberPidsToAdd) async {
-    final futureServicesToAdd = <Future<MapEntry<String, TDocumentService>>>[];
-    for (final memberPid in memberPidsToAdd) {
-      final memberService = this.serviceInstantiator(
-        relationshipService.serviceEnvironment,
-        memberPid,
-      );
-      futureServicesToAdd.add(
-        memberService.restartService().then((_) {
-          Here().debugLogStart(
-            'Added service for memberPid: $memberPid',
-          );
-          return MapEntry(memberPid, memberService);
-        }),
-      );
+    if (memberPidsToAdd.isNotEmpty) {
+      final futureServicesToAdd = <Future<MapEntry<String, TDocumentService>>>[];
+      for (final memberPid in memberPidsToAdd) {
+        final memberService = this.serviceInstantiator(
+          relationshipService.serviceEnvironment,
+          memberPid,
+        );
+        futureServicesToAdd.add(
+          memberService.startService().then((_) {
+            Here().debugLogStart(
+              'Added service for memberPid: $memberPid',
+            );
+            return MapEntry(memberPid, memberService);
+          }),
+        );
+      }
+      final servicesToAdd = await Future.wait(futureServicesToAdd);
+      await this.pMemberServicePool.update((e) => e..addEntries(servicesToAdd));
     }
-    final servicesToAdd = await Future.wait(futureServicesToAdd);
-    await this.pMemberServicePool.update((e) => e..addEntries(servicesToAdd));
   }
 
   //
@@ -149,8 +166,10 @@ class RelationshipMemberService<TModel extends Model,
       updatedMemberPids,
       this._currentMemberPids,
     );
-    Here().debugLog('Members to remove: $memberPidsToRemove');
-    await this.removeMembers(memberPidsToRemove);
+    if (memberPidsToRemove.isNotEmpty) {
+      Here().debugLog('Members to remove: $memberPidsToRemove');
+      await this.removeMembers(memberPidsToRemove);
+    }
   }
 
   //
@@ -158,21 +177,23 @@ class RelationshipMemberService<TModel extends Model,
   //
 
   Future<void> removeMembers(Set<String> memberPidsToRemove) async {
-    await this.pMemberServicePool.update(
-          (e) => e
-            ..removeWhere(
-              (memberPid, eventService) {
-                final remove = memberPidsToRemove.contains(memberPid);
-                if (remove) {
-                  eventService.dispose();
-                  Here().debugLogStop(
-                    'Removed service for memberPid: $memberPid',
-                  );
-                }
-                return remove;
-              },
-            ),
-        );
+    if (memberPidsToRemove.isNotEmpty) {
+      await this.pMemberServicePool.update(
+            (e) => e
+              ..removeWhere(
+                (memberPid, eventService) {
+                  final remove = memberPidsToRemove.contains(memberPid);
+                  if (remove) {
+                    eventService.dispose();
+                    Here().debugLogStop(
+                      'Removed service for memberPid: $memberPid',
+                    );
+                  }
+                  return remove;
+                },
+              ),
+          );
+    }
   }
 
   //

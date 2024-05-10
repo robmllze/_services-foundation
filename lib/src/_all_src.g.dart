@@ -35,7 +35,7 @@ export 'service_utils/user_event_utils.dart';
 export 'service_utils/user_utils.dart';
 export 'services/event_service.dart';
 export 'services/file_service.dart';
-export 'services/job_pub_member_service.dart';
+export 'services/job_member_service.dart';
 export 'services/job_pub_service.dart';
 export 'services/job_service.dart';
 export 'services/organization_member_service.dart';

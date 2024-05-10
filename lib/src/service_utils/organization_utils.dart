@@ -131,7 +131,7 @@ final class OrganizationUtils {
                 .toSet() ??
             {};
 
-    printBlue('organizationIds: $organizationIds');
+    // TODO: Address the issue below.
 
     // assert(
     //   organizationIds.length == organizationPids.length,

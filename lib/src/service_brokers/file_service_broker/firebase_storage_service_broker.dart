@@ -138,7 +138,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
     final pid = pubRef.id!;
     final fileRef = DataRef(
       collection: [
-        ...FileSchema.AVATAR_IMAGE,
+        ...FileSchema.PUBLIC_FILES,
         pid,
         fileId,
       ],
@@ -153,7 +153,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
       createdBy: pid,
       title: null,
       description: null,
-      definitionPath: FileSchema.AVATAR_IMAGE,
+      definitionPath: FileSchema.PUBLIC_FILES,
     );
     final uploadedFile = () async {
       await this.databaseServiceBroker.setModel(
