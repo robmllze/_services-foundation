@@ -27,12 +27,12 @@ final class FileUtils {
 
   static Future<void> pickAndUploadPublicFiles({
     required ServiceEnvironment serviceEnvironment,
-    required String fileId,
     required DataRef pubRef,
     List<String>? allowedExtensions,
     int compressionQuality = 30,
-    bool allowMultiple = true,
+    String? fileId,
   }) async {
+    final allowMultiple = fileId == null;
     final fileResults = await FilePicker.platform.pickFiles(
       allowMultiple: allowMultiple,
       type: allowedExtensions == null ? FileType.any : FileType.custom,
@@ -40,31 +40,24 @@ final class FileUtils {
       allowCompression: true,
       compressionQuality: compressionQuality,
     );
-    final file = fileResults?.files.firstOrNull;
-    if (file != null) {
-      await serviceEnvironment.fileServiceBroker.deletePublicFile(
-        pubRef: pubRef,
-        fileId: fileId,
-      );
-      final result = serviceEnvironment.fileServiceBroker.uploadPublicFile(
-        file: file,
-        pubRef: pubRef,
-        fileId: fileId,
-      );
-      final uploadedFile = await result.uploadedFile;
-      // Note: It's bad practice to use generic models like this.
-      final pubUpdate = GenericModel(
-        data: {
-          'id': pubRef.id,
-          'files': {
-            fileId: uploadedFile,
-          },
-        },
-      );
-      await serviceEnvironment.databaseServiceBroker.setModel(
-        pubUpdate,
-        pubRef,
-      );
+    final files = fileResults?.files;
+    if (files != null) {
+      final futures = <Future>[];
+      for (final file in files) {
+        await serviceEnvironment.fileServiceBroker.deletePublicFile(
+          pubRef: pubRef,
+          fileId: fileId ?? IdUtils.newUuidV4(),
+        );
+        final future = serviceEnvironment.fileServiceBroker
+            .uploadPublicFile(
+              file: file,
+              pubRef: pubRef,
+              fileId: fileId,
+            )
+            .uploadedFile;
+        futures.add(future);
+      }
+      await Future.wait(futures);
     }
   }
 
