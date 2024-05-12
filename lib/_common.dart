@@ -9,6 +9,7 @@
 //.title~
 
 export 'dart:async';
+export 'dart:math';
 
 export 'package:async/async.dart';
 export 'package:meta/meta.dart';

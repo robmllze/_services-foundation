@@ -10,6 +10,8 @@
 export 'app_state/app_environment.dart';
 export 'app_state/app_session.dart';
 export 'create_service_environment/create_firebase_service_environment.dart';
+export 'data_helpers/pub_helper_base.dart';
+export 'data_helpers/relationship_helper_base.dart';
 export 'data_services/event_service.dart';
 export 'data_services/file_service.dart';
 export 'data_services/job_member_service.dart';
