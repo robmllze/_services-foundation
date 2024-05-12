@@ -286,37 +286,53 @@ final class EventUtils {
     required ServiceEnvironment serviceEnvironment,
     required String senderPid,
     String? receiverPid,
+    required String relationshipId,
     required DataRef eventsRef,
     required Model eventDef,
     required EventDefType eventDefType,
   }) async {
-    final eventModel = ModelEvent(
-      id: eventsRef.id!,
-      memberPids: {
-        senderPid,
-        if (receiverPid != null) receiverPid,
-      },
-      createdAt: DateTime.now(),
-      createdBy: senderPid,
-      def: eventDef.toGenericModel(),
-      defType: eventDefType,
-    );
-    await serviceEnvironment.databaseServiceBroker.setModel(
-      eventModel,
-      eventsRef,
-    );
+    // final eventModel = ModelEvent(
+    //   id: eventsRef.id!,
+    //   relationshipId: relationshipId,
+    //   memberPids: {
+    //     senderPid,
+    //     if (receiverPid != null) receiverPid,
+    //   },
+    //   createdAt: DateTime.now(),
+    //   createdBy: senderPid,
+    //   def: eventDef.toGenericModel(),
+    //   defType: eventDefType,
+    // );
+    // await serviceEnvironment.databaseServiceBroker.setModel(
+    //   eventModel,
+    //   eventsRef,
+    // );
+
+    await getSendEventOperation(
+      senderPid: senderPid,
+      receiverPid: receiverPid,
+      relationshipId: relationshipId,
+      eventsRef: eventsRef,
+      eventDef: eventDef,
+      eventDefType: eventDefType,
+    ).execute(serviceEnvironment);
   }
 
   static CreateOrUpdateOperation getSendEventOperation({
     required String senderPid,
-    required String receiverPid,
+    String? receiverPid,
+    required String relationshipId,
     required DataRef eventsRef,
     required Model eventDef,
     required EventDefType eventDefType,
   }) {
     final eventModel = ModelEvent(
       id: eventsRef.id!,
-      memberPids: {senderPid, receiverPid},
+      relationshipId: relationshipId,
+      memberPids: {
+        senderPid,
+        if (receiverPid != null) receiverPid,
+      },
       createdAt: DateTime.now(),
       createdBy: senderPid,
       def: eventDef.toGenericModel(),

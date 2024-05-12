@@ -51,6 +51,7 @@ final class RelationshipEventUtils {
       eventsRef: eventsRef,
       senderPid: senderPid,
       receiverPid: receiverPid,
+      relationshipId: relationshipId,
       eventDef: eventDef,
       eventDefType: eventDefType,
     );
