@@ -172,15 +172,24 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   Stream<Iterable<ModelRelationship>> streamRelationshipsForAnyMembers({
     required Iterable<String> pids,
     int? limit,
+    Iterable<RelationshipDefType> defTypes = const {},
   }) {
+    var pidSet = pids.toSet();
+    if (pidSet.length > 30) {
+      Here().debugLogError('arrayContainsAny only supports up to 30 values.');
+      pidSet = pidSet.take(30).toSet();
+    }
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
-    final pidSet = pids.nullIfEmpty?.toSet();
-    final relationships = collection
+    var relationships = collection
         .baseQuery(limit: limit)
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContainsAny: pidSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
+
+    if (defTypes.isNotEmpty) {
+      relationships = relationships.map((e) => e.where((e) => defTypes.contains(e.defType)));
+    }
     return relationships;
   }
 
@@ -192,15 +201,23 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   Stream<Iterable<ModelRelationship>> streamRelationshipsForAllMembers({
     required Iterable<String> pids,
     int? limit,
+    Iterable<RelationshipDefType> defTypes = const {},
   }) {
+    var pidSet = pids.toSet();
+    if (pidSet.length > 30) {
+      Here().debugLogError('arrayContains only supports up to 30 values.');
+      pidSet = pidSet.take(30).toSet();
+    }
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
-    final pidSet = pids.nullIfEmpty?.toSet();
-    final relationships = collection
+    var relationships = collection
         .baseQuery(limit: limit)
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContains: pidSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
+    if (defTypes.isNotEmpty) {
+      relationships = relationships.map((e) => e.where((e) => defTypes.contains(e.defType)));
+    }
     return relationships;
   }
 
@@ -218,22 +235,30 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = this.firebaseFirestore.collection(collectionPath);
     final stream = collection.baseQuery().snapshots().asyncMap((e) async {
       for (final doc in e.docs) {
-        result.add(DeleteOperation(ref: collectionRef.copyWith(id: doc.id)));
+        final operation = DeleteOperation(
+          ref: collectionRef.copyWith(id: doc.id),
+        );
+        result.add(operation);
       }
     });
     await streamToFuture(stream);
     return result;
   }
-  
+
   //
   //
   //
 
   @override
   Stream<Iterable<ModelFileEntry>> streamFileByCreatorId({
-    required Set<String> createdByAny,
+    required Iterable<String> createdByAny,
     int? limit,
   }) {
+    var createdByAnySet = createdByAny.toSet();
+    if (createdByAnySet.length > 30) {
+      Here().debugLogError('whereIn only supports up to 30 values.');
+      createdByAnySet = createdByAnySet.take(30).toSet();
+    }
     final collectionPath = Schema.fileRef().collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
     final snapshots = collection

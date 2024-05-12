@@ -102,17 +102,16 @@ final class ProjectUtils {
   @visibleForTesting
   static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
-    required Iterable<String> projectPids,
+    required Iterable<String> pids,
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
     // Ensure projectPids contains valid pids.
-    final temp = projectPids.where((pid) => IdUtils.isProjectPid(pid));
-    assert(temp.length == projectPids.length, 'projectPids contains invalid pids.');
-    projectPids = temp.toSet();
+    final temp = pids.where((pid) => IdUtils.isProjectPid(pid));
+    assert(temp.length == pids.length, 'projectPids contains invalid pids.');
+    pids = temp.toSet();
 
     // Get all relationships associated with projectPids (ORGANIZATION_AND_PROJECT, JOB_AND_PROJECT, PROJECT_AND_USER).
-    final associatedRelationshipPool =
-        relationshipPool.filterByAnyMember(memberPids: projectPids).toSet();
+    final associatedRelationshipPool = relationshipPool.filterByAnyMember(memberPids: pids).toSet();
 
     // Get all member pids associated with projectPids, including organization, project and user pids.
     final projectAssociatedMemberPids = associatedRelationshipPool.allMemberPids();
@@ -123,7 +122,7 @@ final class ProjectUtils {
     // Fetch all associated PIDS.
     final projectIds =
         (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelProject>(
-              elements: projectPids,
+              elements: pids,
               collectionRef: Schema.projectsRef(),
               fromJsonOrNull: ModelProject.fromJsonOrNull,
               elementKeys: {ModelProject.K_PID},
@@ -151,13 +150,13 @@ final class ProjectUtils {
         DeleteOperation(
           ref: Schema.projectsRef(projectId: projectId),
         ),
-      for (final projectPid in projectPids)
+      for (final projectPid in pids)
         DeleteOperation(
           ref: Schema.projectPubsRef(projectPid: projectPid),
         ),
       ...await JobUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,
-        jobPids: jobPids,
+        pids: jobPids,
         relationshipPool: relationshipPool,
       ),
     };

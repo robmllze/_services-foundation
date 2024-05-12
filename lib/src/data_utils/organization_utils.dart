@@ -100,17 +100,16 @@ final class OrganizationUtils {
   @visibleForTesting
   static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
-    required Set<String> organizationPids,
+    required Iterable<String> pids,
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
     // Ensure organizationPids contains valid pids.
-    final temp = organizationPids.where((pid) => IdUtils.isOrganizationPid(pid)).toSet();
-    assert(temp.length == organizationPids.length, 'organizationPids contains invalid pids.');
-    organizationPids = temp;
+    final temp = pids.where((pid) => IdUtils.isOrganizationPid(pid)).toSet();
+    assert(temp.length == pids.length, 'organizationPids contains invalid pids.');
+    pids = temp;
 
     // Get all relationships associated with organizationPids (ORGANIZATION_AND_USER, ORGANIZATION_AND_PROJECT).
-    final associatedRelationshipPool =
-        relationshipPool.filterByAnyMember(memberPids: organizationPids).toSet();
+    final associatedRelationshipPool = relationshipPool.filterByAnyMember(memberPids: pids).toSet();
 
     // Get all member pids associated with organizationPids, including user an project pids.
     final organizationAssociatedMemberPids = associatedRelationshipPool.allMemberPids();
@@ -121,7 +120,7 @@ final class OrganizationUtils {
     // Fetch all associated PIDS.
     final organizationIds =
         (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelOrganization>(
-              elements: organizationPids,
+              elements: pids,
               collectionRef: Schema.organizationsRef(),
               fromJsonOrNull: ModelOrganization.fromJsonOrNull,
               elementKeys: {ModelOrganization.K_PID},
@@ -149,13 +148,13 @@ final class OrganizationUtils {
         DeleteOperation(
           ref: Schema.organizationsRef(organizationId: organizationId),
         ),
-      for (final organizationPid in organizationPids)
+      for (final organizationPid in pids)
         DeleteOperation(
           ref: Schema.organizationPubsRef(organizationPid: organizationPid),
         ),
       ...await ProjectUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,
-        projectPids: projectPids,
+        pids: projectPids,
         relationshipPool: relationshipPool,
       ),
     };

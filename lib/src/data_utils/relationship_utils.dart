@@ -299,46 +299,4 @@ final class RelationshipUtils {
       model: update,
     );
   }
-
-  //
-  //
-  //
-
-  static Stream<Iterable<ModelRelationship>> dbStreamRelationshipsForAnyMembers({
-    required ServiceEnvironment serviceEnvironment,
-    required Set<String> memberPids,
-    Set<RelationshipDefType> defTypes = const {},
-    int? limit,
-  }) {
-    var a = serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
-      pids: memberPids,
-      limit: limit ?? memberPids.length,
-    );
-
-    if (defTypes.isNotEmpty) {
-      a = a.map((e) => e.where((e) => defTypes.contains(e.defType)));
-    }
-    return a;
-  }
-
-  //
-  //
-  //
-
-  static Stream<Iterable<ModelRelationship>> dbStreamRelationshipsForAllMembers({
-    required ServiceEnvironment serviceEnvironment,
-    required Set<String> memberPids,
-    Set<RelationshipDefType> defTypes = const {},
-    int? limit,
-  }) {
-    var a = serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMembers(
-      pids: memberPids,
-      limit: limit ?? memberPids.length,
-    );
-
-    if (defTypes.isNotEmpty) {
-      a = a.map((e) => e.where((e) => defTypes.contains(e.defType)));
-    }
-    return a;
-  }
 }

@@ -102,21 +102,20 @@ final class JobUtils {
   @visibleForTesting
   static Future<Iterable<BatchOperation>> getLazyDeleteOperations({
     required ServiceEnvironment serviceEnvironment,
-    required Iterable<String> jobPids,
+    required Iterable<String> pids,
     required Iterable<ModelRelationship> relationshipPool,
   }) async {
     // Ensure jobPids contains valid pids.
-    final temp = jobPids.where((pid) => IdUtils.isJobPid(pid)).toList();
-    assert(temp.length == jobPids.length, 'jobPids contains invalid pids.');
-    jobPids = temp.toSet();
+    final temp = pids.where((pid) => IdUtils.isJobPid(pid)).toList();
+    assert(temp.length == pids.length, 'jobPids contains invalid pids.');
+    pids = temp.toSet();
 
     // Get all relationships associated with jobPids (JOB_AND_PROJECT, JOB_AND_USER).
-    final associatedRelationshipPool =
-        relationshipPool.filterByAnyMember(memberPids: jobPids).toSet();
+    final associatedRelationshipPool = relationshipPool.filterByAnyMember(memberPids: pids).toSet();
 
     // Fetch all associated PIDS.
     final jobIds = (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelJob>(
-          elements: jobPids,
+          elements: pids,
           collectionRef: Schema.jobsRef(),
           fromJsonOrNull: ModelJob.fromJsonOrNull,
           elementKeys: {ModelJob.K_PID},
@@ -144,7 +143,7 @@ final class JobUtils {
         DeleteOperation(
           ref: Schema.jobsRef(jobId: jobId),
         ),
-      for (final jobPid in jobPids)
+      for (final jobPid in pids)
         DeleteOperation(
           ref: Schema.jobPubsRef(jobPid: jobPid),
         ),
