@@ -150,10 +150,13 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     required T? Function(Map<String, dynamic>? otherData) fromJsonOrNull,
     required Set<String> elementKeys,
   }) {
+    final elementSet = elements.where((e) => e.isNotEmpty).toSet();
+    if (elementSet.isEmpty) {
+      return const Stream.empty();
+    }
     final collectionPath = collectionRef.collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
-    final elementSet = elements.nullIfEmpty?.toSet();
-    var snapshots = collection.baseQuery(limit: elementSet?.length);
+    var snapshots = collection.baseQuery(limit: elementSet.length);
     for (final elementKey in elementKeys) {
       snapshots = snapshots.where(elementKey, whereIn: elementSet);
     }
