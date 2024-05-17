@@ -8,8 +8,6 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'package:xyz_gen_annotations/xyz_gen_annotations.dart';
-
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -118,7 +116,6 @@ abstract class PubHelperBase<T extends PublicBaseModel> {
     return (hasData ? this.pub.createdBy == pid : null) ?? false;
   }
 
-  /// Whether the current user is a member of the associated relationship.
   bool isCurrentUserAssociatedRelationshipMemberSnapshot() {
     final pid = this.currentUserPidSnapshot();
     final associatedRelationship = this.firstAssociatedRelationshipSnapshot();
@@ -166,7 +163,7 @@ abstract class PubHelperBase<T extends PublicBaseModel> {
   }
 
   ModelOrganizationPub? firstAssociatedOrganizationMemberSnapshot() {
-    final pid = this.firstAssociatedProjectPidSnapshot();
+    final pid = this.firstAssociatedOrganizationPidSnapshot();
     final hasData = pid != null;
     return hasData
         ? this.organizationMemberPoolSnapshot()?.firstWhereOrNull((e) => e.id == pid)
