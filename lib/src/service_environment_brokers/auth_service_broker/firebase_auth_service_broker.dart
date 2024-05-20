@@ -149,6 +149,28 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
 
   @override
+  Future<void> updateUser({
+    String? displayName,
+    String? photoURL,
+    String? password,
+  }) async {
+    final currentUser = this.firebaseAuth.currentUser!;
+    if (displayName != null) {
+      await currentUser.updateDisplayName(displayName);
+    }
+    if (photoURL != null) {
+      await currentUser.updatePhotoURL(photoURL);
+    }
+    if (password != null) {
+      await currentUser.updatePassword(password);
+    }
+  }
+
+  //
+  //
+  //
+
+  @override
   Future<void> deleteUser() async {
     await this.firebaseAuth.currentUser!.delete();
   }

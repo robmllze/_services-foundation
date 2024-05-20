@@ -50,6 +50,14 @@ final class UserUtils {
       displayName: displayName,
       displayNameSearchable: displayName,
       email: email,
+      emailBook: {
+        'primary': ModelEmailEntry(
+          id: 'primary',
+          email: email,
+          createdAt: now,
+          createdBy: userPid,
+        ),
+      },
     );
     final future = serviceEnvironment.databaseServiceBroker.runBatchOperations([
       CreateOperation(

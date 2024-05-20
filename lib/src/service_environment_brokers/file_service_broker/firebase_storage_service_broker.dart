@@ -224,7 +224,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
     required String fileId,
   }) async {
     final userPub = ModelUserPub.from(await this.databaseServiceBroker.readModel(pubRef));
-    final file = userPub.files?[fileId];
+    final file = userPub.fileBook?[fileId];
     if (file != null) {
       final storagePath = file.storagePath!;
       final storageRef = this.firebaseStorage.ref(storagePath);

@@ -49,18 +49,18 @@ abstract class PubHelperBase<T extends PublicBaseModel> {
     required Iterable<ModelRelationship> relationshipPool,
   }) get getLazyDeleteOperations;
 
-  T? get associatedType {
+  Type? get associatedType {
     final pid = this.pub.id;
     if (pid == null) {
       return null;
     } else if (IdUtils.isUserPid(pid)) {
-      return letAs<T>(ModelUserPub);
+      return ModelUserPub;
     } else if (IdUtils.isJobPid(pid)) {
-      return letAs<T>(ModelJobPub);
+      return ModelJobPub;
     } else if (IdUtils.isProjectPid(pid)) {
-      return letAs<T>(ModelProjectPub);
+      return ModelProjectPub;
     } else if (IdUtils.isOrganizationPid(pid)) {
-      return letAs<T>(ModelOrganizationPub);
+      return ModelOrganizationPub;
     } else {
       return null;
     }

@@ -27,9 +27,9 @@ dependencies:
   _service_interfaces:
     path: ../_service_interfaces
 
-  xyz_gen_annotations: ^0.32.0
+  xyz_gen_annotations: ^0.32.1
   xyz_pod: ^0.29.0
-  xyz_utils: ^0.53.0
+  xyz_utils: ^0.54.0
 
   cloud_firestore: ^4.15.9
   firebase_auth: ^4.17.9
