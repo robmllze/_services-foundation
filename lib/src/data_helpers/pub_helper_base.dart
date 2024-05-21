@@ -12,7 +12,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-abstract class PubHelperBase<T extends PublicBaseModel> {
+abstract class PubHelperBase<T extends PublicModel> {
   //
   //
   //
@@ -49,8 +49,9 @@ abstract class PubHelperBase<T extends PublicBaseModel> {
     required Iterable<ModelRelationship> relationshipPool,
   }) get getLazyDeleteOperations;
 
-  Type? get associatedType {
-    final pid = this.pub.id;
+  Type? get associatedType => getAssociatedType(this.pub.id);
+
+  static Type? getAssociatedType(String? pid) {
     if (pid == null) {
       return null;
     } else if (IdUtils.isUserPid(pid)) {
@@ -66,8 +67,9 @@ abstract class PubHelperBase<T extends PublicBaseModel> {
     }
   }
 
-  DataRef? get associatedRef {
-    final pid = this.pub.id;
+  DataRef? get associatedRef => getAssociatedRef(this.pub.id);
+
+  static DataRef? getAssociatedRef(String? pid) {
     if (pid == null) {
       return null;
     } else if (IdUtils.isUserPid(pid)) {
@@ -113,7 +115,7 @@ abstract class PubHelperBase<T extends PublicBaseModel> {
   bool isCurrentUserCreatorSnapshot() {
     final pid = this.currentUserPidSnapshot();
     final hasData = pid != null;
-    return (hasData ? this.pub.createdBy == pid : null) ?? false;
+    return (hasData ? this.pub.createdBy == pid || this.pub.id == pid : null) ?? false;
   }
 
   bool isCurrentUserAssociatedRelationshipMemberSnapshot() {

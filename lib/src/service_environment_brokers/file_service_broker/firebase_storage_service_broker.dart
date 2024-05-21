@@ -171,11 +171,9 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
     );
     final uploadedFile = () async {
       await this.databaseServiceBroker.setModel(
-            GenericModel(
-              data: {
-                'files': {
-                  fileId: pendingUploadFile.toJson(),
-                },
+            PublicModel(
+              fileBook: {
+                fileId!: pendingUploadFile,
               },
             ),
             pubRef,
@@ -184,11 +182,9 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
       final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
       final uploadedFile = ModelFileEntry.of(pendingUploadFile)..downloadUrl = downloadUrl;
       await this.databaseServiceBroker.setModel(
-            GenericModel(
-              data: {
-                'files': {
-                  fileId: uploadedFile.toJson(),
-                },
+            PublicModel(
+              fileBook: {
+                fileId: uploadedFile,
               },
             ),
             pubRef,
@@ -243,7 +239,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   ) async {
     final update = GenericModel(
       data: {
-        'files': {
+        PublicModel.K_FILE_BOOK: {
           fileId: this.fieldValueBroker.deleteFieldValue(),
         },
       },
