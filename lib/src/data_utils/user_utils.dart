@@ -23,7 +23,6 @@ final class UserUtils {
   //
   //
 
-  @visibleForTesting
   static ({
     Future<void> future,
     ModelUser user,
