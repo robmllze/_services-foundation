@@ -8,25 +8,26 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
+class SharedServiceBroker extends DatabaseServiceInterface {
   //
   //
   //
 
-  final FirebaseFirestore firebaseFirestore;
+  @visibleForTesting
+  final SharedPreferences sharedPreferences;
 
   //
   //
   //
 
-  FirebaseFirestoreServiceBroker({
-    required this.firebaseFirestore,
+  SharedServiceBroker({
+    required this.sharedPreferences,
   });
 
   //
@@ -35,23 +36,26 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> createModel(Model model) async {
-    final documentPath = model.ref!.docPath;
-    final modelRef = this.firebaseFirestore.doc(documentPath);
-    final modelData = model.toJson();
-    await modelRef.set(modelData, SetOptions(merge: false));
+    final ref = model.ref!;
+    final documentPath = ref.docPath;
+    final existingModel = await this.readModel(ref);
+    if (existingModel == null) {
+      final modelString = model.toJsonString();
+      await this.sharedPreferences.setString(documentPath, modelString);
+    } else {
+      throw Exception('Model already exists at $documentPath');
+    }
   }
 
   //
   //
-
   //
 
   @override
   Future<void> setModel(Model model) async {
     final documentPath = model.ref!.docPath;
-    final modelRef = this.firebaseFirestore.doc(documentPath);
-    final modelData = model.toJson();
-    await modelRef.set(modelData, SetOptions(merge: true));
+    final modelString = model.toJsonString();
+    await this.sharedPreferences.setString(documentPath, modelString);
   }
 
   //
@@ -63,12 +67,14 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
     DataRef ref, [
     TModel? Function(Model? model)? convert,
   ]) async {
-    final modelRef = this.firebaseFirestore.doc(ref.docPath);
-    final snapshot = await modelRef.get();
-    final modelData = snapshot.data();
-    final genericModel = DataModel(data: modelData);
-    final model = modelData != null ? convert?.call(genericModel) ?? genericModel : null;
-    return model as TModel?;
+    final value = this.sharedPreferences.getString(ref.docPath);
+    if (value != null) {
+      final data = jsonDecode(value);
+      final genericModel = DataModel(data: data);
+      final model = convert?.call(genericModel) ?? genericModel;
+      return model as TModel?;
+    }
+    return null;
   }
 
   //
@@ -78,9 +84,8 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   @override
   Future<void> updateModel(Model model) async {
     final documentPath = model.ref!.docPath;
-    final modelRef = this.firebaseFirestore.doc(documentPath);
-    final modelData = model.toJson();
-    await modelRef.update(modelData);
+    final modelString = model.toJsonString();
+    await this.sharedPreferences.setString(documentPath, modelString);
   }
 
   //
@@ -89,74 +94,50 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> deleteModel(DataRef ref) async {
-    final documentPath = ref.docPath;
-    final modelRef = this.firebaseFirestore.doc(documentPath);
-    await modelRef.delete();
+    await this.sharedPreferences.remove(ref.docPath);
   }
 
   //
   //
   //
 
-  @override
-  Future<void> runTransaction(
-    Future<void> Function(dynamic transaction) transactionHandler,
-  ) async {
-    await this.firebaseFirestore.runTransaction(transactionHandler);
-  }
-
-  //
-  //
-  //
-
+  /// Executes all operations sequentially. Does not support batch operations
+  /// like Firestore.
   @override
   Future<Iterable<Model?>> runBatchOperations(
     Iterable<BatchOperation> operations,
   ) async {
     final results = <Model?>[];
-    WriteBatch? writeBatch;
     for (final operation in operations) {
       final dataRef = operation.model!.ref!;
-      final docRef = this.firebaseFirestore.doc(dataRef.docPath);
       // Read.
       if (operation.read) {
         final model = await this.readModel(dataRef);
         results.add(model);
         continue;
       }
-
-      writeBatch ??= this.firebaseFirestore.batch();
-
-      // Delete.
+      // Delete
       if (operation.delete) {
-        writeBatch.delete(docRef);
+        await this.deleteModel(dataRef);
         results.add(null);
         continue;
       }
-
       final model = operation.model!;
-      final data = model.toJson();
-
-      // Create.
+      // Create
       if (operation.create) {
-        writeBatch.set(
-          docRef,
-          data,
-          // Create and update.
-          SetOptions(merge: operation.update),
-        );
+        if (operation.update) {
+          await this.setModel(model);
+        } else {
+          await this.createModel(model);
+        }
         results.add(model);
-        continue;
       }
-
-      // Update.
+      // Update
       if (operation.update) {
-        writeBatch.update(docRef, data);
+        await this.updateModel(model);
         results.add(model);
-        continue;
       }
     }
-    await writeBatch?.commit();
     return results;
   }
 }

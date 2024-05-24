@@ -8,40 +8,34 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
 
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class CacheServiceBroker extends DatabaseServiceInterface {
+class HiveServiceBroker extends DatabaseServiceInterface {
   //
   //
   //
 
-  @visibleForTesting
-  final SharedPreferences sharedPreferences;
-
-  //
-  //
-  //
-
-  CacheServiceBroker({
-    required this.sharedPreferences,
-  });
+  HiveServiceBroker();
 
   //
   //
   //
 
   @override
-  Future<void> createModel(Model model, DataRef ref) async {
+  Future<void> createModel(Model model) async {
+    final ref = model.ref!;
+    final documentPath = ref.docPath;
     final existingModel = await this.readModel(ref);
     if (existingModel == null) {
-      final modelString = model.toJsonString();
-      await this.sharedPreferences.setString(ref.key, modelString);
+      final box = await Hive.openBox(documentPath);
+      await box.putAll(model.toJson());
+      await box.close();
     } else {
-      throw Exception('Model already exists at $ref');
+      throw Exception('Model already exists at $documentPath');
     }
   }
 
@@ -50,9 +44,11 @@ class CacheServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> setModel(Model model, DataRef ref) async {
-    final modelString = model.toJsonString();
-    await this.sharedPreferences.setString(ref.key, modelString);
+  Future<void> setModel(Model model) async {
+    final documentPath = model.ref!.docPath;
+    final box = await Hive.openBox(documentPath);
+    await box.putAll(model.toJson());
+    await box.close();
   }
 
   //
@@ -64,10 +60,10 @@ class CacheServiceBroker extends DatabaseServiceInterface {
     DataRef ref, [
     TModel? Function(Model? model)? convert,
   ]) async {
-    final value = this.sharedPreferences.getString(ref.key);
-    if (value != null) {
-      final data = jsonDecode(value);
-      final genericModel = GenericModel(data: data);
+    final box = await Hive.openBox(ref.docPath);
+    final data = box.toMap().mapKeys((e) => e.toString());
+    if (data.isNotEmpty) {
+      final genericModel = DataModel(data: data);
       final model = convert?.call(genericModel) ?? genericModel;
       return model as TModel?;
     }
@@ -79,9 +75,11 @@ class CacheServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> updateModel(Model model, DataRef ref) async {
-    final modelString = model.toJsonString();
-    await this.sharedPreferences.setString(ref.key, modelString);
+  Future<void> updateModel(Model model) async {
+    final documentPath = model.ref!.docPath;
+    final box = await Hive.openBox(documentPath);
+    box.putAll(model.toJson());
+    await box.close();
   }
 
   //
@@ -90,7 +88,10 @@ class CacheServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> deleteModel(DataRef ref) async {
-    await this.sharedPreferences.remove(ref.key);
+    final documentPath = ref.docPath;
+    final box = await Hive.openBox(documentPath);
+    await box.deleteFromDisk();
+    await box.close();
   }
 
   //
@@ -105,7 +106,7 @@ class CacheServiceBroker extends DatabaseServiceInterface {
   ) async {
     final results = <Model?>[];
     for (final operation in operations) {
-      final dataRef = operation.ref!;
+      final dataRef = operation.model!.ref!;
       // Read.
       if (operation.read) {
         final model = await this.readModel(dataRef);
@@ -122,15 +123,15 @@ class CacheServiceBroker extends DatabaseServiceInterface {
       // Create
       if (operation.create) {
         if (operation.update) {
-          await this.setModel(model, dataRef);
+          await this.setModel(model);
         } else {
-          await this.createModel(model, dataRef);
+          await this.createModel(model);
         }
         results.add(model);
       }
       // Update
       if (operation.update) {
-        await this.updateModel(model, dataRef);
+        await this.updateModel(model);
         results.add(model);
       }
     }

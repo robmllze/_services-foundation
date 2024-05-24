@@ -35,23 +35,30 @@ final class UserUtils {
   }) {
     final now = DateTime.now();
     final userId = serviceEnvironment.authServiceBroker.pCurrentUser.value!.userId;
+    final userRef = Schema.usersRef(userId: userId);
     final seed = IdUtils.newUuidV4();
     final userPid = IdUtils.idToUserPid(seed: seed, userId: userId);
+    final userPubRef = Schema.userPubsRef(userPid: userPid);
+    const PRIMARY_EMAIL_ID = 'primary';
+    final primaryEmailRef = userPubRef + Schema.emailsRef(emailId: PRIMARY_EMAIL_ID);
     final user = ModelUser(
+      ref: userRef,
       createdAt: now,
       id: userId,
       pid: userPid,
       seed: seed,
     );
     final userPub = ModelUserPub(
+      ref: userPubRef,
       createdAt: now,
       id: userPid,
       displayName: displayName,
       displayNameSearchable: displayName,
       email: email,
       emailBook: {
-        'primary': ModelEmailEntry(
-          id: 'primary',
+        PRIMARY_EMAIL_ID: ModelEmailEntry(
+          ref: primaryEmailRef,
+          id: PRIMARY_EMAIL_ID,
           email: email,
           createdAt: now,
           createdBy: userPid,
@@ -59,14 +66,8 @@ final class UserUtils {
       },
     );
     final future = serviceEnvironment.databaseServiceBroker.runBatchOperations([
-      CreateOperation(
-        ref: Schema.usersRef(userId: userId),
-        model: user,
-      ),
-      CreateOperation(
-        ref: Schema.userPubsRef(userPid: userPid),
-        model: userPub,
-      ),
+      CreateOperation(model: user),
+      CreateOperation(model: userPub),
     ]);
     return (
       future: future,
@@ -96,8 +97,11 @@ final class UserUtils {
 
     // Create delete operations for all relationships created by userPid.
     final createdByRelationshipDeleteOperations = createdByRelationshipIds.map(
-      (id) => DeleteOperation(
-        ref: Schema.relationshipsRef(relationshipId: id),
+      (e) => DeleteOperation(
+        model: ModelRelationship(
+          ref: Schema.relationshipsRef(relationshipId: e),
+          id: e,
+        ),
       ),
     );
 
@@ -114,9 +118,9 @@ final class UserUtils {
     // Create remove member operations for all relationships where userPid is a
     // member of.
     final memberOfRelationshipDeleteOperations = memberOfRelationshipIds.map(
-      (id) => RelationshipUtils.getLazyRemoveMembersOperation(
+      (e) => RelationshipUtils.getLazyRemoveMembersOperation(
         serviceEnvironment: serviceEnvironment,
-        relationshipId: id,
+        relationshipId: e,
         memberPids: {userPid},
       ),
     );
@@ -139,15 +143,19 @@ final class UserUtils {
 
     // Create delete operations for all organization pubs created by userPid.
     final organizationPubDeleteOperations = organizationPids.map(
-      (id) => DeleteOperation(
-        ref: Schema.organizationPubsRef(organizationPid: id),
+      (e) => DeleteOperation(
+        model: ModelOrganizationPub(
+          ref: Schema.organizationPubsRef(organizationPid: e),
+        ),
       ),
     );
 
     // Create delete operations for all organizations created by userPid.
     final organizationDeleteOperations = organizationIds.map(
-      (id) => DeleteOperation(
-        ref: Schema.organizationsRef(organizationId: id),
+      (e) => DeleteOperation(
+        model: ModelOrganization(
+          ref: Schema.organizationsRef(organizationId: e),
+        ),
       ),
     );
 
@@ -169,15 +177,19 @@ final class UserUtils {
 
     // Create delete operations for all project pubs created by userPid.
     final projectPubsDeleteOperations = projectPids.map(
-      (id) => DeleteOperation(
-        ref: Schema.projectPubsRef(projectPid: id),
+      (e) => DeleteOperation(
+        model: ModelProjectPub(
+          ref: Schema.projectPubsRef(projectPid: e),
+        ),
       ),
     );
 
     // Create delete operations for all projects created by userPid.
     final projectDeleteOperations = projectIds.map(
-      (id) => DeleteOperation(
-        ref: Schema.projectsRef(projectId: id),
+      (e) => DeleteOperation(
+        model: ModelProject(
+          ref: Schema.projectsRef(projectId: e),
+        ),
       ),
     );
 
@@ -197,23 +209,27 @@ final class UserUtils {
 
     // Create delete operations for all job pubs created by userPid.
     final jobPubsDeleteOperations = jobPids.map(
-      (id) => DeleteOperation(
-        ref: Schema.jobPubsRef(jobPid: id),
+      (e) => DeleteOperation(
+        model: ModelJobPub(
+          ref: Schema.jobPubsRef(jobPid: e),
+        ),
       ),
     );
 
     // Create delete operations for all jobs created by userPid.
     final jobsDeleteOperations = jobIds.map(
-      (id) => DeleteOperation(
-        ref: Schema.jobsRef(jobId: id),
+      (e) => DeleteOperation(
+        model: ModelJob(
+          ref: Schema.jobsRef(jobId: e),
+        ),
       ),
     );
 
     // Create delete operations for all events within relationships created by userPid.
     final relationshipEventDeleteOperations = (await Future.wait(
           createdByRelationshipIds.map(
-            (id) => serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
-              collectionRef: Schema.relationshipEventsRef(relationshipId: id),
+            (e) => serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
+              collectionRef: Schema.relationshipEventsRef(relationshipId: e),
             ),
           ),
         ))
@@ -222,12 +238,16 @@ final class UserUtils {
 
     // Create a delete operation for the user document.
     final deleteUserOperation = DeleteOperation(
-      ref: Schema.usersRef(userId: userId),
+      model: ModelUser(
+        ref: Schema.usersRef(userId: userId),
+      ),
     );
 
     // Create a delete operation for the user pub document.
     final deleteUserPubOperation = DeleteOperation(
-      ref: Schema.userPubsRef(userPid: userPid),
+      model: ModelUserPub(
+        ref: Schema.userPubsRef(userPid: userPid),
+      ),
     );
 
     // Run all operations in a batch.
@@ -252,7 +272,7 @@ final class UserUtils {
     await Future.wait(
       fileIds.map(
         (id) {
-          final ref = Schema.fileRef(fileId: id);
+          final ref = Schema.filesRef(fileId: id);
           return serviceEnvironment.fileServiceBroker.deleteFile(ref);
         },
       ),

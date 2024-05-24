@@ -40,7 +40,7 @@ final class RelationshipEventUtils {
     required String receiverPid,
     required String relationshipId,
     required String eventId,
-    required GenericModel eventDef,
+    required DataModel eventDef,
     required EventDefType eventDefType,
   }) {
     final eventsRef = Schema.relationshipEventsRef(

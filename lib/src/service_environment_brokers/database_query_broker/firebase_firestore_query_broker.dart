@@ -36,14 +36,14 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<GenericModel?> streamModel(
+  Stream<DataModel?> streamModel(
     DataRef ref, [
-    Future<void> Function(GenericModel? update)? onUpdate,
+    Future<void> Function(DataModel? update)? onUpdate,
   ]) {
     final docRef = this.firebaseFirestore.doc(ref.docPath);
     return docRef.snapshots().asyncMap((snapshot) async {
       final modelData = snapshot.data();
-      final model = modelData != null ? GenericModel(data: modelData) : null;
+      final model = modelData != null ? DataModel(data: modelData) : null;
       await onUpdate?.call(model);
       return model;
     });
@@ -54,9 +54,9 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<GenericModel>> streamModelCollection(
+  Stream<Iterable<DataModel>> streamModelCollection(
     DataRef ref, {
-    Future<void> Function(Iterable<GenericModel> update)? onUpdate,
+    Future<void> Function(Iterable<DataModel> update)? onUpdate,
     Object? ascendByField,
     Object? descendByField,
     int? limit,
@@ -71,7 +71,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
         .snapshots();
     final result = snapshots.asyncMap((querySnapshot) async {
       final modelsData = querySnapshot.docs.map((e) => e.data());
-      final models = modelsData.map((modelData) => GenericModel(data: modelData));
+      final models = modelsData.map((modelData) => DataModel(data: modelData));
       await onUpdate?.call(models);
       return models;
     });
@@ -238,8 +238,13 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = this.firebaseFirestore.collection(collectionPath);
     final stream = collection.baseQuery().snapshots().asyncMap((e) async {
       for (final doc in e.docs) {
+        final ref = (collectionRef..id = doc.id);
         final operation = DeleteOperation(
-          ref: collectionRef.copyWith(id: doc.id),
+          model: DataModel(
+            data: {
+              Model.K_REF: ref.toJson(),
+            },
+          ),
         );
         result.add(operation);
       }
@@ -262,7 +267,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       Here().debugLogError('whereIn only supports up to 30 values.');
       createdByAnySet = createdByAnySet.take(30).toSet();
     }
-    final collectionPath = Schema.fileRef().collectionPath!;
+    final collectionPath = Schema.filesRef().collectionPath!;
     final collection = this.firebaseFirestore.collection(collectionPath);
     final snapshots = collection
         .baseQuery(limit: limit)

@@ -27,7 +27,7 @@ dependencies:
   _service_interfaces:
     path: ../_service_interfaces
 
-  xyz_gen_annotations: ^0.32.1
+  xyz_gen_annotations: ^0.40.0
   xyz_pod: ^0.31.0
   xyz_utils: ^0.54.0
 
@@ -41,6 +41,8 @@ dependencies:
   meta: any
 
   file_picker: ^8.0.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 ## -----------------------------------------------------------------------------
 

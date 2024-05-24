@@ -39,18 +39,23 @@ final class ProjectUtils {
     final now = DateTime.now();
     final seed = IdUtils.newUuidV4();
     final projectId = IdUtils.newUuidV4();
+    final projectRef = Schema.projectsRef(projectId: projectId);
     final projectPid = IdUtils.idToProjectPid(
       seed: seed,
       projectId: projectId,
     );
+
     final project = ModelProject(
+      ref: projectRef,
       createdAt: now,
       createdBy: userId,
       id: projectId,
       pid: projectPid,
       seed: seed,
     );
+    final projectPubRef = Schema.projectPubsRef(projectPid: projectPid);
     final projectPub = ModelProjectPub(
+      ref: projectPubRef,
       createdAt: now,
       createdBy: userPid,
       whenOpened: {userPid: now},
@@ -60,7 +65,9 @@ final class ProjectUtils {
       description: description,
     );
     final relationshipId = IdUtils.newRelationshipId();
+    final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
     final relationship = ModelRelationship(
+      ref: relationshipRef,
       createdAt: now,
       createdBy: userPid,
       id: relationshipId,
@@ -73,18 +80,9 @@ final class ProjectUtils {
     );
     final future = serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        CreateOperation(
-          ref: Schema.projectsRef(projectId: projectId),
-          model: project,
-        ),
-        CreateOperation(
-          ref: Schema.projectPubsRef(projectPid: projectPid),
-          model: projectPub,
-        ),
-        CreateOperation(
-          ref: Schema.relationshipsRef(relationshipId: relationshipId),
-          model: relationship,
-        ),
+        CreateOperation(model: project),
+        CreateOperation(model: projectPub),
+        CreateOperation(model: relationship),
       ],
     );
     return (
@@ -148,11 +146,19 @@ final class ProjectUtils {
         ),
       for (final projectId in projectIds)
         DeleteOperation(
-          ref: Schema.projectsRef(projectId: projectId),
+          model: ModelProject(
+            ref: Schema.projectsRef(
+              projectId: projectId,
+            ),
+          ),
         ),
       for (final projectPid in pids)
         DeleteOperation(
-          ref: Schema.projectPubsRef(projectPid: projectPid),
+          model: ModelProjectPub(
+            ref: Schema.projectPubsRef(
+              projectPid: projectPid,
+            ),
+          ),
         ),
       ...await JobUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,

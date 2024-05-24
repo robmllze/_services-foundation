@@ -27,7 +27,7 @@ final class RelationshipUtils {
     required ServiceEnvironment serviceEnvironment,
     required String createdBy,
     DateTime? createdAt,
-    GenericModel? def,
+    DataModel? def,
     RelationshipDefType? defType,
     String? newRelationshipId,
     Set<String>? memberPids,
@@ -40,13 +40,8 @@ final class RelationshipUtils {
       defType: defType,
       def: def,
     );
-    final ref = Schema.relationshipsRef(
-      relationshipId: relationship.id!,
-    );
-    await serviceEnvironment.databaseServiceBroker.setModel(
-      relationship,
-      ref,
-    );
+
+    await serviceEnvironment.databaseServiceBroker.setModel(relationship);
   }
 
   //
@@ -56,7 +51,7 @@ final class RelationshipUtils {
   static CreateOperation getCreateRelationshipOperation({
     required String createdBy,
     DateTime? createdAt,
-    GenericModel? def,
+    DataModel? def,
     RelationshipDefType? defType,
     String? newRelationshipId,
     Set<String>? memberPids,
@@ -69,13 +64,7 @@ final class RelationshipUtils {
       defType: defType,
       def: def,
     );
-    final ref = Schema.relationshipsRef(
-      relationshipId: relationship.id!,
-    );
-    return CreateOperation(
-      ref: ref,
-      model: relationship,
-    );
+    return CreateOperation(model: relationship);
   }
 
   //
@@ -85,13 +74,16 @@ final class RelationshipUtils {
   static ModelRelationship newRelationship({
     required String createdBy,
     DateTime? createdAt,
-    GenericModel? def,
+    DataModel? def,
     RelationshipDefType? defType,
     String? newRelationshipId,
     Set<String>? memberPids,
   }) {
+    final relationshipId = newRelationshipId ?? IdUtils.newRelationshipId();
+    final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
     return ModelRelationship(
-      id: newRelationshipId ?? IdUtils.newRelationshipId(),
+      ref: relationshipRef,
+      id: relationshipId,
       createdAt: createdAt ?? DateTime.now(),
       createdBy: createdBy,
       memberPids: {...?memberPids, createdBy},
@@ -196,20 +188,18 @@ final class RelationshipUtils {
     required ServiceEnvironment serviceEnvironment,
     required String relationshipId,
   }) async {
-    final relationshipPath = Schema.relationshipsRef(
-      relationshipId: relationshipId,
-    );
+    final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
     final currentUserId = serviceEnvironment.currentUser?.userId;
     assert(currentUserId != null);
     if (currentUserId != null) {
       await serviceEnvironment.databaseServiceBroker.setModel(
         ModelRelationship(
+          ref: relationshipRef,
           id: relationshipId,
           whenDisabled: {
             currentUserId: DateTime.now(),
           },
         ),
-        relationshipPath,
       );
     }
   }
@@ -225,7 +215,12 @@ final class RelationshipUtils {
   }) async {
     return [
       // Operation to delete the relationship document.
-      DeleteOperation(ref: Schema.relationshipsRef(relationshipId: relationshipId)),
+      DeleteOperation(
+        model: ModelRelationship(
+          ref: Schema.relationshipsRef(relationshipId: relationshipId),
+          id: relationshipId,
+        ),
+      ),
       // Operations to delete the events collection associated with the relationship document.
       ...await serviceEnvironment.databaseQueryBroker.getLazyDeleteCollectionOperations(
         collectionRef: Schema.relationshipEventsRef(relationshipId: relationshipId),
@@ -246,15 +241,8 @@ final class RelationshipUtils {
     required ModelRelationship relationship,
     required Set<String> memberPids,
   }) async {
-    final relationshipId = relationship.id;
-    if (relationshipId != null) {
-      final ref = Schema.relationshipsRef(relationshipId: relationshipId);
-      (relationship.memberPids ??= {}).addAll(memberPids);
-      await serviceEnvironment.databaseServiceBroker.updateModel(
-        relationship,
-        ref,
-      );
-    }
+    (relationship.memberPids ??= {}).addAll(memberPids);
+    await serviceEnvironment.databaseServiceBroker.updateModel(relationship);
   }
 
   //
@@ -268,12 +256,8 @@ final class RelationshipUtils {
   }) async {
     final relationshipId = relationship.id;
     if (relationshipId != null) {
-      final ref = Schema.relationshipsRef(relationshipId: relationshipId);
       (relationship.memberPids ??= {}).removeAll(memberPids);
-      await serviceEnvironment.databaseServiceBroker.updateModel(
-        relationship,
-        ref,
-      );
+      await serviceEnvironment.databaseServiceBroker.updateModel(relationship);
     }
   }
 
@@ -287,16 +271,14 @@ final class RelationshipUtils {
     required String relationshipId,
     required Set<String> memberPids,
   }) {
-    final ref = Schema.relationshipsRef(relationshipId: relationshipId);
-    final update = GenericModel(
+    final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
+    final update = DataModel(
       data: {
+        ModelRelationship.K_REF: relationshipRef.toJson(),
         ModelRelationship.K_MEMBER_PIDS:
             serviceEnvironment.fieldValueBroker.arrayRemoveFieldValue(memberPids.toList()),
       },
     );
-    return UpdateOperation(
-      ref: ref,
-      model: update,
-    );
+    return UpdateOperation(model: update);
   }
 }

@@ -38,18 +38,23 @@ final class OrganizationUtils {
     final now = DateTime.now();
     final seed = IdUtils.newUuidV4();
     final organizationId = IdUtils.newUuidV4();
+    final organizationRef = Schema.organizationsRef(organizationId: organizationId);
     final organizationPid = IdUtils.idToOrganizationPid(
       seed: seed,
       organizationId: organizationId,
     );
+
     final organization = ModelOrganization(
+      ref: organizationRef,
       createdAt: now,
       createdBy: userId,
       id: organizationId,
       pid: organizationPid,
       seed: seed,
     );
+    final organizationPubRef = Schema.organizationPubsRef(organizationPid: organizationPid);
     final organizationPub = ModelOrganizationPub(
+      ref: organizationPubRef,
       createdAt: now,
       createdBy: userPid,
       description: description,
@@ -59,7 +64,9 @@ final class OrganizationUtils {
     );
 
     final relationshipId = IdUtils.newRelationshipId();
+    final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
     final relationship = ModelRelationship(
+      ref: relationshipRef,
       createdAt: now,
       createdBy: userPid,
       defType: RelationshipDefType.USER_AND_ORGANIZATION,
@@ -71,18 +78,9 @@ final class OrganizationUtils {
     );
     final future = serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        CreateOperation(
-          ref: Schema.organizationsRef(organizationId: organizationId),
-          model: organization,
-        ),
-        CreateOperation(
-          ref: Schema.organizationPubsRef(organizationPid: organizationPid),
-          model: organizationPub,
-        ),
-        CreateOperation(
-          ref: Schema.relationshipsRef(relationshipId: relationshipId),
-          model: relationship,
-        ),
+        CreateOperation(model: organization),
+        CreateOperation(model: organizationPub),
+        CreateOperation(model: relationship),
       ],
     );
     return (
@@ -146,11 +144,19 @@ final class OrganizationUtils {
         ),
       for (final organizationId in organizationIds)
         DeleteOperation(
-          ref: Schema.organizationsRef(organizationId: organizationId),
+          model: ModelOrganization(
+            ref: Schema.organizationsRef(
+              organizationId: organizationId,
+            ),
+          ),
         ),
       for (final organizationPid in pids)
         DeleteOperation(
-          ref: Schema.organizationPubsRef(organizationPid: organizationPid),
+          model: ModelOrganizationPub(
+            ref: Schema.organizationPubsRef(
+              organizationPid: organizationPid,
+            ),
+          ),
         ),
       ...await ProjectUtils.getLazyDeleteOperations(
         serviceEnvironment: serviceEnvironment,

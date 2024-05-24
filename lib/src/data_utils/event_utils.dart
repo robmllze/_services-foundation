@@ -238,14 +238,14 @@ final class EventUtils {
     required bool value,
   }) async {
     await serviceEnvironment.databaseServiceBroker.updateModel(
-      GenericModel(
+      DataModel(
         data: {
+          ModelEvent.K_REF: eventsRef.toJson(),
           eventTag: {
             userPid: value ? DateTime.now().toUtc().toIso8601String() : '',
           },
         },
       ),
-      eventsRef,
     );
   }
 
@@ -256,9 +256,9 @@ final class EventUtils {
     required bool value,
   }) {
     return CreateOrUpdateOperation(
-      ref: eventsRef,
-      model: GenericModel(
+      model: DataModel(
         data: {
+          ModelEvent.K_REF: eventsRef.toJson(),
           eventTag: {
             userPid: value ? DateTime.now().toUtc().toIso8601String() : '',
           },
@@ -327,6 +327,7 @@ final class EventUtils {
     required EventDefType eventDefType,
   }) {
     final eventModel = ModelEvent(
+      ref: eventsRef,
       id: eventsRef.id!,
       relationshipId: relationshipId,
       memberPids: {
@@ -335,12 +336,9 @@ final class EventUtils {
       },
       createdAt: DateTime.now(),
       createdBy: senderPid,
-      def: eventDef.toGenericModel(),
+      def: DataModel.fromOrNull(eventDef),
       defType: eventDefType,
     );
-    return CreateOrUpdateOperation(
-      ref: eventsRef,
-      model: eventModel,
-    );
+    return CreateOrUpdateOperation(model: eventModel);
   }
 }

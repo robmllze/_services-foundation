@@ -39,18 +39,23 @@ final class JobUtils {
     final now = DateTime.now();
     final seed = IdUtils.newUuidV4();
     final jobId = IdUtils.newUuidV4();
+    final jobRef = Schema.jobsRef(jobId: jobId);
     final jobPid = IdUtils.idToJobPid(
       seed: seed,
       jobId: jobId,
     );
+
     final job = ModelJob(
+      ref: jobRef,
       createdAt: now,
       createdBy: userId,
       id: jobId,
       pid: jobPid,
       seed: seed,
     );
+    final jobPubRef = Schema.jobPubsRef(jobPid: jobPid);
     final jobPub = ModelJobPub(
+      ref: jobPubRef,
       createdAt: now,
       createdBy: userPid,
       whenOpened: {userPid: now},
@@ -61,6 +66,7 @@ final class JobUtils {
     );
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
+      ref: Schema.relationshipsRef(relationshipId: relationshipId),
       createdAt: now,
       createdBy: userPid,
       defType: RelationshipDefType.JOB_AND_PROJECT,
@@ -73,18 +79,9 @@ final class JobUtils {
     );
     final future = serviceEnvironment.databaseServiceBroker.runBatchOperations(
       [
-        CreateOperation(
-          ref: Schema.jobsRef(jobId: jobId),
-          model: job,
-        ),
-        CreateOperation(
-          ref: Schema.jobPubsRef(jobPid: jobPid),
-          model: jobPub,
-        ),
-        CreateOperation(
-          ref: Schema.relationshipsRef(relationshipId: relationshipId),
-          model: relationship,
-        ),
+        CreateOperation(model: job),
+        CreateOperation(model: jobPub),
+        CreateOperation(model: relationship),
       ],
     );
     return (
@@ -141,11 +138,19 @@ final class JobUtils {
         ),
       for (final jobId in jobIds)
         DeleteOperation(
-          ref: Schema.jobsRef(jobId: jobId),
+          model: ModelJob(
+            ref: Schema.jobsRef(
+              jobId: jobId,
+            ),
+          ),
         ),
       for (final jobPid in pids)
         DeleteOperation(
-          ref: Schema.jobPubsRef(jobPid: jobPid),
+          model: ModelJobPub(
+            ref: Schema.jobPubsRef(
+              jobPid: jobPid,
+            ),
+          ),
         ),
     };
   }
