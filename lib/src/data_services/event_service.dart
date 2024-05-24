@@ -68,5 +68,7 @@ class EventService extends CollectionServiceInterface<ModelEvent> {
   //
 
   @override
-  dynamic fromJson(Map<String, dynamic> data) => ModelEvent.fromJson(data);
+  dynamic fromJson(Map<String, dynamic> data) {
+    return ModelEvent.fromJson(data);
+  }
 }

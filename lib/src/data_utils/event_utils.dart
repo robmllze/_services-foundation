@@ -291,23 +291,6 @@ final class EventUtils {
     required Model eventDef,
     required EventDefType eventDefType,
   }) async {
-    // final eventModel = ModelEvent(
-    //   id: eventsRef.id!,
-    //   relationshipId: relationshipId,
-    //   memberPids: {
-    //     senderPid,
-    //     if (receiverPid != null) receiverPid,
-    //   },
-    //   createdAt: DateTime.now(),
-    //   createdBy: senderPid,
-    //   def: eventDef.toGenericModel(),
-    //   defType: eventDefType,
-    // );
-    // await serviceEnvironment.databaseServiceBroker.setModel(
-    //   eventModel,
-    //   eventsRef,
-    // );
-
     await getSendEventOperation(
       senderPid: senderPid,
       receiverPid: receiverPid,
@@ -336,7 +319,7 @@ final class EventUtils {
       },
       createdAt: DateTime.now(),
       createdBy: senderPid,
-      def: DataModel.fromOrNull(eventDef),
+      def: DataModel(data: eventDef.toJson()),
       defType: eventDefType,
     );
     return CreateOrUpdateOperation(model: eventModel);
