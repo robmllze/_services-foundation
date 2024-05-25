@@ -19,7 +19,7 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
   //
 
-  HiveServiceBroker();
+  const HiveServiceBroker();
 
   //
   //
@@ -98,43 +98,56 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
   //
 
-  /// Executes all operations sequentially. Does not support batch operations
-  /// like Firestore.
+  @override
+  Future<void> runTransaction(
+    Future<void> Function(TransactionInterface transaction) transactionHandler,
+  ) async {
+    final broker = HiveTransactionBroker();
+    await transactionHandler(broker);
+    await broker.commit();
+  }
+
+  //
+  //
+  //
+
   @override
   Future<Iterable<Model?>> runBatchOperations(
     Iterable<BatchOperation> operations,
   ) async {
+    final broker = HiveTransactionBroker();
     final results = <Model?>[];
+
     for (final operation in operations) {
-      final dataRef = operation.model!.ref!;
+      final path = operation.model!.ref!.docPath;
       // Read.
       if (operation.read) {
-        final model = await this.readModel(dataRef);
-        results.add(model);
+        await broker.read(path);
         continue;
       }
-      // Delete
+
+      // Delete.
       if (operation.delete) {
-        await this.deleteModel(dataRef);
-        results.add(null);
+        broker.delete(path);
         continue;
       }
+
       final model = operation.model!;
-      // Create
+      final data = model.toJson();
+
+      // Create.
       if (operation.create) {
-        if (operation.update) {
-          await this.setModel(model);
-        } else {
-          await this.createModel(model);
-        }
-        results.add(model);
+        broker.create(path, data);
+        continue;
       }
-      // Update
+
+      // Update.
       if (operation.update) {
-        await this.updateModel(model);
-        results.add(model);
+        broker.update(path, data);
+        continue;
       }
     }
+    await broker.commit();
     return results;
   }
 }

@@ -30,12 +30,13 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
   final authServiceBroker = FirebaseAuthServiceBroker(
     firebaseAuth: firebaseAuth,
   );
-  final databaseServiceBroker = FirebaseFirestoreServiceBroker(
+
+  final databaseServiceBroker = FirestoreServiceBroker(
     firebaseFirestore: firebaseFirestore,
   );
 
   await Hive.initFlutter();
-  final localDatabaseServiceBroker = HiveServiceBroker();
+  final localDatabaseServiceBroker = const HiveServiceBroker();
 
   final databaseQueryBroker = FirebaseFirestoreQueryBroker(
     firebaseFirestore: firebaseFirestore,

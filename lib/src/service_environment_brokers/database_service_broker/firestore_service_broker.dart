@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
+class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
   //
   //
@@ -25,7 +25,7 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   //
   //
 
-  FirebaseFirestoreServiceBroker({
+  FirestoreServiceBroker({
     required this.firebaseFirestore,
   });
 
@@ -100,9 +100,16 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> runTransaction(
-    Future<void> Function(dynamic transaction) transactionHandler,
+    Future<void> Function(TransactionInterface broker) transactionHandler,
   ) async {
-    await this.firebaseFirestore.runTransaction(transactionHandler);
+    await this.firebaseFirestore.runTransaction((transaction) async {
+      final firestoreTransaction = FirestoreTransactionBroker(
+        this.firebaseFirestore,
+        transaction,
+      );
+      await transactionHandler(firestoreTransaction);
+      await firestoreTransaction.commit();
+    });
   }
 
   //
@@ -113,24 +120,20 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
   Future<Iterable<Model?>> runBatchOperations(
     Iterable<BatchOperation> operations,
   ) async {
+    final broker = FirestoreBatchTransactionBroker(this.firebaseFirestore);
     final results = <Model?>[];
-    WriteBatch? writeBatch;
+
     for (final operation in operations) {
-      final dataRef = operation.model!.ref!;
-      final docRef = this.firebaseFirestore.doc(dataRef.docPath);
+      final path = operation.model!.ref!.docPath;
       // Read.
       if (operation.read) {
-        final model = await this.readModel(dataRef);
-        results.add(model);
+        await broker.read(path);
         continue;
       }
 
-      writeBatch ??= this.firebaseFirestore.batch();
-
       // Delete.
       if (operation.delete) {
-        writeBatch.delete(docRef);
-        results.add(null);
+        broker.delete(path);
         continue;
       }
 
@@ -139,24 +142,17 @@ class FirebaseFirestoreServiceBroker extends DatabaseServiceInterface {
 
       // Create.
       if (operation.create) {
-        writeBatch.set(
-          docRef,
-          data,
-          // Create and update.
-          SetOptions(merge: operation.update),
-        );
-        results.add(model);
+        broker.create(path, data);
         continue;
       }
 
       // Update.
       if (operation.update) {
-        writeBatch.update(docRef, data);
-        results.add(model);
+        broker.update(path, data);
         continue;
       }
     }
-    await writeBatch?.commit();
+    await broker.commit();
     return results;
   }
 }
