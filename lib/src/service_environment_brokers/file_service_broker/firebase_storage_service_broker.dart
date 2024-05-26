@@ -43,7 +43,8 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   @override
   Future<(Uri, ModelFileEntry)?> downloadUrl(DataRef ref) async {
     try {
-      final fileEntry = ModelFileEntry.from(await this.databaseServiceBroker.readModel(ref));
+      final fileEntry =
+          (await this.databaseServiceBroker.readModel(ref, ModelFileEntry.fromJsonOrNull))!;
       final storagePath = fileEntry.storagePath!;
       var downloadUrl = fileEntry.downloadUrl;
       if (downloadUrl != null) {
@@ -65,7 +66,8 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   @override
   Future<(Uint8List, ModelFileEntry)?> downloadFileFromRef(DataRef ref) async {
     try {
-      final fileEntry = ModelFileEntry.from(await this.databaseServiceBroker.readModel(ref));
+      final fileEntry =
+          (await this.databaseServiceBroker.readModel(ref, ModelFileEntry.fromJsonOrNull))!;
       final data = (await this.downloadFile(fileEntry))!;
       return (data, fileEntry);
     } catch (_) {
@@ -210,7 +212,8 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
 
   @override
   Future<void> deleteFile(DataRef ref) async {
-    final fileEntry = ModelFileEntry.from(await this.databaseServiceBroker.readModel(ref));
+    final fileEntry =
+        (await this.databaseServiceBroker.readModel(ref, ModelFileEntry.fromJsonOrNull))!;
     final storagePath = fileEntry.storagePath!;
     final storageRef = this.firebaseStorage.ref(storagePath);
     await storageRef.delete();
@@ -226,7 +229,8 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
     required DataRef pubRef,
     required String fileId,
   }) async {
-    final userPub = ModelUserPub.from(await this.databaseServiceBroker.readModel(pubRef));
+    final userPub =
+        (await this.databaseServiceBroker.readModel(pubRef, PublicModel.fromJsonOrNull))!;
     final file = userPub.fileBook?[fileId];
     if (file != null) {
       final storagePath = file.storagePath!;

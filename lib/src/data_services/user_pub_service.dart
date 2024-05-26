@@ -34,7 +34,7 @@ class UserPubService extends DocumentServiceInterface<ModelUserPub> {
   //
 
   @override
-  ModelUserPub fromJson(Map<String, dynamic> data) {
-    return ModelUserPub.fromJson(data);
+  ModelUserPub? fromJsonOrNull(Map<String, dynamic>? data) {
+    return ModelUserPub.fromJsonOrNull(data);
   }
 }

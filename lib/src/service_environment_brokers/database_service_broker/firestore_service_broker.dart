@@ -34,11 +34,14 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<DataModel?> streamModel(DataRef ref) {
+  Stream<TModel?> streamModel<TModel extends Model>(
+    DataRef ref,
+    TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
+  ) {
     final docRef = this.firestore.doc(ref.docPath);
     return docRef.snapshots().asyncMap((snapshot) async {
       final modelData = snapshot.data();
-      final model = modelData != null ? DataModel(data: modelData) : null;
+      final model = fromJsonOrNull(modelData);
       return model;
     });
   }
@@ -48,8 +51,9 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<Iterable<DataModel>> streamModelCollection(
-    DataRef ref, {
+  Stream<Iterable<TModel?>> streamModelCollection<TModel extends Model>(
+    DataRef ref,
+    TModel? Function(Map<String, dynamic>? data) fromJsonOrNull, {
     Object? ascendByField,
     Object? descendByField,
     int? limit,
@@ -64,7 +68,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
         .snapshots();
     final result = snapshots.asyncMap((querySnapshot) async {
       final modelsData = querySnapshot.docs.map((e) => e.data());
-      final models = modelsData.map((modelData) => DataModel(data: modelData));
+      final models = modelsData.map((e) => fromJsonOrNull(e));
       return models;
     });
     return result;
@@ -75,7 +79,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> createModel(Model model) async {
+  Future<void> createModel<TModel extends Model>(TModel model) async {
     final documentPath = model.ref!.docPath;
     final modelRef = this.firestore.doc(documentPath);
     final modelData = model.toJson();
@@ -88,7 +92,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> setModel(Model model) async {
+  Future<void> setModel<TModel extends Model>(TModel model) async {
     final documentPath = model.ref!.docPath;
     final modelRef = this.firestore.doc(documentPath);
     final modelData = model.toJson();
@@ -101,15 +105,14 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<TModel?> readModel<TModel extends Model>(
-    DataRef ref, [
-    TModel? Function(Model? model)? convert,
-  ]) async {
+    DataRef ref,
+    TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
+  ) async {
     final modelRef = this.firestore.doc(ref.docPath);
     final snapshot = await modelRef.get();
-    final modelData = snapshot.data();
-    final genericModel = DataModel(data: modelData);
-    final model = modelData != null ? convert?.call(genericModel) ?? genericModel : null;
-    return model as TModel?;
+    final data = snapshot.data();
+    final model = fromJsonOrNull(data);
+    return model;
   }
 
   //
@@ -117,7 +120,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> updateModel(Model model) async {
+  Future<void> updateModel<TModel extends Model>(TModel model) async {
     final documentPath = model.ref!.docPath;
     final modelRef = this.firestore.doc(documentPath);
     final modelData = model.toJson();
@@ -158,11 +161,11 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<Iterable<Model?>> runBatchOperations(
-    Iterable<BatchOperation> operations,
+  Future<Iterable<TModel?>> runBatchOperations<TModel extends Model>(
+    Iterable<BatchOperation<TModel>> operations,
   ) async {
     final broker = FirestoreBatchTransactionBroker(this.firestore);
-    final results = <Model?>[];
+    final results = <TModel?>[];
 
     for (final operation in operations) {
       final path = operation.model!.ref!.docPath;

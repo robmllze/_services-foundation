@@ -35,7 +35,10 @@ class SharedServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<DataModel?> streamModel(DataRef ref) {
+  Stream<TModel?> streamModel<TModel extends Model>(
+    DataRef ref,
+    TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
+  ) {
     // TODO: implement streamModel
     throw UnimplementedError();
   }
@@ -45,8 +48,9 @@ class SharedServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<Iterable<DataModel?>> streamModelCollection(
-    DataRef ref, {
+  Stream<Iterable<TModel?>> streamModelCollection<TModel extends Model>(
+    DataRef ref,
+    TModel? Function(Map<String, dynamic>? data) fromJsonOrNull, {
     Object? ascendByField,
     Object? descendByField,
     int? limit,
@@ -60,10 +64,10 @@ class SharedServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> createModel(Model model) async {
+  Future<void> createModel<TModel extends Model>(TModel model) async {
     final ref = model.ref!;
     final documentPath = ref.docPath;
-    final existingModel = await this.readModel(ref);
+    final existingModel = await this.readModel(ref, DataModel.fromJsonOrNull);
     if (existingModel == null) {
       final modelString = model.toJsonString();
       await this.sharedPreferences.setString(documentPath, modelString);
@@ -77,7 +81,7 @@ class SharedServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> setModel(Model model) async {
+  Future<void> setModel<TModel extends Model>(TModel model) async {
     final documentPath = model.ref!.docPath;
     final modelString = model.toJsonString();
     await this.sharedPreferences.setString(documentPath, modelString);
@@ -89,15 +93,14 @@ class SharedServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<TModel?> readModel<TModel extends Model>(
-    DataRef ref, [
-    TModel? Function(Model? model)? convert,
-  ]) async {
+    DataRef ref,
+    TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
+  ) async {
     final value = this.sharedPreferences.getString(ref.docPath);
     if (value != null) {
       final data = jsonDecode(value);
-      final genericModel = DataModel(data: data);
-      final model = convert?.call(genericModel) ?? genericModel;
-      return model as TModel?;
+      final model = fromJsonOrNull(data);
+      return model;
     }
     return null;
   }
@@ -107,7 +110,7 @@ class SharedServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> updateModel(Model model) async {
+  Future<void> updateModel<TModel extends Model>(TModel model) async {
     final documentPath = model.ref!.docPath;
     final modelString = model.toJsonString();
     await this.sharedPreferences.setString(documentPath, modelString);
@@ -142,13 +145,13 @@ class SharedServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<Iterable<Model?>> runBatchOperations(
-    Iterable<BatchOperation> operations,
+  Future<Iterable<TModel?>> runBatchOperations<TModel extends Model>(
+    Iterable<BatchOperation<TModel>> operations,
   ) async {
     final broker = SharedPreferencesTransactionBroker(
       this.sharedPreferences,
     );
-    final results = <Model?>[];
+    final results = <TModel?>[];
 
     for (final operation in operations) {
       final path = operation.model!.ref!.docPath;

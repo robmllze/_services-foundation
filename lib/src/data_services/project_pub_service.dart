@@ -34,7 +34,7 @@ class ProjectPubService extends DocumentServiceInterface<ModelProjectPub> {
   //
 
   @override
-  ModelProjectPub fromJson(Map<String, dynamic> data) {
-    return ModelProjectPub.fromJson(data);
+  ModelProjectPub? fromJsonOrNull(Map<String, dynamic>? data) {
+    return ModelProjectPub.fromJsonOrNull(data);
   }
 }

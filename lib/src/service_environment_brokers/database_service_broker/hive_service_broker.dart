@@ -28,26 +28,24 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
   //r
 
-  Stream<DataModel?> streamModel(DataRef ref) {
-    Stream<DataModel?> stream2Creator(Box box) {
-      late final StreamController<DataModel?> controller;
-      void addValue(dynamic map) {
-        final data = letMap(map)?.mapKeys((e) => e.toString());
-        if (data != null && data.isNotEmpty) {
-          final model = DataModel(data: data);
-          controller.add(model);
-        } else {
-          controller.add(null);
-        }
+  Stream<TModel?> streamModel<TModel extends Model>(
+    DataRef ref,
+    TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
+  ) {
+    Stream<TModel?> stream2Creator(Box box) {
+      late final StreamController<TModel?> controller;
+      void setData(Map<String, dynamic>? data) {
+        final model = fromJsonOrNull(data);
+        controller.add(model);
       }
 
-      controller = StreamController<DataModel?>(
+      controller = StreamController<TModel?>(
         onListen: () async {
-          final data = box.get('data');
-          addValue(data);
-          final streamSubscription = box.watch(key: 'data').listen(
-            (event) {
-              addValue(event.value);
+          final data = box.getData();
+          setData(data);
+          final streamSubscription = box.watchData().listen(
+            (data) {
+              setData(data);
             },
             onError: controller.addError,
             onDone: controller.close,
@@ -65,7 +63,7 @@ class HiveServiceBroker extends DatabaseServiceInterface {
     final stream1 = Stream.fromFuture(() {
       return HiveBoxManager.openBox(ref.docPath);
     }());
-    final stream2 = firstToSecondStream<Box, DataModel?>(
+    final stream2 = firstToSecondStream<Box, TModel?>(
       stream1,
       stream2Creator,
     );
@@ -77,9 +75,9 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<Iterable<DataModel?>> streamModelCollection(
-    DataRef ref, {
-    Future<void> Function(Iterable<DataModel?> model)? onUpdate,
+  Stream<Iterable<TModel?>> streamModelCollection<TModel extends Model>(
+    DataRef ref,
+    TModel? Function(Map<String, dynamic>? data) fromJsonOrNull, {
     Object? ascendByField,
     Object? descendByField,
     int? limit,
@@ -93,17 +91,17 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> createModel(Model model) async {
-    final ref = model.ref!;
-    final documentPath = ref.docPath;
-    final existingModel = await this.readModel(ref);
-    if (existingModel == null) {
-      final box = await Hive.openBox(documentPath);
-      await box.putAll(model.toJson());
-      await box.close();
-    } else {
-      throw Exception('Model already exists at $documentPath');
-    }
+  Future<void> createModel<TModel extends Model>(TModel model) async {
+    // final ref = model.ref!;
+    // final documentPath = ref.docPath;
+    // final existingModel = await this.readModel(ref);
+    // if (existingModel == null) {
+    //   final box = await Hive.openBox(documentPath);
+    //   await box.putAll(model.toJson());
+    //   await box.close();
+    // } else {
+    //   throw Exception('Model already exists at $documentPath');
+    // }
   }
 
   //
@@ -115,18 +113,16 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> setModel(Model model) async {
+  Future<void> setModel<TModel extends Model>(TModel model) async {
     // Set the model data.
     {
-      await executeBoxActionOnce(model.ref!.docPath, (box) async {
-        final a = box.get('data') ?? {};
-        printGreen(a);
-        final b = model.toJson();
-        final c = mergeDataDeep(a, b);
-        printGreen(c);
-        await box.put('data', c);
-        printLightGreen('success');
-      });
+      final documentPath = model.ref!.docPath;
+      final box = await HiveBoxManager.openBox(documentPath);
+      final a = box.getData();
+      final b = model.toJson();
+      final c = mergeDataDeep(a, b);
+      await box.putData(c);
+      await HiveBoxManager.closeBox(documentPath);
     }
     // Add a reference to the model to the collection document.
 
@@ -155,17 +151,14 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<TModel?> readModel<TModel extends Model>(
-    DataRef ref, [
-    TModel? Function(Model? model)? convert,
-  ]) async {
-    final box = await Hive.openBox(ref.docPath);
-    final data = box.toMap().mapKeys((e) => e.toString());
-    if (data.isNotEmpty) {
-      final genericModel = DataModel(data: data);
-      final model = convert?.call(genericModel) ?? genericModel;
-      return model as TModel?;
-    }
-    return null;
+    DataRef ref,
+    TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
+  ) async {
+    final box = await HiveBoxManager.openBox(ref.docPath);
+    final boxData = box.getData();
+    final model = fromJsonOrNull(boxData);
+    await HiveBoxManager.closeBox(ref.docPath);
+    return model;
   }
 
   //
@@ -173,12 +166,7 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> updateModel(Model model) async {
-    final documentPath = model.ref!.docPath;
-    final box = await Hive.openBox(documentPath);
-    await box.putAll(model.toJson());
-    await box.close();
-  }
+  Future<void> updateModel<TModel extends Model>(TModel model) async {}
 
   //
   //
@@ -186,9 +174,10 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> deleteModel(DataRef ref) async {
-    await executeBoxActionOnce(ref.docPath, (box) async {
-      await box.put('data', null);
-    });
+    final documentPath = ref.docPath;
+    final box = await HiveBoxManager.openBox(documentPath);
+    await box.putData(null);
+    await HiveBoxManager.closeBox(documentPath);
   }
 
   //
@@ -209,11 +198,11 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<Iterable<Model?>> runBatchOperations(
-    Iterable<BatchOperation> operations,
+  Future<Iterable<TModel?>> runBatchOperations<TModel extends Model>(
+    Iterable<BatchOperation<TModel>> operations,
   ) async {
     final broker = HiveTransactionBroker();
-    final results = <Model?>[];
+    final results = <TModel?>[];
 
     for (final operation in operations) {
       final path = operation.model!.ref!.docPath;
@@ -251,31 +240,53 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-/// Opens a box, executes an action, and immediatly closes the box. This
-/// simplifies the process of opening and closing a box for a single action.
-/// If a box is already open, say by some stream, it will not be closed after
-/// the action is executed.
-Future<void> executeBoxActionOnce(
-  String documentPath,
-  Future<void> Function(Box box) action,
-) async {
-  final wasOpen = HiveBoxManager.isBoxOpen(documentPath);
-  if (!wasOpen) {
-    await HiveBoxManager.openBox(documentPath);
+extension DataExtensionOnBox on Box {
+  //
+  //
+  //
+
+  Map<String, dynamic> toData() {
+    final data = this.toMap();
+    return data.mapKeys((e) {
+      return e.toString();
+    });
   }
-  final box = HiveBoxManager.box(documentPath)!;
-  await action(box);
-  if (!wasOpen) {
-    await box.close();
+
+  Map<String, dynamic>? getData() {
+    return letMap(this.get('data'))?.mapKeys((e) {
+      return e?.toString();
+    }).nonNullKeys;
+  }
+
+  Stream<Map<String, dynamic>?> watchData() {
+    return this.watch(key: 'data').map((e) {
+      return letMap(e.value)?.mapKeys((e) => e.toString()).nonNullKeys;
+    });
+  }
+
+  Future<void> putData(Map<String, dynamic>? data) {
+    return this.put('data', data);
   }
 }
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 final class HiveBoxManager {
+  //
+  //
+  //
+
   const HiveBoxManager._();
 
+  //
+  //
+  //
+
   static final Map<String, _BoxHolder> _boxes = {};
+
+  //
+  //
+  //
 
   static Future<Box> openBox(String name) async {
     if (isBoxOpen(name)) {
@@ -288,6 +299,10 @@ final class HiveBoxManager {
     }
   }
 
+  //
+  //
+  //
+
   static Future<void> closeBox(String name) async {
     if (isBoxOpen(name)) {
       _boxes[name]!.referenceCount--;
@@ -298,18 +313,24 @@ final class HiveBoxManager {
     }
   }
 
+  //
+  //
+  //
+
   static bool isBoxOpen(String name) {
     return _boxes.containsKey(name);
   }
 
+  //
+  //
+  //
+
   static Box? box(String name) {
-    if (isBoxOpen(name)) {
-      return _boxes[name]!.box;
-    } else {
-      return null;
-    }
+    return _boxes[name]?.box;
   }
 }
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 class _BoxHolder {
   int referenceCount = 1;

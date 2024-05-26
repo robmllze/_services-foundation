@@ -35,8 +35,8 @@ class FileService extends CollectionServiceInterface<ModelFileEntry> {
   //
 
   @override
-  dynamic fromJson(Map<String, dynamic> data) {
-    return ModelFileEntry.fromJson(data);
+  ModelFileEntry? fromJsonOrNull(Map<String, dynamic>? data) {
+    return ModelFileEntry.fromJsonOrNull(data);
   }
 
   //
