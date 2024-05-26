@@ -9,74 +9,26 @@
 //.title~
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:flutter/material.dart' show StringCharacters;
 
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
+final class FirestoreQueryBroker extends DatabaseQueryInterface<FirestoreServiceBroker> {
   //
   //
   //
 
-  final FirebaseFirestore firebaseFirestore;
-
-  //
-  //
-  //
-
-  FirebaseFirestoreQueryBroker({
-    required this.firebaseFirestore,
+  const FirestoreQueryBroker({
+    required super.databaseServiceBroker,
   });
 
   //
   //
   //
 
-  @override
-  Stream<DataModel?> streamModel(
-    DataRef ref, [
-    Future<void> Function(DataModel? update)? onUpdate,
-  ]) {
-    final docRef = this.firebaseFirestore.doc(ref.docPath);
-    return docRef.snapshots().asyncMap((snapshot) async {
-      final modelData = snapshot.data();
-      final model = modelData != null ? DataModel(data: modelData) : null;
-      await onUpdate?.call(model);
-      return model;
-    });
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<DataModel>> streamModelCollection(
-    DataRef ref, {
-    Future<void> Function(Iterable<DataModel> update)? onUpdate,
-    Object? ascendByField,
-    Object? descendByField,
-    int? limit,
-  }) {
-    final collection = this.firebaseFirestore.collection(ref.collectionPath!);
-    final snapshots = collection
-        .baseQuery(
-          ascendByField: ascendByField,
-          descendByField: descendByField,
-          limit: limit,
-        )
-        .snapshots();
-    final result = snapshots.asyncMap((querySnapshot) async {
-      final modelsData = querySnapshot.docs.map((e) => e.data());
-      final models = modelsData.map((modelData) => DataModel(data: modelData));
-      await onUpdate?.call(models);
-      return models;
-    });
-    return result;
-  }
+  FirebaseFirestore get _firestore => this.databaseServiceBroker.firestore;
 
   //
   //
@@ -88,7 +40,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
     int? limit = 10,
   }) {
     final collectionPath = Schema.userPubsRef().collectionPath!;
-    final collection = firebaseFirestore.collection(collectionPath);
+    final collection = this._firestore.collection(collectionPath);
     // NB: Emails and searchable names must be lowercase for this function to work.
     final searchableQuery = nameOrEmailQuery.toLowerCase();
     // Text length must be at least 2 to start the query.
@@ -155,7 +107,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       return const Stream.empty();
     }
     final collectionPath = collectionRef.collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
+    final collection = this._firestore.collection(collectionPath);
     var snapshots = collection.baseQuery(limit: elementSet.length);
     for (final elementKey in elementKeys) {
       snapshots = snapshots.where(elementKey, whereIn: elementSet);
@@ -183,7 +135,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       pidSet = pidSet.take(30).toSet();
     }
     final collectionPath = Schema.relationshipsRef().collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
+    final collection = this._firestore.collection(collectionPath);
     var relationships = collection
         .baseQuery(limit: limit)
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContainsAny: pidSet)
@@ -212,7 +164,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       pidSet = pidSet.take(30).toSet();
     }
     final collectionPath = Schema.relationshipsRef().collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
+    final collection = this._firestore.collection(collectionPath);
     var relationships = collection
         .baseQuery(limit: limit)
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContains: pidSet)
@@ -235,7 +187,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
   }) async {
     final result = <BatchOperation>[];
     final collectionPath = collectionRef.collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
+    final collection = this._firestore.collection(collectionPath);
     final stream = collection.baseQuery().snapshots().asyncMap((e) async {
       for (final doc in e.docs) {
         final ref = (collectionRef..id = doc.id);
@@ -268,7 +220,7 @@ final class FirebaseFirestoreQueryBroker extends DatabaseQueryInterface {
       createdByAnySet = createdByAnySet.take(30).toSet();
     }
     final collectionPath = Schema.filesRef().collectionPath!;
-    final collection = this.firebaseFirestore.collection(collectionPath);
+    final collection = this._firestore.collection(collectionPath);
     final snapshots = collection
         .baseQuery(limit: limit)
         .where(

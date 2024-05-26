@@ -19,15 +19,56 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
   //
 
-  final FirebaseFirestore firebaseFirestore;
+  final FirebaseFirestore firestore;
 
   //
   //
   //
 
   FirestoreServiceBroker({
-    required this.firebaseFirestore,
+    required this.firestore,
   });
+
+  //
+  //
+  //
+
+  @override
+  Stream<DataModel?> streamModel(DataRef ref) {
+    final docRef = this.firestore.doc(ref.docPath);
+    return docRef.snapshots().asyncMap((snapshot) async {
+      final modelData = snapshot.data();
+      final model = modelData != null ? DataModel(data: modelData) : null;
+      return model;
+    });
+  }
+
+  //
+  //
+  //
+
+  @override
+  Stream<Iterable<DataModel>> streamModelCollection(
+    DataRef ref, {
+    Object? ascendByField,
+    Object? descendByField,
+    int? limit,
+  }) {
+    final collection = this.firestore.collection(ref.collectionPath!);
+    final snapshots = collection
+        .baseQuery(
+          ascendByField: ascendByField,
+          descendByField: descendByField,
+          limit: limit,
+        )
+        .snapshots();
+    final result = snapshots.asyncMap((querySnapshot) async {
+      final modelsData = querySnapshot.docs.map((e) => e.data());
+      final models = modelsData.map((modelData) => DataModel(data: modelData));
+      return models;
+    });
+    return result;
+  }
 
   //
   //
@@ -36,7 +77,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   @override
   Future<void> createModel(Model model) async {
     final documentPath = model.ref!.docPath;
-    final modelRef = this.firebaseFirestore.doc(documentPath);
+    final modelRef = this.firestore.doc(documentPath);
     final modelData = model.toJson();
     await modelRef.set(modelData, SetOptions(merge: false));
   }
@@ -49,7 +90,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   @override
   Future<void> setModel(Model model) async {
     final documentPath = model.ref!.docPath;
-    final modelRef = this.firebaseFirestore.doc(documentPath);
+    final modelRef = this.firestore.doc(documentPath);
     final modelData = model.toJson();
     await modelRef.set(modelData, SetOptions(merge: true));
   }
@@ -63,7 +104,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
     DataRef ref, [
     TModel? Function(Model? model)? convert,
   ]) async {
-    final modelRef = this.firebaseFirestore.doc(ref.docPath);
+    final modelRef = this.firestore.doc(ref.docPath);
     final snapshot = await modelRef.get();
     final modelData = snapshot.data();
     final genericModel = DataModel(data: modelData);
@@ -78,7 +119,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   @override
   Future<void> updateModel(Model model) async {
     final documentPath = model.ref!.docPath;
-    final modelRef = this.firebaseFirestore.doc(documentPath);
+    final modelRef = this.firestore.doc(documentPath);
     final modelData = model.toJson();
     await modelRef.update(modelData);
   }
@@ -90,7 +131,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   @override
   Future<void> deleteModel(DataRef ref) async {
     final documentPath = ref.docPath;
-    final modelRef = this.firebaseFirestore.doc(documentPath);
+    final modelRef = this.firestore.doc(documentPath);
     await modelRef.delete();
   }
 
@@ -102,9 +143,9 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   Future<void> runTransaction(
     Future<void> Function(TransactionInterface broker) transactionHandler,
   ) async {
-    await this.firebaseFirestore.runTransaction((transaction) async {
+    await this.firestore.runTransaction((transaction) async {
       final firestoreTransaction = FirestoreTransactionBroker(
-        this.firebaseFirestore,
+        this.firestore,
         transaction,
       );
       await transactionHandler(firestoreTransaction);
@@ -120,7 +161,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   Future<Iterable<Model?>> runBatchOperations(
     Iterable<BatchOperation> operations,
   ) async {
-    final broker = FirestoreBatchTransactionBroker(this.firebaseFirestore);
+    final broker = FirestoreBatchTransactionBroker(this.firestore);
     final results = <Model?>[];
 
     for (final operation in operations) {

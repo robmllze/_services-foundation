@@ -35,6 +35,31 @@ class SharedServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
+  Stream<DataModel?> streamModel(DataRef ref) {
+    // TODO: implement streamModel
+    throw UnimplementedError();
+  }
+
+  //
+  //
+  //
+
+  @override
+  Stream<Iterable<DataModel?>> streamModelCollection(
+    DataRef ref, {
+    Object? ascendByField,
+    Object? descendByField,
+    int? limit,
+  }) {
+    // TODO: implement streamModelCollection
+    throw UnimplementedError();
+  }
+
+  //
+  //
+  //
+
+  @override
   Future<void> createModel(Model model) async {
     final ref = model.ref!;
     final documentPath = ref.docPath;

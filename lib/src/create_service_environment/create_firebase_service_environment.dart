@@ -25,21 +25,21 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
   required String functionsRegion,
 }) async {
   final app = await Firebase.initializeApp(options: firebaseOptions);
-  final firebaseFirestore = FirebaseFirestore.instanceFor(app: app);
+  final firestore = FirebaseFirestore.instanceFor(app: app);
   final firebaseAuth = FirebaseAuth.instanceFor(app: app);
   final authServiceBroker = FirebaseAuthServiceBroker(
     firebaseAuth: firebaseAuth,
   );
 
   final databaseServiceBroker = FirestoreServiceBroker(
-    firebaseFirestore: firebaseFirestore,
+    firestore: firestore,
   );
 
   await Hive.initFlutter();
   final localDatabaseServiceBroker = const HiveServiceBroker();
 
-  final databaseQueryBroker = FirebaseFirestoreQueryBroker(
-    firebaseFirestore: firebaseFirestore,
+  final databaseQueryBroker = FirestoreQueryBroker(
+    databaseServiceBroker: databaseServiceBroker,
   );
   final functionsServiceBroker = FirebaseFunctionsServiceBroker(
     region: functionsRegion,
