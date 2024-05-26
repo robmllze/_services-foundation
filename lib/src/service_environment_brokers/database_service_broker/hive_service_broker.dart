@@ -8,11 +8,14 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+// TODO: We need a smart way to open and close boxes. Say we stream, the problem is,
+// some async function may close the box mid-stream.
 
 class HiveServiceBroker extends DatabaseServiceInterface {
   //
@@ -23,17 +26,15 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
   //
   //
-  //
+  //r
 
-  @override
-  Stream<DataModel?> streamModel(DataRef ref, [void Function(DataModel? model)? onUpdate]) {
-    Stream<DataModel?> secondStreamCreator(Box box) {
+  Stream<DataModel?> streamModel(DataRef ref) {
+    Stream<DataModel?> stream2Creator(Box box) {
       late final StreamController<DataModel?> controller;
       void addValue(dynamic map) {
-        final value = letMap(map)?.map((key, value) => MapEntry(key.toString(), value));
-        if (value != null) {
-          final model = DataModel(data: map);
-          onUpdate?.call(model);
+        final data = letMap(map)?.mapKeys((e) => e.toString());
+        if (data != null && data.isNotEmpty) {
+          final model = DataModel(data: data);
           controller.add(model);
         } else {
           controller.add(null);
@@ -42,12 +43,11 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
       controller = StreamController<DataModel?>(
         onListen: () async {
-          final temp = box.toMap().mapKeys((e) => e.toString());
-          addValue(temp);
-          final streamSubscription = box.watch().listen(
+          final data = box.get('data');
+          addValue(data);
+          final streamSubscription = box.watch(key: 'data').listen(
             (event) {
-              temp[event.key.toString()] = event.value;
-              addValue(temp);
+              addValue(event.value);
             },
             onError: controller.addError,
             onDone: controller.close,
@@ -55,21 +55,21 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
           controller.onCancel = () async {
             await streamSubscription.cancel();
-            await box.close();
+            await HiveBoxManager.closeBox(ref.docPath);
           };
         },
       );
       return controller.stream;
     }
 
-    final firstStream = Stream.fromFuture(() {
-      return Hive.openBox(ref.docPath);
+    final stream1 = Stream.fromFuture(() {
+      return HiveBoxManager.openBox(ref.docPath);
     }());
-    final combinedStream = firstToSecondStream<Box, DataModel?>(
-      firstStream,
-      secondStreamCreator,
+    final stream2 = firstToSecondStream<Box, DataModel?>(
+      stream1,
+      stream2Creator,
     );
-    return combinedStream;
+    return stream2;
   }
 
   //
@@ -77,11 +77,13 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<Iterable<DataModel?>> streamModelCollection(DataRef ref,
-      {Future<void> Function(Iterable<DataModel?> model)? onUpdate,
-      Object? ascendByField,
-      Object? descendByField,
-      int? limit}) {
+  Stream<Iterable<DataModel?>> streamModelCollection(
+    DataRef ref, {
+    Future<void> Function(Iterable<DataModel?> model)? onUpdate,
+    Object? ascendByField,
+    Object? descendByField,
+    int? limit,
+  }) {
     // TODO: implement streamModelCollection
     throw UnimplementedError();
   }
@@ -116,13 +118,14 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   Future<void> setModel(Model model) async {
     // Set the model data.
     {
-      final ref = model.ref!;
-      final documentPath = ref.docPath;
-      await executeBoxActionOnce(documentPath, (box) async {
-        final a = box.toMap();
+      await executeBoxActionOnce(model.ref!.docPath, (box) async {
+        final a = box.get('data') ?? {};
+        printGreen(a);
         final b = model.toJson();
         final c = mergeDataDeep(a, b);
-        await box.putAll(c);
+        printGreen(c);
+        await box.put('data', c);
+        printLightGreen('success');
       });
     }
     // Add a reference to the model to the collection document.
@@ -183,10 +186,9 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> deleteModel(DataRef ref) async {
-    final documentPath = ref.docPath;
-    final box = await Hive.openBox(documentPath);
-    await box.deleteFromDisk();
-    await box.close();
+    await executeBoxActionOnce(ref.docPath, (box) async {
+      await box.put('data', null);
+    });
   }
 
   //
@@ -257,13 +259,61 @@ Future<void> executeBoxActionOnce(
   String documentPath,
   Future<void> Function(Box box) action,
 ) async {
-  final isBoxOpen = Hive.isBoxOpen(documentPath);
-  if (!isBoxOpen) {
-    await Hive.openBox(documentPath);
+  final wasOpen = HiveBoxManager.isBoxOpen(documentPath);
+  if (!wasOpen) {
+    await HiveBoxManager.openBox(documentPath);
   }
-  final box = Hive.box(documentPath);
+  final box = HiveBoxManager.box(documentPath)!;
   await action(box);
-  if (!isBoxOpen) {
+  if (!wasOpen) {
     await box.close();
   }
+}
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+final class HiveBoxManager {
+  const HiveBoxManager._();
+
+  static final Map<String, _BoxHolder> _boxes = {};
+
+  static Future<Box> openBox(String name) async {
+    if (isBoxOpen(name)) {
+      _boxes[name]!.referenceCount++;
+      return _boxes[name]!.box;
+    } else {
+      var box = await Hive.openBox(name);
+      _boxes[name] = _BoxHolder(box);
+      return box;
+    }
+  }
+
+  static Future<void> closeBox(String name) async {
+    if (isBoxOpen(name)) {
+      _boxes[name]!.referenceCount--;
+      if (_boxes[name]!.referenceCount == 0) {
+        await _boxes[name]!.box.close();
+        _boxes.remove(name);
+      }
+    }
+  }
+
+  static bool isBoxOpen(String name) {
+    return _boxes.containsKey(name);
+  }
+
+  static Box? box(String name) {
+    if (isBoxOpen(name)) {
+      return _boxes[name]!.box;
+    } else {
+      return null;
+    }
+  }
+}
+
+class _BoxHolder {
+  int referenceCount = 1;
+  Box box;
+
+  _BoxHolder(this.box);
 }

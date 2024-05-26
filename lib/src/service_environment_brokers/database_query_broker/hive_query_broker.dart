@@ -12,14 +12,14 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-final class HiveQueryBroker extends DatabaseQueryInterface<HiveServiceBroker> {
+final class HiveQueryBroker extends DatabaseQueryInterface {
   //
   //
   //
 
   const HiveQueryBroker({
-    required super.databaseServiceBroker,
-  });
+    required HiveServiceBroker databaseServiceBroker,
+  }) : super(databaseServiceBroker: databaseServiceBroker);
 
   //
   //

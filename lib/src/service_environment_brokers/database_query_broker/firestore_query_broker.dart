@@ -15,20 +15,21 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-final class FirestoreQueryBroker extends DatabaseQueryInterface<FirestoreServiceBroker> {
+final class FirestoreQueryBroker extends DatabaseQueryInterface {
   //
   //
   //
 
   const FirestoreQueryBroker({
-    required super.databaseServiceBroker,
-  });
+    required FirestoreServiceBroker databaseServiceBroker,
+  }) : super(databaseServiceBroker: databaseServiceBroker);
 
   //
   //
   //
 
-  FirebaseFirestore get _firestore => this.databaseServiceBroker.firestore;
+  FirebaseFirestore get _firestore =>
+      (this.databaseServiceBroker as FirestoreServiceBroker).firestore;
 
   //
   //
