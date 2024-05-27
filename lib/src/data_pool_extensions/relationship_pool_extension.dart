@@ -22,7 +22,7 @@ extension RelationshipPoolExtension on Iterable<ModelRelationship> {
   // --- Filtering -------------------------------------------------------------
 
   Iterable<ModelRelationship> filterByDefType({
-    required Set<RelationshipDefType> defTypes,
+    required Iterable<RelationshipDefType> defTypes,
   }) {
     if (defTypes.isEmpty) return [];
     return this.where(

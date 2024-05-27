@@ -51,7 +51,7 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<Iterable<TModel?>> streamModelCollection<TModel extends Model>(
+  Stream<Iterable<TModel>> streamModelCollection<TModel extends Model>(
     DataRef ref,
     TModel? Function(Map<String, dynamic>? data) fromJsonOrNull, {
     Object? ascendByField,
@@ -66,12 +66,13 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
           limit: limit,
         )
         .snapshots();
-    final result = snapshots.asyncMap((querySnapshot) async {
+    final r0 = snapshots.asyncMap((querySnapshot) async {
       final modelsData = querySnapshot.docs.map((e) => e.data());
       final models = modelsData.map((e) => fromJsonOrNull(e));
       return models;
     });
-    return result;
+    final r1 = r0.map((e) => e.nonNulls);
+    return r1;
   }
 
   //

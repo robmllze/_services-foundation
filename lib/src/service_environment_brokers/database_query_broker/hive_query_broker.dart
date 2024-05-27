@@ -27,10 +27,20 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
 
   @override
   Stream<Iterable<ModelUserPub>> streamUserPubsByNameOrEmailQuery({
-    required String nameOrEmailQuery,
+    required String partialNameOrEmail,
     int? limit = 10,
   }) {
-    throw UnimplementedError();
+    var stream = this.databaseServiceBroker.streamModelCollection(
+          Schema.userPubsRef(),
+          ModelUserPub.fromJsonOrNull,
+        );
+    stream = stream.map((e) {
+      return e.filterByPartialNameOrEmail(partialNameOrEmail: partialNameOrEmail);
+    });
+    if (limit != null) {
+      stream = stream.map((e) => e.take(limit));
+    }
+    return stream;
   }
 
   //
@@ -38,13 +48,24 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<T>> streamByWhereInElements<T>({
+  Stream<Iterable<TModel>> streamByWhereInElements<TModel extends Model>({
     required Iterable<String> elements,
     required DataRef collectionRef,
-    required T? Function(Map<String, dynamic>? otherData) fromJsonOrNull,
+    required TModel? Function(Map<String, dynamic>? otherData) fromJsonOrNull,
     required Set<String> elementKeys,
   }) {
-    throw UnimplementedError();
+    var stream = this.databaseServiceBroker.streamModelCollection(
+          collectionRef,
+          fromJsonOrNull,
+        );
+    stream = stream.map((e) {
+      return e.nonNulls.queryByWhereInElements(
+        elementKeys: elementKeys,
+        elements: elements,
+        fromJsonOrNull: fromJsonOrNull,
+      );
+    });
+    return stream;
   }
 
   //
@@ -52,37 +73,45 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<ModelRelationship>> streamRelationshipsForAnyMembers({
-    required Iterable<String> pids,
-    int? limit,
+  Stream<Iterable<ModelRelationship>> streamRelationshipsForAnyMember({
+    required Iterable<String> memberPids,
     Iterable<RelationshipDefType> defTypes = const {},
-  }) {
-    throw UnimplementedError();
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<ModelRelationship>> streamRelationshipsForAllMembers({
-    required Iterable<String> pids,
     int? limit,
-    Iterable<RelationshipDefType> defTypes = const {},
   }) {
-    throw UnimplementedError();
+    var stream = this.databaseServiceBroker.streamModelCollection(
+          Schema.relationshipsRef(),
+          ModelRelationship.fromJsonOrNull,
+        );
+    stream = stream.map((e) {
+      return e.filterByAnyMember(memberPids: memberPids).filterByDefType(defTypes: defTypes);
+    });
+    if (limit != null) {
+      stream = stream.map((e) => e.take(limit));
+    }
+    return stream;
   }
 
   //
   //
   //
 
-  @visibleForTesting
   @override
-  Future<Iterable<BatchOperation>> getLazyDeleteCollectionOperations({
-    required DataRef collectionRef,
-  }) async {
-    throw UnimplementedError();
+  Stream<Iterable<ModelRelationship>> streamRelationshipsForEveryMember({
+    required Iterable<String> memberPids,
+    Iterable<RelationshipDefType> defTypes = const {},
+    int? limit,
+  }) {
+    var stream = this.databaseServiceBroker.streamModelCollection(
+          Schema.relationshipsRef(),
+          ModelRelationship.fromJsonOrNull,
+        );
+    stream = stream.map((e) {
+      return e.filterByEveryMember(memberPids: memberPids).filterByDefType(defTypes: defTypes);
+    });
+    if (limit != null) {
+      stream = stream.map((e) => e.take(limit));
+    }
+    return stream;
   }
 
   //
@@ -94,6 +123,28 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
     required Iterable<String> createdByAny,
     int? limit,
   }) {
+    var stream = this.databaseServiceBroker.streamModelCollection(
+          Schema.filesRef(),
+          ModelFileEntry.fromJsonOrNull,
+        );
+    stream = stream.map((e) {
+      return e.where((e) => createdByAny.contains(e.createdBy));
+    });
+    if (limit != null) {
+      stream = stream.map((e) => e.take(limit));
+    }
+    return stream;
+  }
+
+  //
+  //
+  //
+
+  @visibleForTesting
+  @override
+  Future<Iterable<BatchOperation>> getLazyDeleteCollectionOperations({
+    required DataRef collectionRef,
+  }) async {
     throw UnimplementedError();
   }
 }

@@ -48,7 +48,7 @@ class SharedPreferencesServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<Iterable<TModel?>> streamModelCollection<TModel extends Model>(
+  Stream<Iterable<TModel>> streamModelCollection<TModel extends Model>(
     DataRef ref,
     TModel? Function(Map<String, dynamic>? data) fromJsonOrNull, {
     Object? ascendByField,

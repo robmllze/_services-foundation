@@ -37,13 +37,13 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
 
   @override
   Stream<Iterable<ModelUserPub>> streamUserPubsByNameOrEmailQuery({
-    required String nameOrEmailQuery,
+    required String partialNameOrEmail,
     int? limit = 10,
   }) {
     final collectionPath = Schema.userPubsRef().collectionPath!;
     final collection = this._firestore.collection(collectionPath);
     // NB: Emails and searchable names must be lowercase for this function to work.
-    final searchableQuery = nameOrEmailQuery.toLowerCase();
+    final searchableQuery = partialNameOrEmail.toLowerCase();
     // Text length must be at least 2 to start the query.
     if (searchableQuery.length > 2) {
       // Get the text with the last character incremented.
@@ -97,11 +97,11 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<T>> streamByWhereInElements<T>({
+  Stream<Iterable<TModel>> streamByWhereInElements<TModel extends Model>({
     required Set<String> elementKeys,
     required Iterable<String> elements,
     required DataRef collectionRef,
-    required T? Function(Map<String, dynamic>? otherData) fromJsonOrNull,
+    required TModel? Function(Map<String, dynamic>? otherData) fromJsonOrNull,
   }) {
     final elementSet = elements.where((e) => e.isNotEmpty).toSet();
     if (elementSet.isEmpty) {
@@ -125,12 +125,12 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<ModelRelationship>> streamRelationshipsForAnyMembers({
-    required Iterable<String> pids,
-    int? limit,
+  Stream<Iterable<ModelRelationship>> streamRelationshipsForAnyMember({
+    required Iterable<String> memberPids,
     Iterable<RelationshipDefType> defTypes = const {},
+    int? limit,
   }) {
-    var pidSet = pids.toSet();
+    var pidSet = memberPids.toSet();
     if (pidSet.length > 30) {
       Here().debugLogError('arrayContainsAny only supports up to 30 values.');
       pidSet = pidSet.take(30).toSet();
@@ -154,12 +154,12 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<ModelRelationship>> streamRelationshipsForAllMembers({
-    required Iterable<String> pids,
-    int? limit,
+  Stream<Iterable<ModelRelationship>> streamRelationshipsForEveryMember({
+    required Iterable<String> memberPids,
     Iterable<RelationshipDefType> defTypes = const {},
+    int? limit,
   }) {
-    var pidSet = pids.toSet();
+    var pidSet = memberPids.toSet();
     if (pidSet.length > 30) {
       Here().debugLogError('arrayContains only supports up to 30 values.');
       pidSet = pidSet.take(30).toSet();
@@ -175,6 +175,33 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
       relationships = relationships.map((e) => e.where((e) => defTypes.contains(e.defType)));
     }
     return relationships;
+  }
+
+  //
+  //
+  //
+
+  @override
+  Stream<Iterable<ModelFileEntry>> streamFilesByCreatorId({
+    required Iterable<String> createdByAny,
+    int? limit,
+  }) {
+    var createdByAnySet = createdByAny.toSet();
+    if (createdByAnySet.length > 30) {
+      Here().debugLogError('whereIn only supports up to 30 values.');
+      createdByAnySet = createdByAnySet.take(30).toSet();
+    }
+    final collectionPath = Schema.filesRef().collectionPath!;
+    final collection = this._firestore.collection(collectionPath);
+    final snapshots = collection
+        .baseQuery(limit: limit)
+        .where(
+          ModelFileEntry.K_CREATED_BY,
+          whereIn: createdByAny,
+        )
+        .snapshots();
+    final results = snapshots.map((e) => e.docs.map((e) => ModelFileEntry.fromJson(e.data())));
+    return results;
   }
 
   //
@@ -204,32 +231,5 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     });
     await streamToFuture(stream);
     return result;
-  }
-
-  //
-  //
-  //
-
-  @override
-  Stream<Iterable<ModelFileEntry>> streamFilesByCreatorId({
-    required Iterable<String> createdByAny,
-    int? limit,
-  }) {
-    var createdByAnySet = createdByAny.toSet();
-    if (createdByAnySet.length > 30) {
-      Here().debugLogError('whereIn only supports up to 30 values.');
-      createdByAnySet = createdByAnySet.take(30).toSet();
-    }
-    final collectionPath = Schema.filesRef().collectionPath!;
-    final collection = this._firestore.collection(collectionPath);
-    final snapshots = collection
-        .baseQuery(limit: limit)
-        .where(
-          ModelFileEntry.K_CREATED_BY,
-          whereIn: createdByAny,
-        )
-        .snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelFileEntry.fromJson(e.data())));
-    return results;
   }
 }

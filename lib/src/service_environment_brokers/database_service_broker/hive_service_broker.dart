@@ -71,7 +71,7 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Stream<Iterable<TModel?>> streamModelCollection<TModel extends Model>(
+  Stream<Iterable<TModel>> streamModelCollection<TModel extends Model>(
     DataRef ref,
     TModel? Function(Map<String, dynamic>? data) fromJsonOrNull, {
     Object? ascendByField,
@@ -135,7 +135,9 @@ class HiveServiceBroker extends DatabaseServiceInterface {
       collectionSubscription.cancel();
     };
 
-    return controller.stream;
+    final r0 = controller.stream;
+    final r1 = r0.map((e) => e.nonNulls);
+    return r1;
   }
 
   //
