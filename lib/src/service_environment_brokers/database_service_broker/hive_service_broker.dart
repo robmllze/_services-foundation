@@ -33,41 +33,89 @@ class HiveServiceBroker extends DatabaseServiceInterface {
     DataRef ref,
     TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
   ) {
-    Stream<TModel?> stream2Creator(Box box) {
-      late final StreamController<TModel?> controller;
-      void setData(Map<String, dynamic>? data) {
-        final model = fromJsonOrNull(data);
-        controller.add(model);
-      }
+    late final StreamController<TModel?> controller;
 
-      controller = StreamController<TModel?>(
-        onListen: () async {
-          final data = box.getData();
-          if (data != null) {
-            setData(data);
-            final streamSubscription = box.watchData().listen(
-                  setData,
-                  onError: controller.addError,
-                  onDone: controller.close,
-                );
-
-            controller.onCancel = () async {
-              await streamSubscription.cancel();
-              await HiveBoxManager.closeBox(ref.docPath);
-            };
+    controller = StreamController<TModel?>(
+      onListen: () async {
+        try {
+          final box = await HiveBoxManager.openBox(ref.docPath);
+          // Function to handle data setting and stream emission
+          void setData(Map<String, dynamic>? data) {
+            if (data != null && data.isNotEmpty) {
+              final model = fromJsonOrNull(data);
+              controller.add(model);
+            } else {
+              controller.add(null);
+            }
           }
-        },
-      );
-      return controller.stream;
-    }
 
-    final stream1 = Stream.fromFuture(() {
-      return HiveBoxManager.openBox(ref.docPath);
-    }());
+          // Get initial data and listen for updates
+          final initialData = box.getData();
+          setData(initialData);
 
-    final stream2 = StreamMapper(stream1).map(stream2Creator).stream;
-    return stream2;
+          final streamSubscription = box.watchData().listen(
+                setData,
+                onError: controller.addError,
+                onDone: controller.close,
+              );
+
+          // Ensure resources are cleaned up when the stream is no longer needed
+          controller.onCancel = () async {
+            await streamSubscription.cancel();
+            await HiveBoxManager.closeBox(ref.docPath);
+          };
+        } catch (e) {
+          controller.addError(e);
+          await controller.close();
+        }
+      },
+    );
+
+    return controller.stream;
   }
+
+  // @override
+  // Stream<TModel?> streamModel<TModel extends Model>(
+  //   DataRef ref,
+  //   TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
+  // ) {
+  //   Stream<TModel?> stream2Creator(Box box) {
+  //     late final StreamController<TModel?> controller;
+  //     void setData(Map<String, dynamic>? data) {
+  //       if (data != null && data.isNotEmpty) {
+  //         final model = fromJsonOrNull(data);
+  //         controller.add(model);
+  //       } else {
+  //         controller.add(null);
+  //       }
+  //     }
+
+  //     controller = StreamController<TModel?>(
+  //       onListen: () async {
+  //         final data = box.getData();
+  //         setData(data);
+  //         final streamSubscription = box.watchData().listen(
+  //               setData,
+  //               onError: controller.addError,
+  //               onDone: controller.close,
+  //             );
+
+  //         controller.onCancel = () async {
+  //           await streamSubscription.cancel();
+  //           await HiveBoxManager.closeBox(ref.docPath);
+  //         };
+  //       },
+  //     );
+  //     return controller.stream;
+  //   }
+
+  //   final stream1 = Stream.fromFuture(() {
+  //     return HiveBoxManager.openBox(ref.docPath);
+  //   }());
+
+  //   final stream2 = StreamMapper(stream1).map(stream2Creator).stream;
+  //   return stream2;
+  // }
 
   //
   //
@@ -81,8 +129,68 @@ class HiveServiceBroker extends DatabaseServiceInterface {
     Object? descendByField,
     int? limit,
   }) {
-    // TODO: implement streamModelCollection
-    throw UnimplementedError();
+    // StreamController that will manage the output stream
+    final StreamController<Iterable<TModel?>> controller = StreamController<Iterable<TModel?>>();
+    // Map to keep track of the active subscriptions and their latest emitted model
+    final Map<int, TModel?> activeModels = {};
+
+    // Initial fetch and setup of streams for each document
+    this.streamModel(ref, ModelDataCollection.fromJsonOrNull).listen(
+      (ModelDataCollection? collection) {
+        if (collection?.documents == null) {
+          controller.add([]);
+        } else {
+          // Iterate over each document reference
+          for (int i = 0; i < collection!.documents!.length; i++) {
+            DataRef element = collection.documents!.elementAt(i);
+            // Create stream for each document
+            Stream<TModel?> documentStream = this.streamModel(element, fromJsonOrNull);
+
+            // Subscribe to the document stream
+            final int index = i; // Capture the index for use in the stream listener
+            documentStream.listen(
+              (TModel? model) {
+                // Update the model in the map
+                activeModels[index] = model;
+                // Emit the current snapshot of all models
+                controller.add(activeModels.values.toList());
+              },
+              onError: controller.addError,
+              onDone: () {
+                // Remove the model from the map when the stream is done
+                activeModels.remove(index);
+                // Emit the current snapshot of all models
+                controller.add(activeModels.values.toList());
+              },
+            );
+          }
+        }
+      },
+      onError: controller.addError,
+      onDone: controller.close,
+    );
+
+    return controller.stream;
+  }
+
+  //
+  //
+  //
+
+  // HiveService ONLY!
+  Future<void> deleteCollection(DataRef ref) async {
+    await HiveBoxManager.scope(
+      ref.docPath,
+      (box) async {
+        final model = await this.readModel(ref, ModelDataCollection.fromJsonOrNull);
+        if (model != null) {
+          model.documents?.forEach((element) async {
+            await this.deleteModel(element);
+          });
+          await box.deleteData();
+        }
+      },
+    );
   }
 
   //
@@ -113,37 +221,37 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> setModel<TModel extends Model>(TModel model) async {
+    final modelRef = model.ref!;
     // Set the model data.
-    {
-      await HiveBoxManager.scope(
-        model.ref!.docPath,
-        (box) async {
-          final a = box.getData();
-          final b = model.toJson();
-          final c = letMap(mergeDataDeep(a, b))?.mapKeys((e) => e?.toString()).nonNullKeys;
-          await box.putData(c);
-        },
-      );
-    }
-    // Add a reference to the model to the collection document.
+    await HiveBoxManager.scope(
+      modelRef.docPath,
+      (box) async {
+        final data = model.toJson();
+        await box.mergeData(data);
+      },
+    );
 
-    // {
-    //   final collectionPath = model.ref!.collectionPath!;
-    //   final ref1 = model.ref!;
-    //   final ref2 = DataRef(collection: ['collections'], id: collectionPath);
-    //   final documentPath = ref2.docPath;
-    //   final box = await Hive.openBox(documentPath);
-    //   final a = box.toMap();
-    //   printRed(a);
-    //   final b = ModelDataCollection(
-    //     ref: ref2,
-    //     documents: {ref1},
-    //   ).toJson();
-    //   print(b);
-    //   final c = mergeDataDeep(a, b);
-    //   await box.putAll(c);
-    //   await box.close();
-    // }
+    final collectionDocumentRef = DataRef(
+      collection: ['collections'],
+      id: modelRef.collectionPath!,
+    );
+    // Add a reference to the model to the collection document.
+    await HiveBoxManager.scope(
+      collectionDocumentRef.docPath,
+      (box) async {
+        final boxData = box.getData();
+        final model = ModelDataCollection.fromJsonOrNull(boxData);
+        final documents = model?.documents ?? {};
+        if (model != null) {
+          if (!documents.contains(modelRef)) {
+            documents.add(modelRef);
+            model.documents = documents;
+            final data = model.toJson();
+            await box.putData(data);
+          }
+        }
+      },
+    );
   }
 
   //
@@ -178,8 +286,30 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> deleteModel(DataRef ref) {
-    return HiveBoxManager.scope(
+  Future<void> deleteModel(DataRef ref) async {
+    final collectionDocumentRef = DataRef(
+      collection: ['collections'],
+      id: ref.collectionPath!,
+    );
+    // Remove the reference to the model from the collection document.
+    await HiveBoxManager.scope(
+      collectionDocumentRef.docPath,
+      (box) async {
+        final boxData = box.getData();
+        final model = ModelDataCollection.fromJsonOrNull(boxData);
+        final documents = model?.documents ?? {};
+        if (model != null) {
+          if (documents.contains(ref)) {
+            documents.remove(ref);
+            model.documents = documents;
+            final data = model.toJson();
+            await box.putData(data);
+          }
+        }
+      },
+    );
+    //  Delete the model data.
+    await HiveBoxManager.scope(
       ref.docPath,
       (box) => box.deleteData(),
     );
@@ -269,6 +399,13 @@ extension DataExtensionOnBox on Box {
 
   Future<void> putData(Map<String, dynamic>? data) {
     return this.put('data', data);
+  }
+
+  Future<void> mergeData(Map<String, dynamic>? data) async {
+    final a = this.getData();
+    final b = data;
+    final c = letMap(mergeDataDeep(a, b))?.mapKeys((e) => e?.toString()).nonNullKeys;
+    await this.putData(c);
   }
 
   Future<void> deleteData() {
