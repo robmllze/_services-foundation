@@ -64,6 +64,16 @@ class SharedPreferencesServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
+  Future<void> deleteCollection({required DataRef collectionRef}) {
+    // TODO: implement deleteCollection
+    throw UnimplementedError();
+  }
+
+  //
+  //
+  //
+
+  @override
   Future<void> createModel<TModel extends Model>(TModel model) async {
     final ref = model.ref!;
     final documentPath = ref.docPath;

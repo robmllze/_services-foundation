@@ -14,9 +14,6 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-// TODO: We need a smart way to open and close boxes. Say we stream, the problem is,
-// some async function may close the box mid-stream.
-
 class HiveServiceBroker extends DatabaseServiceInterface {
   //
   //
@@ -34,13 +31,11 @@ class HiveServiceBroker extends DatabaseServiceInterface {
     TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
   ) {
     late final StreamController<TModel?> controller;
-
     controller = StreamController<TModel?>(
       onListen: () async {
         try {
           final box = await HiveBoxManager.openBox(ref.docPath);
-          // Function to handle data setting and stream emission
-          void setData(Map<String, dynamic>? data) {
+          void $setData(Map<String, dynamic>? data) {
             if (data != null && data.isNotEmpty) {
               final model = fromJsonOrNull(data);
               controller.add(model);
@@ -49,17 +44,14 @@ class HiveServiceBroker extends DatabaseServiceInterface {
             }
           }
 
-          // Get initial data and listen for updates
           final initialData = box.getData();
-          setData(initialData);
-
+          $setData(initialData);
           final streamSubscription = box.watchData().listen(
-                setData,
+                $setData,
                 onError: controller.addError,
                 onDone: controller.close,
               );
 
-          // Ensure resources are cleaned up when the stream is no longer needed
           controller.onCancel = () async {
             await streamSubscription.cancel();
             await HiveBoxManager.closeBox(ref.docPath);
@@ -73,49 +65,6 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
     return controller.stream;
   }
-
-  // @override
-  // Stream<TModel?> streamModel<TModel extends Model>(
-  //   DataRef ref,
-  //   TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
-  // ) {
-  //   Stream<TModel?> stream2Creator(Box box) {
-  //     late final StreamController<TModel?> controller;
-  //     void setData(Map<String, dynamic>? data) {
-  //       if (data != null && data.isNotEmpty) {
-  //         final model = fromJsonOrNull(data);
-  //         controller.add(model);
-  //       } else {
-  //         controller.add(null);
-  //       }
-  //     }
-
-  //     controller = StreamController<TModel?>(
-  //       onListen: () async {
-  //         final data = box.getData();
-  //         setData(data);
-  //         final streamSubscription = box.watchData().listen(
-  //               setData,
-  //               onError: controller.addError,
-  //               onDone: controller.close,
-  //             );
-
-  //         controller.onCancel = () async {
-  //           await streamSubscription.cancel();
-  //           await HiveBoxManager.closeBox(ref.docPath);
-  //         };
-  //       },
-  //     );
-  //     return controller.stream;
-  //   }
-
-  //   final stream1 = Stream.fromFuture(() {
-  //     return HiveBoxManager.openBox(ref.docPath);
-  //   }());
-
-  //   final stream2 = StreamMapper(stream1).map(stream2Creator).stream;
-  //   return stream2;
-  // }
 
   //
   //
@@ -131,19 +80,22 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   }) {
     final controller = StreamController<Iterable<TModel?>>();
     final subscriptions = <int, StreamSubscription<TModel?>>{};
-    final activeModels = <int, TModel?>{};
+    final models = <int, TModel?>{};
 
-    void updateAndEmitModels() {
-      controller.add(activeModels.values.whereType<TModel?>().toList());
+    void $emitModels() {
+      controller.add(models.values);
+    }
+
+    Future<void> $cancelSubscriptions() async {
+      await Future.wait(subscriptions.values.map((e) => e.cancel()));
     }
 
     StreamSubscription? collectionSubscription =
         this.streamModel(ref, ModelDataCollection.fromJsonOrNull).listen(
               (collection) {
-                // Existing subscriptions cleanup
-                subscriptions.values.forEach((sub) => sub.cancel());
+                $cancelSubscriptions();
                 subscriptions.clear();
-                activeModels.clear();
+                models.clear();
                 final documents = collection?.documents;
                 if (documents == null) {
                   controller.add([]);
@@ -156,16 +108,16 @@ class HiveServiceBroker extends DatabaseServiceInterface {
                     subscriptions[index] = documentStream.listen(
                       (model) {
                         if (model == null) {
-                          activeModels.remove(index);
+                          models.remove(index);
                         } else {
-                          activeModels[index] = model;
+                          models[index] = model;
                         }
-                        updateAndEmitModels();
+                        $emitModels();
                       },
                       onError: controller.addError,
                       onDone: () {
-                        activeModels.remove(index);
-                        updateAndEmitModels();
+                        models.remove(index);
+                        $emitModels();
                       },
                     );
                   }
@@ -173,17 +125,13 @@ class HiveServiceBroker extends DatabaseServiceInterface {
               },
               onError: controller.addError,
               onDone: () {
-                for (final subscription in subscriptions.values) {
-                  subscription.cancel();
-                }
+                $cancelSubscriptions();
                 controller.close();
               },
             );
 
     controller.onCancel = () {
-      for (final subscription in subscriptions.values) {
-        subscription.cancel();
-      }
+      $cancelSubscriptions();
       collectionSubscription.cancel();
     };
 
@@ -194,16 +142,26 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
   //
 
-  // HiveService ONLY!
-  Future<void> deleteCollection(DataRef ref) async {
+  @override
+  Future<void> deleteCollection({
+    required DataRef collectionRef,
+  }) async {
     await HiveBoxManager.scope(
-      ref.docPath,
+      collectionRef.docPath,
       (box) async {
-        final model = await this.readModel(ref, ModelDataCollection.fromJsonOrNull);
-        if (model != null) {
-          model.documents?.forEach((element) async {
-            await this.deleteModel(element);
-          });
+        final collection = await this.readModel(
+          collectionRef,
+          ModelDataCollection.fromJsonOrNull,
+        );
+        final documents = collection?.documents;
+        if (documents != null) {
+          // Delete all documents in the collection.
+          for (final ref in documents) {
+            await HiveBoxManager.scope(ref.docPath, (box) {
+              return box.deleteData();
+            });
+          }
+          // Delete the collection document.
           await box.deleteData();
         }
       },
@@ -216,21 +174,12 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> createModel<TModel extends Model>(TModel model) async {
-    // final ref = model.ref!;
-    // final documentPath = ref.docPath;
-    // final existingModel = await this.readModel(ref);
-    // if (existingModel == null) {
-    //   final box = await Hive.openBox(documentPath);
-    //   await box.putAll(model.toJson());
-    //   await box.close();
-    // } else {
-    //   throw Exception('Model already exists at $documentPath');
-    // }
+    if (await _modelExists(model)) {
+      throw Exception('Model already exists at ${model.ref!.docPath}');
+    } else {
+      await this.setModel(model);
+    }
   }
-
-  //
-  //
-  //
 
   //
   //
@@ -238,30 +187,29 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> setModel<TModel extends Model>(TModel model) async {
-    final modelRef = model.ref!;
     // Set the model data.
+    final ref = model.ref!;
     await HiveBoxManager.scope(
-      modelRef.docPath,
+      ref.docPath,
       (box) async {
         final data = model.toJson();
         await box.mergeData(data);
       },
     );
 
-    final collectionDocumentRef = DataRef(
-      collection: ['collections'],
-      id: modelRef.collectionPath!,
-    );
     // Add a reference to the model to the collection document.
+    final falseCollectionsRef = Schema.falseCollectionsRef(
+      collectionPath: ref.collectionPath!,
+    );
     await HiveBoxManager.scope(
-      collectionDocumentRef.docPath,
+      falseCollectionsRef.docPath,
       (box) async {
         final boxData = box.getData();
         final model = ModelDataCollection.fromJsonOrNull(boxData);
         final documents = model?.documents ?? {};
         if (model != null) {
-          if (!documents.contains(modelRef)) {
-            documents.add(modelRef);
+          if (!documents.contains(ref)) {
+            documents.add(ref);
             model.documents = documents;
             final data = model.toJson();
             await box.putData(data);
@@ -296,7 +244,26 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> updateModel<TModel extends Model>(TModel model) async {}
+  Future<void> updateModel<TModel extends Model>(TModel model) async {
+    if (await _modelExists(model)) {
+      await this.setModel(model);
+    } else {
+      throw Exception('Model does not exist at ${model.ref!.docPath}');
+    }
+  }
+
+  //
+  //
+  //
+
+  Future<bool> _modelExists<TModel extends Model>(TModel model) async {
+    final readModel = await this.readModel(
+      model.ref!,
+      DataModel.fromJsonOrNull,
+    );
+    final readModelData = readModel?.toJson();
+    return readModelData != null && readModelData.isNotEmpty;
+  }
 
   //
   //
@@ -304,13 +271,12 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
   @override
   Future<void> deleteModel(DataRef ref) async {
-    final collectionDocumentRef = DataRef(
-      collection: ['collections'],
-      id: ref.collectionPath!,
-    );
     // Remove the reference to the model from the collection document.
+    final falseCollectionsRef = Schema.falseCollectionsRef(
+      collectionPath: ref.collectionPath!,
+    );
     await HiveBoxManager.scope(
-      collectionDocumentRef.docPath,
+      falseCollectionsRef.docPath,
       (box) async {
         final boxData = box.getData();
         final model = ModelDataCollection.fromJsonOrNull(boxData);

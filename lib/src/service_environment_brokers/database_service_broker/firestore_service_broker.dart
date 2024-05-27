@@ -79,6 +79,21 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
+  Future<void> deleteCollection({
+    required DataRef collectionRef,
+  }) async {
+    final collection = this.firestore.collection(collectionRef.collectionPath!);
+    final snapshots = await collection.get();
+    for (final doc in snapshots.docs) {
+      await doc.reference.delete();
+    }
+  }
+
+  //
+  //
+  //
+
+  @override
   Future<void> createModel<TModel extends Model>(TModel model) async {
     final documentPath = model.ref!.docPath;
     final modelRef = this.firestore.doc(documentPath);
