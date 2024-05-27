@@ -48,22 +48,7 @@ final class EventUtils {
         0;
   }
 
-  //
-  //
-  //
-
-  static List<ModelEvent>? sortEventsByDateSentAscending(
-    Iterable<ModelEvent>? eventModels,
-  ) {
-    return (eventModels?.toList()
-      ?..sort((e0, e1) {
-        final now = DateTime.now();
-        final d0 = e0.createdAt ?? now;
-        final d1 = e1.createdAt ?? now;
-        final n = d0.compareTo(d1);
-        return n;
-      }));
-  }
+ 
 
   //
   //

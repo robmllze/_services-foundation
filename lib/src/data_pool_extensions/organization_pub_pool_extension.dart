@@ -12,22 +12,23 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-extension JobPubPoolExtension on Iterable<ModelJobPub> {
+extension OrganizationPubPoolExtension on Iterable<ModelOrganizationPub> {
   //
   //
   //
 
-  Iterable<ModelJobPub> filterByRelationship({
-    required String? relationshipId,
-    required Iterable<ModelRelationship>? relationshipPool,
+  // --- Filtering -------------------------------------------------------------
+
+  Iterable<ModelOrganizationPub> filterOrganizationsByRelationship({
+    required String relationshipId,
+    required Iterable<ModelRelationship> relationshipPool,
   }) {
-    final relationship = relationshipPool?.firstWhereOrNull((e) => e.id == relationshipId);
-    if (relationship != null) {
-      final pids = RelationshipUtils.extractJobMemberPids(relationship: relationship);
-      final result = pids.map((pid) => this.firstWhereOrNull((e) => e.id == pid)).nonNulls;
-      return result;
-    } else {
-      return [];
-    }
+    return this.filterByRelationship(
+      relationshipId: relationshipId,
+      relationshipPool: relationshipPool,
+      memberPidPrefixes: {
+        IdUtils.ORGANIZATION_PID_PREFIX,
+      },
+    );
   }
 }

@@ -17,6 +17,10 @@ extension RelationshipPoolExtension on Iterable<ModelRelationship> {
   //
   //
 
+  // --- Sorting ---------------------------------------------------------------
+
+  // --- Filtering -------------------------------------------------------------
+
   Iterable<ModelRelationship> filterByDefType({
     required Set<RelationshipDefType> defTypes,
   }) {

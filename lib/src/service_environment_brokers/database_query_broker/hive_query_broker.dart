@@ -90,7 +90,7 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<ModelFileEntry>> streamFileByCreatorId({
+  Stream<Iterable<ModelFileEntry>> streamFilesByCreatorId({
     required Iterable<String> createdByAny,
     int? limit,
   }) {

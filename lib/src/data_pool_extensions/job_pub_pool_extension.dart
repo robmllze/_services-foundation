@@ -12,48 +12,23 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-final class RelationshipEventUtils {
+extension JobPubPoolExtension on Iterable<ModelJobPub> {
   //
   //
   //
 
-  RelationshipEventUtils._();
+  // --- Filtering -------------------------------------------------------------
 
-  //
-  //
-  //
-
-  static EventService? getEventServiceForRelationship({
-    required Map<String, EventService>? eventServicePool,
+  Iterable<ModelJobPub> filterJobsByRelationship({
     required String relationshipId,
+    required Iterable<ModelRelationship> relationshipPool,
   }) {
-    final eventService = eventServicePool?[relationshipId];
-    return eventService;
-  }
-
-  //
-  //
-  //
-
-  static CreateOrUpdateOperation getSendEventOperation({
-    required String senderPid,
-    required String receiverPid,
-    required String relationshipId,
-    required String eventId,
-    required DataModel eventDef,
-    required EventDefType eventDefType,
-  }) {
-    final eventsRef = Schema.relationshipEventsRef(
+    return this.filterByRelationship(
       relationshipId: relationshipId,
-      eventId: eventId,
-    );
-    return EventUtils.getSendEventOperation(
-      eventsRef: eventsRef,
-      senderPid: senderPid,
-      receiverPid: receiverPid,
-      relationshipId: relationshipId,
-      eventDef: eventDef,
-      eventDefType: eventDefType,
+      relationshipPool: relationshipPool,
+      memberPidPrefixes: {
+        IdUtils.JOB_PID_PREFIX,
+      },
     );
   }
 }

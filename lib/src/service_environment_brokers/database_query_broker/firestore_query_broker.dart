@@ -98,10 +98,10 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
 
   @override
   Stream<Iterable<T>> streamByWhereInElements<T>({
+    required Set<String> elementKeys,
     required Iterable<String> elements,
     required DataRef collectionRef,
     required T? Function(Map<String, dynamic>? otherData) fromJsonOrNull,
-    required Set<String> elementKeys,
   }) {
     final elementSet = elements.where((e) => e.isNotEmpty).toSet();
     if (elementSet.isEmpty) {
@@ -211,7 +211,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   //
 
   @override
-  Stream<Iterable<ModelFileEntry>> streamFileByCreatorId({
+  Stream<Iterable<ModelFileEntry>> streamFilesByCreatorId({
     required Iterable<String> createdByAny,
     int? limit,
   }) {

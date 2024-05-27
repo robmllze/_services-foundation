@@ -12,42 +12,51 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FileService extends CollectionServiceInterface<ModelFileEntry> {
+extension EntryModelPoolExtension<TModel extends EntryModel> on Iterable<TModel> {
   //
   //
   //
 
-  final Set<String> createdBy;
+  // --- Sorting ---------------------------------------------------------------
 
-  //
-  //
-  //
-
-  FileService({
-    required this.createdBy,
-    required super.serviceEnvironment,
-    required super.ref,
-    required super.limit,
-  });
-
-  //
-  //
-  //
-
-  @override
-  ModelFileEntry? fromJsonOrNull(Map<String, dynamic>? data) {
-    return ModelFileEntry.fromJsonOrNull(data);
+  Iterable<TModel> byTitleAscending() {
+    return this.toList()
+      ..sort((e0, e1) {
+        final t0 = e0.titleSearchable ?? e0.title ?? '';
+        final t1 = e1.titleSearchable ?? e1.title ?? '';
+        final n = t0.compareTo(t1);
+        return n;
+      });
   }
 
   //
   //
   //
 
-  @override
-  Stream<Iterable<ModelFileEntry>> stream([int? limit]) {
-    return super.serviceEnvironment.databaseQueryBroker.streamFilesByCreatorId(
-          createdByAny: this.createdBy,
-          limit: limit,
-        );
+  Iterable<TModel> byTitleDescending() {
+    return this.byTitleAscending().toList().reversed;
+  }
+
+  //
+  //
+  //
+
+  Iterable<TModel> byCreatedAtAscending() {
+    return this.toList()
+      ..sort((e0, e1) {
+        final now = DateTime.now();
+        final d0 = e0.createdAt ?? now;
+        final d1 = e1.createdAt ?? now;
+        final n = d0.compareTo(d1);
+        return n;
+      });
+  }
+
+  //
+  //
+  //
+
+  Iterable<TModel> byCreatedAtDescending() {
+    return this.byCreatedAtAscending().toList().reversed;
   }
 }

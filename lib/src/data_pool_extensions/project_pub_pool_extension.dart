@@ -12,22 +12,23 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-extension OrganizationPubPoolExtension on Iterable<ModelOrganizationPub> {
+extension ProjectPubPoolExtension on Iterable<ModelProjectPub> {
   //
   //
   //
 
-  Iterable<ModelOrganizationPub> filterByRelationship({
-    required String? relationshipId,
-    required Iterable<ModelRelationship>? relationshipPool,
+  // --- Filtering -------------------------------------------------------------
+
+  Iterable<ModelProjectPub> filterProjectsByRelationship({
+    required String relationshipId,
+    required Iterable<ModelRelationship> relationshipPool,
   }) {
-    final relationship = relationshipPool?.firstWhereOrNull((e) => e.id == relationshipId);
-    if (relationship != null) {
-      final pids = RelationshipUtils.extractOrganizationMemberPids(relationship: relationship);
-      final result = pids.map((pid) => this.firstWhereOrNull((e) => e.id == pid)).nonNulls;
-      return result;
-    } else {
-      return [];
-    }
+    return this.filterByRelationship(
+      relationshipId: relationshipId,
+      relationshipPool: relationshipPool,
+      memberPidPrefixes: {
+        IdUtils.PROJECT_PID_PREFIX,
+      },
+    );
   }
 }
