@@ -129,46 +129,63 @@ class HiveServiceBroker extends DatabaseServiceInterface {
     Object? descendByField,
     int? limit,
   }) {
-    // StreamController that will manage the output stream
-    final StreamController<Iterable<TModel?>> controller = StreamController<Iterable<TModel?>>();
-    // Map to keep track of the active subscriptions and their latest emitted model
-    final Map<int, TModel?> activeModels = {};
+    final controller = StreamController<Iterable<TModel?>>();
+    final subscriptions = <int, StreamSubscription<TModel?>>{};
+    final activeModels = <int, TModel?>{};
 
-    // Initial fetch and setup of streams for each document
-    this.streamModel(ref, ModelDataCollection.fromJsonOrNull).listen(
-      (ModelDataCollection? collection) {
-        if (collection?.documents == null) {
-          controller.add([]);
-        } else {
-          // Iterate over each document reference
-          for (int i = 0; i < collection!.documents!.length; i++) {
-            DataRef element = collection.documents!.elementAt(i);
-            // Create stream for each document
-            Stream<TModel?> documentStream = this.streamModel(element, fromJsonOrNull);
+    void updateAndEmitModels() {
+      controller.add(activeModels.values.whereType<TModel?>().toList());
+    }
 
-            // Subscribe to the document stream
-            final int index = i; // Capture the index for use in the stream listener
-            documentStream.listen(
-              (TModel? model) {
-                // Update the model in the map
-                activeModels[index] = model;
-                // Emit the current snapshot of all models
-                controller.add(activeModels.values.toList());
+    StreamSubscription? collectionSubscription =
+        this.streamModel(ref, ModelDataCollection.fromJsonOrNull).listen(
+              (collection) {
+                // Existing subscriptions cleanup
+                subscriptions.values.forEach((sub) => sub.cancel());
+                subscriptions.clear();
+                activeModels.clear();
+                final documents = collection?.documents;
+                if (documents == null) {
+                  controller.add([]);
+                } else {
+                  for (var i = 0; i < documents.length; i++) {
+                    final ref = documents.elementAt(i);
+                    final documentStream = this.streamModel(ref, fromJsonOrNull);
+
+                    final index = i;
+                    subscriptions[index] = documentStream.listen(
+                      (model) {
+                        if (model == null) {
+                          activeModels.remove(index);
+                        } else {
+                          activeModels[index] = model;
+                        }
+                        updateAndEmitModels();
+                      },
+                      onError: controller.addError,
+                      onDone: () {
+                        activeModels.remove(index);
+                        updateAndEmitModels();
+                      },
+                    );
+                  }
+                }
               },
               onError: controller.addError,
               onDone: () {
-                // Remove the model from the map when the stream is done
-                activeModels.remove(index);
-                // Emit the current snapshot of all models
-                controller.add(activeModels.values.toList());
+                for (final subscription in subscriptions.values) {
+                  subscription.cancel();
+                }
+                controller.close();
               },
             );
-          }
-        }
-      },
-      onError: controller.addError,
-      onDone: controller.close,
-    );
+
+    controller.onCancel = () {
+      for (final subscription in subscriptions.values) {
+        subscription.cancel();
+      }
+      collectionSubscription.cancel();
+    };
 
     return controller.stream;
   }
