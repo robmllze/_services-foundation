@@ -55,6 +55,8 @@ export 'service_environment_brokers/database_query_broker/firestore_query_broker
 export 'service_environment_brokers/database_query_broker/hive_query_broker.dart';
 export 'service_environment_brokers/database_service_broker/firestore_service_broker.dart';
 export 'service_environment_brokers/database_service_broker/hive_service_broker.dart';
+export 'service_environment_brokers/database_service_broker/hive_utils/data_on_box_extension.dart';
+export 'service_environment_brokers/database_service_broker/hive_utils/hive_box_manager.dart';
 export 'service_environment_brokers/database_service_broker/shared_preferences_service_broker.dart';
 export 'service_environment_brokers/field_value_broker/firebase_field_value_broker.dart';
 export 'service_environment_brokers/file_service_broker/firebase_storage_service_broker.dart';

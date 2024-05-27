@@ -8,8 +8,6 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'package:hive/hive.dart';
-
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -25,8 +23,8 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
   //
   //
 
-  final _operations = <TransactionOperation<_TData, _TReference>>[];
-  final _boxes = <String, _TReference>{};
+  final _operations = <TransactionOperation<_TData, Null>>[];
+  final _names = <String>{};
 
   //
   //
@@ -47,8 +45,7 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
   @override
   Future<_TData?> read(String path) async {
     final operation = HiveReadOperation(path);
-    final box = this._addBox(path);
-    final result = await operation.execute(box);
+    final result = await operation.execute(null);
     return result;
   }
 
@@ -87,8 +84,7 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
     try {
       for (final operation in this._operations) {
         if (operation is HiveReadOperation) continue;
-        final reference = this._getBox(operation.path);
-        final result = await operation.execute(reference);
+        final result = await operation.execute(null);
         results[operation.path] = result;
       }
     } finally {
@@ -103,8 +99,10 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
 
   @override
   Future<void> discard() async {
-    await Future.wait(this._boxes.values.map((e) => e.close()));
-    this._boxes.clear();
+    for (final name in this._names) {
+      await HiveBoxManager.closeBox(name);
+    }
+    this._names.clear();
     this._operations.clear();
   }
 
@@ -112,16 +110,8 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
   //
   //
 
-  _TReference _addBox(String path) {
-    return this._boxes[path] = Hive.box<_TData>(path);
-  }
-
-  //
-  //
-  //
-
-  _TReference _getBox(String path) {
-    return this._boxes[path]!;
+  void _addBox(String path) {
+    this._names.add(path);
   }
 }
 
@@ -148,9 +138,11 @@ class HiveCreateOperation extends _TTransactionOperation {
   //
 
   @override
-  Future<_TData?> execute(_TReference reference) async {
-    await reference.put(reference.path, data);
-    return null;
+  Future<_TData?> execute(Null reference) async {
+    return HiveBoxManager.scope(this.path, (box) async {
+      await box.putData(data);
+      return data;
+    });
   }
 }
 
@@ -169,16 +161,11 @@ class HiveReadOperation extends _TTransactionOperation {
   //
   //
 
-  _TData? _result;
-
-  //
-  //
-  //
-
   @override
-  Future<_TData?> execute(_TReference reference) async {
-    this._result = await reference.get(reference.name);
-    return this._result;
+  Future<_TData?> execute(Null reference) async {
+    return HiveBoxManager.scope(this.path, (box) async {
+      return await box.getData();
+    });
   }
 }
 
@@ -205,9 +192,11 @@ class HiveUpdateOperation extends _TTransactionOperation {
   //
 
   @override
-  Future<_TData?> execute(_TReference reference) async {
-    await reference.put(reference.name, data);
-    return null;
+  Future<_TData?> execute(Null reference) async {
+    return HiveBoxManager.scope(this.path, (box) async {
+      await box.putData(data);
+      return data;
+    });
   }
 }
 
@@ -227,16 +216,16 @@ class HiveDeleteOperation extends _TTransactionOperation {
   //
 
   @override
-  Future<_TData?> execute(_TReference reference) async {
-    await reference.delete(reference.name);
-    return null;
+  Future<_TData?> execute(Null reference) async {
+    return HiveBoxManager.scope(this.path, (box) async {
+      await box.deleteData();
+      return null;
+    });
   }
 }
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-typedef _TReference = Box<_TData>;
-
 typedef _TData = Map<String, dynamic>;
 
-typedef _TTransactionOperation = TransactionOperation<_TData, Box<_TData>>;
+typedef _TTransactionOperation = TransactionOperation<_TData, Null>;

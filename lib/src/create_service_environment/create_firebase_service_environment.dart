@@ -31,12 +31,13 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
     firebaseAuth: firebaseAuth,
   );
 
+  final databaseServiceBroker1 = await HiveServiceBroker.initFlutter();
+
+  final databaseQueryBroker1 = HiveQueryBroker(databaseServiceBroker: databaseServiceBroker1);
+
   final databaseServiceBroker = FirestoreServiceBroker(
     firestore: firestore,
   );
-
-  await Hive.initFlutter();
-  final localDatabaseServiceBroker = const HiveServiceBroker();
 
   final databaseQueryBroker = FirestoreQueryBroker(
     databaseServiceBroker: databaseServiceBroker,
@@ -57,9 +58,8 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
   );
   final serviceEnvironment = ServiceEnvironment(
     authServiceBroker: authServiceBroker,
-    databaseServiceBroker: databaseServiceBroker,
-    localDatabaseServiceBroker: localDatabaseServiceBroker,
-    databaseQueryBroker: databaseQueryBroker,
+    databaseServiceBroker: databaseServiceBroker1,
+    databaseQueryBroker: databaseQueryBroker1,
     functionsServiceBroker: functionsServiceBroker,
     fileServiceBroker: fileServiceBroker,
     fieldValueBroker: fieldValueBroker,

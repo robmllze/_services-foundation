@@ -19,6 +19,15 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
   //
 
+  static Future<HiveServiceBroker> initFlutter() async {
+    await Hive.initFlutter();
+    return const HiveServiceBroker();
+  }
+
+  //
+  //
+  //
+
   const HiveServiceBroker();
 
   //
@@ -356,128 +365,4 @@ class HiveServiceBroker extends DatabaseServiceInterface {
     await broker.commit();
     return results;
   }
-}
-
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-extension DataExtensionOnBox on Box {
-  //
-  //
-  //
-
-  Map<String, dynamic> toData() {
-    final data = this.toMap();
-    return data.mapKeys((e) {
-      return e.toString();
-    });
-  }
-
-  Map<String, dynamic>? getData() {
-    return letMap(this.get('data'))?.mapKeys((e) => e?.toString()).nonNullKeys;
-  }
-
-  Stream<Map<String, dynamic>?> watchData() {
-    return this.watch(key: 'data').map((e) {
-      return letMap(e.value)?.mapKeys((e) => e.toString()).nonNullKeys;
-    });
-  }
-
-  Future<void> putData(Map<String, dynamic>? data) {
-    return this.put('data', data);
-  }
-
-  Future<void> mergeData(Map<String, dynamic>? data) async {
-    final a = this.getData();
-    final b = data;
-    final c = letMap(mergeDataDeep(a, b))?.mapKeys((e) => e?.toString()).nonNullKeys;
-    await this.putData(c);
-  }
-
-  Future<void> deleteData() {
-    return this.put('data', null);
-  }
-}
-
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-final class HiveBoxManager {
-  //
-  //
-  //
-
-  const HiveBoxManager._();
-
-  //
-  //
-  //
-
-  static final Map<String, _BoxHolder> _boxes = {};
-
-  //
-  //
-  //
-
-  static Future<T> scope<T>(
-    String name,
-    Future<T> Function(Box box) action,
-  ) async {
-    final box = await openBox(name);
-    final t = await action(box);
-    await closeBox(name);
-    return t;
-  }
-
-  //
-  //
-  //
-
-  static Future<Box> openBox(String name) async {
-    if (isBoxOpen(name)) {
-      _boxes[name]!.referenceCount++;
-      return _boxes[name]!.box;
-    } else {
-      var box = await Hive.openBox(name);
-      _boxes[name] = _BoxHolder(box);
-      return box;
-    }
-  }
-
-  //
-  //
-  //
-
-  static Future<void> closeBox(String name) async {
-    if (isBoxOpen(name)) {
-      _boxes[name]!.referenceCount--;
-      if (_boxes[name]!.referenceCount == 0) {
-        await _boxes[name]!.box.close();
-        _boxes.remove(name);
-      }
-    }
-  }
-
-  //
-  //
-  //
-
-  static bool isBoxOpen(String name) {
-    return _boxes.containsKey(name);
-  }
-
-  //
-  //
-  //
-
-  static Box? box(String name) {
-    return _boxes[name]?.box;
-  }
-}
-
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-class _BoxHolder {
-  int referenceCount = 1;
-  Box box;
-
-  _BoxHolder(this.box);
 }
