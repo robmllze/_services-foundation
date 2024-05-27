@@ -8,8 +8,6 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'package:hive_flutter/hive_flutter.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -31,9 +29,8 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
     firebaseAuth: firebaseAuth,
   );
 
-  final databaseServiceBroker1 = await HiveServiceBroker.initFlutter();
-
-  final databaseQueryBroker1 = HiveQueryBroker(databaseServiceBroker: databaseServiceBroker1);
+  //final databaseServiceBroker1 = await HiveServiceBroker.initFlutter();
+  //final databaseQueryBroker1 = HiveQueryBroker(databaseServiceBroker: databaseServiceBroker1);
 
   final databaseServiceBroker = FirestoreServiceBroker(
     firestore: firestore,
@@ -58,8 +55,8 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
   );
   final serviceEnvironment = ServiceEnvironment(
     authServiceBroker: authServiceBroker,
-    databaseServiceBroker: databaseServiceBroker1,
-    databaseQueryBroker: databaseQueryBroker1,
+    databaseServiceBroker: databaseServiceBroker,
+    databaseQueryBroker: databaseQueryBroker,
     functionsServiceBroker: functionsServiceBroker,
     fileServiceBroker: fileServiceBroker,
     fieldValueBroker: fieldValueBroker,
