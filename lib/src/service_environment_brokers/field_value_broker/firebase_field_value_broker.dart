@@ -14,6 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
+@visibleForTesting
 final class FirebaseFieldValueBroker extends FieldValueInterface {
   //
   //

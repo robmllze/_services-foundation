@@ -252,6 +252,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
       data: {
         PublicModel.K_REF: pubRef.toJson(),
         PublicModel.K_FILE_BOOK: {
+          // TODO: Use a transaction instead.
           fileId: this.fieldValueBroker.deleteFieldValue(),
         },
       },
