@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class SharedServiceBroker extends DatabaseServiceInterface {
+class SharedPreferencesServiceBroker extends DatabaseServiceInterface {
   //
   //
   //
@@ -26,7 +26,7 @@ class SharedServiceBroker extends DatabaseServiceInterface {
   //
   //
 
-  SharedServiceBroker({
+  SharedPreferencesServiceBroker({
     required this.sharedPreferences,
   });
 

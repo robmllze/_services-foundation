@@ -26,8 +26,9 @@ class HiveServiceBroker extends DatabaseServiceInterface {
 
   //
   //
-  //r
+  //
 
+  @override
   Stream<TModel?> streamModel<TModel extends Model>(
     DataRef ref,
     TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
@@ -42,19 +43,19 @@ class HiveServiceBroker extends DatabaseServiceInterface {
       controller = StreamController<TModel?>(
         onListen: () async {
           final data = box.getData();
-          setData(data);
-          final streamSubscription = box.watchData().listen(
-            (data) {
-              setData(data);
-            },
-            onError: controller.addError,
-            onDone: controller.close,
-          );
+          if (data != null) {
+            setData(data);
+            final streamSubscription = box.watchData().listen(
+                  setData,
+                  onError: controller.addError,
+                  onDone: controller.close,
+                );
 
-          controller.onCancel = () async {
-            await streamSubscription.cancel();
-            await HiveBoxManager.closeBox(ref.docPath);
-          };
+            controller.onCancel = () async {
+              await streamSubscription.cancel();
+              await HiveBoxManager.closeBox(ref.docPath);
+            };
+          }
         },
       );
       return controller.stream;
@@ -63,10 +64,8 @@ class HiveServiceBroker extends DatabaseServiceInterface {
     final stream1 = Stream.fromFuture(() {
       return HiveBoxManager.openBox(ref.docPath);
     }());
-    final stream2 = firstToSecondStream<Box, TModel?>(
-      stream1,
-      stream2Creator,
-    );
+
+    final stream2 = StreamMapper(stream1).map(stream2Creator).stream;
     return stream2;
   }
 
@@ -116,13 +115,15 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   Future<void> setModel<TModel extends Model>(TModel model) async {
     // Set the model data.
     {
-      final documentPath = model.ref!.docPath;
-      final box = await HiveBoxManager.openBox(documentPath);
-      final a = box.getData();
-      final b = model.toJson();
-      final c = mergeDataDeep(a, b);
-      await box.putData(c);
-      await HiveBoxManager.closeBox(documentPath);
+      await HiveBoxManager.scope(
+        model.ref!.docPath,
+        (box) async {
+          final a = box.getData();
+          final b = model.toJson();
+          final c = letMap(mergeDataDeep(a, b))?.mapKeys((e) => e?.toString()).nonNullKeys;
+          await box.putData(c);
+        },
+      );
     }
     // Add a reference to the model to the collection document.
 
@@ -153,12 +154,16 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   Future<TModel?> readModel<TModel extends Model>(
     DataRef ref,
     TModel? Function(Map<String, dynamic>? data) fromJsonOrNull,
-  ) async {
-    final box = await HiveBoxManager.openBox(ref.docPath);
-    final boxData = box.getData();
-    final model = fromJsonOrNull(boxData);
-    await HiveBoxManager.closeBox(ref.docPath);
-    return model;
+  ) {
+    return HiveBoxManager.scope(
+      ref.docPath,
+      (box) async {
+        final box = await HiveBoxManager.openBox(ref.docPath);
+        final boxData = box.getData();
+        final model = fromJsonOrNull(boxData);
+        return model;
+      },
+    );
   }
 
   //
@@ -173,11 +178,11 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> deleteModel(DataRef ref) async {
-    final documentPath = ref.docPath;
-    final box = await HiveBoxManager.openBox(documentPath);
-    await box.putData(null);
-    await HiveBoxManager.closeBox(documentPath);
+  Future<void> deleteModel(DataRef ref) {
+    return HiveBoxManager.scope(
+      ref.docPath,
+      (box) => box.deleteData(),
+    );
   }
 
   //
@@ -253,9 +258,7 @@ extension DataExtensionOnBox on Box {
   }
 
   Map<String, dynamic>? getData() {
-    return letMap(this.get('data'))?.mapKeys((e) {
-      return e?.toString();
-    }).nonNullKeys;
+    return letMap(this.get('data'))?.mapKeys((e) => e?.toString()).nonNullKeys;
   }
 
   Stream<Map<String, dynamic>?> watchData() {
@@ -266,6 +269,10 @@ extension DataExtensionOnBox on Box {
 
   Future<void> putData(Map<String, dynamic>? data) {
     return this.put('data', data);
+  }
+
+  Future<void> deleteData() {
+    return this.put('data', null);
   }
 }
 
@@ -283,6 +290,20 @@ final class HiveBoxManager {
   //
 
   static final Map<String, _BoxHolder> _boxes = {};
+
+  //
+  //
+  //
+
+  static Future<T> scope<T>(
+    String name,
+    Future<T> Function(Box box) action,
+  ) async {
+    final box = await openBox(name);
+    final t = await action(box);
+    await closeBox(name);
+    return t;
+  }
 
   //
   //
