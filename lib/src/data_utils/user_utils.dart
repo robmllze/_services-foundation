@@ -34,7 +34,7 @@ final class UserUtils {
     required String userId,
   }) {
     final now = DateTime.now();
-    final userId = serviceEnvironment.authServiceBroker.pCurrentUser.value!.userId;
+    final userId = serviceEnvironment.authServiceBroker.pCurrentUser.value!.id!;
     final userRef = Schema.usersRef(userId: userId);
     final seed = IdUtils.newUuidV4();
     final userPid = IdUtils.idToUserPid(seed: seed, userId: userId);

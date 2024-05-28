@@ -23,7 +23,6 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   //
 
   final DatabaseServiceInterface databaseServiceBroker;
-  final FirebaseFieldValueBroker fieldValueBroker;
   final FirebaseStorage firebaseStorage;
 
   //
@@ -32,7 +31,6 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
 
   FirebaseStorageServiceBroker({
     required this.databaseServiceBroker,
-    required this.fieldValueBroker,
     required this.firebaseStorage,
   });
 
@@ -236,7 +234,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
       final storagePath = file.storagePath!;
       final storageRef = this.firebaseStorage.ref(storagePath);
       await storageRef.delete();
-      await this._deleteFileEntry(pubRef, fileId);
+      await this._deletePublicFileEntry(pubRef, fileId);
     }
   }
 
@@ -244,20 +242,17 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
   //
   //
 
-  Future<void> _deleteFileEntry(
+  Future<void> _deletePublicFileEntry(
     DataRef pubRef,
     String fileId,
   ) async {
-    final update = DataModel(
-      data: {
-        PublicModel.K_REF: pubRef.toJson(),
-        PublicModel.K_FILE_BOOK: {
-          // TODO: Use a transaction instead.
-          fileId: this.fieldValueBroker.deleteFieldValue(),
-        },
-      },
-    );
-    await this.databaseServiceBroker.setModel(update);
+    this.databaseServiceBroker.runTransaction((handler) async {
+      final model = (await handler.read(pubRef, PublicModel.fromJsonOrNull))!;
+      final fileBook = model.fileBook;
+      if (fileBook == null) return;
+      fileBook.remove(fileId);
+      handler.update(model);
+    });
   }
 
   //

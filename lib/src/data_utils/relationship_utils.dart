@@ -8,6 +8,8 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -189,7 +191,7 @@ final class RelationshipUtils {
     required String relationshipId,
   }) async {
     final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
-    final currentUserId = serviceEnvironment.currentUser?.userId;
+    final currentUserId = serviceEnvironment.currentUser?.id;
     assert(currentUserId != null);
     if (currentUserId != null) {
       await serviceEnvironment.databaseServiceBroker.setModel(
@@ -275,8 +277,8 @@ final class RelationshipUtils {
     final update = DataModel(
       data: {
         ModelRelationship.K_REF: relationshipRef.toJson(),
-        ModelRelationship.K_MEMBER_PIDS:
-            serviceEnvironment.fieldValueBroker.arrayRemoveFieldValue(memberPids.toList()),
+        // TODO: DO NOT USE FIREBASE FIELD VALUES!!!
+        ModelRelationship.K_MEMBER_PIDS: FieldValue.arrayRemove(memberPids.toList()),
       },
     );
     return UpdateOperation(model: update);

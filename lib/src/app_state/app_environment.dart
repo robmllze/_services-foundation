@@ -8,6 +8,8 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
+import 'package:_data/_common.dart';
+
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -70,9 +72,9 @@ abstract class AppEnvironment<TAppSession extends AppSession> {
   //
   //
 
-  void onFreshLogin(AuthUser currentAuthUser);
+  void onFreshLogin(ModelAuthUser currentAuthUser);
 
-  void onLogin(AuthUser currentAuthUser);
+  void onLogin(ModelAuthUser currentAuthUser);
 
   void onFreshLogout();
 

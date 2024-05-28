@@ -8,6 +8,8 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
+import 'package:_data/_common.dart';
+
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -36,7 +38,7 @@ abstract class AppSession {
   //
 
   @mustCallSuper
-  FutureOr<void> startSession(AuthUser currentAuthUser) async {
+  FutureOr<void> startSession(ModelAuthUser currentAuthUser) async {
     // assert(
     //   !this._didStart,
     //   'The session has already been started.',

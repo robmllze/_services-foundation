@@ -8,6 +8,7 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
+import 'package:_data/_common.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '/_common.dart';
@@ -19,18 +20,17 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
   //
 
-  @visibleForTesting
-  final FirebaseAuth firebaseAuth;
+  final FirebaseAuth _firebaseAuth;
 
   //
   //
   //
 
   FirebaseAuthServiceBroker({
-    required this.firebaseAuth,
+    required FirebaseAuth firebaseAuth,
     super.onLogin,
     super.onLogout,
-  }) {
+  }) : _firebaseAuth = firebaseAuth {
     this.startHandlingAuthStateChanges();
   }
 
@@ -38,7 +38,7 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
   //
 
-  StreamSubscription<User?>? _authStateChangesSubscription;
+  StreamSubscription<ModelAuthUser?>? _authStateChangesSubscription;
 
   //
   //
@@ -46,11 +46,11 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
 
   Future<void> startHandlingAuthStateChanges() async {
     await stopHandlingAuthStateChanges();
-    this._authStateChangesSubscription = this.firebaseAuth.authStateChanges().listen((user) async {
-      if (user != null) {
-        final userInterface = user.toUserInterface();
-        await super.pCurrentUser.set(userInterface);
-        super.onLogin?.call(userInterface);
+    this._authStateChangesSubscription =
+        this._firebaseAuth.authStateChanges().map((e) => e?.toAuthUser()).listen((authUser) async {
+      if (authUser != null) {
+        await super.pCurrentUser.set(authUser);
+        super.onLogin?.call(authUser);
       } else {
         await super.pCurrentUser.set(null);
         super.onLogout?.call();
@@ -76,7 +76,7 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required String password,
   }) async {
     try {
-      await this.firebaseAuth.signInWithEmailAndPassword(
+      await this._firebaseAuth.signInWithEmailAndPassword(
             email: email,
             password: password,
           );
@@ -100,7 +100,7 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required String password,
   }) async {
     try {
-      await this.firebaseAuth.createUserWithEmailAndPassword(
+      await this._firebaseAuth.createUserWithEmailAndPassword(
             email: email,
             password: password,
           );
@@ -121,7 +121,7 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   @override
   Future<void> logOut() async {
     await super.pCurrentUser.set(null);
-    await this.firebaseAuth.signOut();
+    await this._firebaseAuth.signOut();
   }
 
   //
@@ -132,7 +132,7 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   Future<void> sendPasswordResetEmail({
     required String email,
   }) async {
-    await this.firebaseAuth.sendPasswordResetEmail(
+    await this._firebaseAuth.sendPasswordResetEmail(
           email: email,
         );
   }
@@ -142,7 +142,7 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
 
   @override
-  Future<String?> getIdToken() => this.firebaseAuth.currentUser!.getIdToken();
+  Future<String?> getIdToken() => this._firebaseAuth.currentUser!.getIdToken();
 
   //
   //
@@ -154,7 +154,7 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
     String? photoURL,
     String? password,
   }) async {
-    final currentUser = this.firebaseAuth.currentUser!;
+    final currentUser = this._firebaseAuth.currentUser!;
     if (displayName != null) {
       await currentUser.updateDisplayName(displayName);
     }
@@ -172,17 +172,20 @@ class FirebaseAuthServiceBroker extends AuthServiceInterface {
 
   @override
   Future<void> deleteUser() async {
-    await this.firebaseAuth.currentUser!.delete();
+    await this._firebaseAuth.currentUser!.delete();
   }
 }
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-extension UserToUserInterfaceExtension on User {
-  AuthUser toUserInterface() {
-    return AuthUser(
-      userId: this.uid,
-      email: this.email!,
+extension ToAuthUserOnUserExtension on User {
+  ModelAuthUser toAuthUser() {
+    return ModelAuthUser(
+      id: this.uid,
+      email: this.email,
+      displayName: this.displayName,
+      photoUrl: this.photoURL,
+      emailVerified: this.emailVerified,
     );
   }
 }

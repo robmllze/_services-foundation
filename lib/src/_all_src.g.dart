@@ -50,6 +50,7 @@ export 'data_utils/user_event_utils.dart';
 export 'data_utils/user_utils.dart';
 export 'service_environment_brokers/auth_service_broker/firebase_auth_service_broker.dart';
 export 'service_environment_brokers/auth_service_broker/hive_auth_service_broker.dart';
+export 'service_environment_brokers/auth_service_broker/shared_preferences_auth_service_broker.dart';
 export 'service_environment_brokers/database_query_broker/base_query_on_collection_reference_extension.dart';
 export 'service_environment_brokers/database_query_broker/firestore_query_broker.dart';
 export 'service_environment_brokers/database_query_broker/hive_query_broker.dart';
