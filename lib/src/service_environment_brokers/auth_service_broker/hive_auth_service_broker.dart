@@ -8,12 +8,11 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'package:_data/_common.dart';
-
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
+@visibleForTesting
 class HiveAuthServiceBroker extends AuthServiceInterface {
   //
   //
@@ -115,8 +114,8 @@ class HiveAuthServiceBroker extends AuthServiceInterface {
     required String email,
     required String password,
   }) async {
-    final userRef = this._getUserRef(email);
-    final authUser = await this._getAuthUser(userRef);
+    final ref = this._getAuthUserRef(email);
+    final authUser = await this._getAuthUser(ref);
     if (authUser == null) {
       throw Exception('User not found.');
     }
@@ -161,14 +160,15 @@ class HiveAuthServiceBroker extends AuthServiceInterface {
     if ($email.isEmpty || password.isEmpty) {
       throw Exception('Email and password must not be empty.');
     }
-    final userRef = this._getUserRef($email);
+    final ref = this._getAuthUserRef($email);
+
     final authUser = ModelAuthUser(
-      ref: userRef,
-      id: email,
+      ref: ref,
+      id: IdUtils.newUuidV4(),
       email: $email,
       password: password,
     );
-    await this.hiveServiceBroker.setModel(authUser);
+    await this.hiveServiceBroker.createModel(authUser);
     await this.pCurrentUser.set(authUser);
   }
 
@@ -202,8 +202,12 @@ class HiveAuthServiceBroker extends AuthServiceInterface {
   //
   //
 
-  DataRef _getUserRef(String email) {
-    return this.authUsersRef.copy()..id = email;
+  DataRef _getAuthUserRef(String email) {
+    return DataRef(
+      collection: ['session', this.sessionKey, 'auth_users'],
+      id: email,
+    );
+    // return this.authUsersRef.copy()..id = email;
   }
 
   //
@@ -222,9 +226,9 @@ class HiveAuthServiceBroker extends AuthServiceInterface {
   //
   //
 
-  Future<ModelAuthUser?> _getAuthUser(DataRef authUserRef) async {
+  Future<ModelAuthUser?> _getAuthUser(DataRef ref) async {
     final model = await this.hiveServiceBroker.readModel(
-          authUserRef,
+          ref,
           ModelAuthUser.fromJsonOrNull,
         );
     return model;

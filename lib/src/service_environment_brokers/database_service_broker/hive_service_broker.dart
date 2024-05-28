@@ -14,6 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
+@visibleForTesting
 class HiveServiceBroker extends DatabaseServiceInterface {
   //
   //
