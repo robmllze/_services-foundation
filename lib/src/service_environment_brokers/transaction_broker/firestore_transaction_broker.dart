@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreTransactionBroker extends TransactionInterface<_TData> {
+class FirestoreTransactionBroker extends TransactionInterface {
   //
   //
   //
@@ -35,18 +35,17 @@ class FirestoreTransactionBroker extends TransactionInterface<_TData> {
   //
   //
 
-  final _operations = <TransactionOperation<_TData, _TReference>>[];
+  final _operations = <_TTransactionOperation>[];
 
   //
   //
   //
 
   @override
-  void create(String path, _TData data) {
+  void create(Model model) {
     final operation = FirestoreCreateOperation(
-      path,
+      model,
       this._transaction,
-      data,
       options: SetOptions(merge: true),
     );
     this._operations.add(operation);
@@ -57,13 +56,18 @@ class FirestoreTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  Future<_TData?> read(String path) async {
-    final reference = this._firestore.doc(path);
+  Future<TModel?> read<TModel extends Model>(
+    DataRef ref,
+    TFromJsonOrNull<TModel> fromJsonOrNull,
+  ) async {
+    final documentPath = ref.docPath;
+    final reference = this._firestore.doc(documentPath);
     final operation = FirestoreReadOperation(
-      path,
+      ref,
+      fromJsonOrNull,
       this._transaction,
     );
-    final result = operation.execute(reference);
+    final result = await operation.execute(reference);
     return result;
   }
 
@@ -72,11 +76,10 @@ class FirestoreTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  void update(String path, _TData data) {
+  void update(Model model) {
     final operation = FirestoreUpdateOperation(
-      path,
+      model,
       this._transaction,
-      data,
     );
     this._operations.add(operation);
   }
@@ -86,9 +89,9 @@ class FirestoreTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  void delete(String path) {
+  void delete(DataRef ref) {
     final operation = FirestoreDeleteOperation(
-      path,
+      ref,
       this._transaction,
     );
     this._operations.add(operation);
@@ -99,14 +102,17 @@ class FirestoreTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  Future<Map<String, _TData?>> commit() async {
-    final results = <String, _TData?>{};
+  Future<List<Model>> commit() async {
+    final results = <Model>[];
     try {
       for (final operation in this._operations) {
         if (operation is FirestoreReadOperation) continue;
-        final reference = this._firestore.doc(operation.path);
+        final documentPath = operation.ref.docPath;
+        final reference = this._firestore.doc(documentPath);
         final result = await operation.execute(reference);
-        results[operation.path] = result;
+        if (result is Model) {
+          results.add(result);
+        }
       }
     } catch (e) {
       rethrow;
@@ -133,43 +139,42 @@ class FirestoreCreateOperation extends _TTransactionOperation {
   //
   //
 
+  final Model model;
   final Transaction _transaction;
-  final _TData data;
   final SetOptions? options;
 
   //
   //
   //
 
-  const FirestoreCreateOperation(
-    super.path,
-    this._transaction,
-    this.data, {
+  FirestoreCreateOperation(
+    this.model,
+    this._transaction, {
     this.options,
-  });
+  }) : super(model.ref!);
 
   //
   //
   //
 
   @override
-  Future<_TData?> execute(_TReference reference) async {
+  Future<dynamic> execute(_TReference reference) async {
     await this._transaction.set(
           reference,
-          data,
+          this.model.toJson(),
           this.options ?? SetOptions(merge: true),
         );
-    return null;
   }
 }
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreReadOperation extends _TTransactionOperation {
+class FirestoreReadOperation<TModel extends Model> extends _TTransactionOperation {
   //
   //
   //
 
+  final TFromJsonOrNull<TModel> fromJsonOrNull;
   final Transaction _transaction;
 
   //
@@ -177,7 +182,8 @@ class FirestoreReadOperation extends _TTransactionOperation {
   //
 
   FirestoreReadOperation(
-    super.path,
+    super.ref,
+    this.fromJsonOrNull,
     this._transaction,
   );
 
@@ -185,17 +191,12 @@ class FirestoreReadOperation extends _TTransactionOperation {
   //
   //
 
-  _TData? _result;
-
-  //
-  //
-  //
-
   @override
-  Future<_TData?> execute(_TReference reference) async {
+  Future<dynamic> execute(_TReference reference) async {
     final snapshot = await this._transaction.get(reference);
-    this._result = snapshot.data();
-    return this._result;
+    final data = snapshot.data();
+    final model = this.fromJsonOrNull(data);
+    return model;
   }
 }
 
@@ -207,25 +208,24 @@ class FirestoreUpdateOperation extends _TTransactionOperation {
   //
 
   final Transaction _transaction;
-  final _TData data;
+  final Model model;
 
   //
   //
   //
 
-  const FirestoreUpdateOperation(
-    super.path,
+  FirestoreUpdateOperation(
+    this.model,
     this._transaction,
-    this.data,
-  );
+  ) : super(model.ref!);
 
   //
   //
   //
 
   @override
-  Future<_TData?> execute(_TReference reference) async {
-    await this._transaction.update(reference, data);
+  Future<dynamic> execute(_TReference reference) async {
+    await this._transaction.update(reference, model.toJson());
     return null;
   }
 }
@@ -244,7 +244,7 @@ class FirestoreDeleteOperation extends _TTransactionOperation {
   //
 
   const FirestoreDeleteOperation(
-    super.path,
+    super.ref,
     this._transaction,
   );
 
@@ -253,7 +253,7 @@ class FirestoreDeleteOperation extends _TTransactionOperation {
   //
 
   @override
-  Future<_TData?> execute(_TReference reference) async {
+  Future<dynamic> execute(_TReference reference) async {
     await this._transaction.delete(reference);
     return null;
   }
@@ -261,8 +261,6 @@ class FirestoreDeleteOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-typedef _TReference = DocumentReference<_TData>;
+typedef _TReference = DocumentReference<Map<String, dynamic>>;
 
-typedef _TData = Map<String, dynamic>;
-
-typedef _TTransactionOperation = TransactionOperation<_TData, _TReference>;
+typedef _TTransactionOperation = TransactionOperation<_TReference>;

@@ -101,7 +101,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     required Set<String> elementKeys,
     required Iterable<String> elements,
     required DataRef collectionRef,
-    required TModel? Function(Map<String, dynamic>? otherData) fromJsonOrNull,
+    required TFromJsonOrNull<TModel> fromJsonOrNull,
   }) {
     final elementSet = elements.where((e) => e.isNotEmpty).toSet();
     if (elementSet.isEmpty) {

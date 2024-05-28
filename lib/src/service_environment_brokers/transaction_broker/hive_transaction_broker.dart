@@ -12,19 +12,26 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class HiveTransactionBroker extends TransactionInterface<_TData> {
+class HiveTransactionBroker extends TransactionInterface {
   //
   //
   //
 
-  HiveTransactionBroker();
+  final HiveServiceBroker hiveServiceBroker;
 
   //
   //
   //
 
-  final _operations = <TransactionOperation<_TData, Null>>[];
-  final _names = <String>{};
+  HiveTransactionBroker({
+    required this.hiveServiceBroker,
+  });
+
+  //
+  //
+  //
+
+  final _operations = <_TTransactionOperation>[];
 
   //
   //
@@ -32,9 +39,8 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  void create(String path, _TData data) {
-    this._addBox(path);
-    final operation = HiveCreateOperation(path, data);
+  void create(Model model) {
+    final operation = HiveCreateOperation(model);
     this._operations.add(operation);
   }
 
@@ -43,9 +49,12 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  Future<_TData?> read(String path) async {
-    final operation = HiveReadOperation(path);
-    final result = await operation.execute(null);
+  Future<TModel?> read<TModel extends Model>(
+    DataRef ref,
+    TFromJsonOrNull<TModel> fromJsonOrNull,
+  ) async {
+    final operation = HiveReadOperation(ref, fromJsonOrNull);
+    final result = await operation.execute(this.hiveServiceBroker);
     return result;
   }
 
@@ -54,12 +63,8 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  void update(String path, _TData data) {
-    this._addBox(path);
-    final operation = HiveUpdateOperation(
-      path,
-      data,
-    );
+  void update(Model model) {
+    final operation = HiveUpdateOperation(model);
     this._operations.add(operation);
   }
 
@@ -68,9 +73,8 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  void delete(String path) {
-    this._addBox(path);
-    final operation = HiveDeleteOperation(path);
+  void delete(DataRef ref) {
+    final operation = HiveDeleteOperation(ref);
     this._operations.add(operation);
   }
 
@@ -79,13 +83,15 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  Future<Map<String, _TData?>> commit() async {
-    final results = <String, _TData?>{};
+  Future<List<Model>> commit() async {
+    final results = <Model>[];
     try {
       for (final operation in this._operations) {
         if (operation is HiveReadOperation) continue;
-        final result = await operation.execute(null);
-        results[operation.path] = result;
+        final result = await operation.execute(this.hiveServiceBroker);
+        if (result is Model) {
+          results.add(result);
+        }
       }
     } finally {
       await this.discard();
@@ -99,19 +105,7 @@ class HiveTransactionBroker extends TransactionInterface<_TData> {
 
   @override
   Future<void> discard() async {
-    for (final name in this._names) {
-      await HiveBoxManager.closeBox(name);
-    }
-    this._names.clear();
     this._operations.clear();
-  }
-
-  //
-  //
-  //
-
-  void _addBox(String path) {
-    this._names.add(path);
   }
 }
 
@@ -122,39 +116,42 @@ class HiveCreateOperation extends _TTransactionOperation {
   //
   //
 
-  final _TData data;
+  final Model model;
 
   //
   //
   //
 
-  const HiveCreateOperation(
-    super.path,
-    this.data,
-  );
+  HiveCreateOperation(
+    this.model,
+  ) : super(model.ref!);
 
   //
   //
   //
 
   @override
-  Future<_TData?> execute(Null reference) async {
-    return HiveBoxManager.scope(this.path, (box) async {
-      await box.putData(data);
-      return data;
-    });
+  Future<dynamic> execute(_TReference reference) async {
+    await reference.createModel(model);
   }
 }
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class HiveReadOperation extends _TTransactionOperation {
+class HiveReadOperation<TModel extends Model> extends _TTransactionOperation {
   //
   //
   //
 
-  HiveReadOperation(
-    super.path,
+  final TFromJsonOrNull<TModel> fromJsonOrNull;
+
+  //
+  //
+  //
+
+  const HiveReadOperation(
+    super.ref,
+    this.fromJsonOrNull,
   );
 
   //
@@ -162,10 +159,9 @@ class HiveReadOperation extends _TTransactionOperation {
   //
 
   @override
-  Future<_TData?> execute(Null reference) async {
-    return HiveBoxManager.scope(this.path, (box) async {
-      return await box.getData();
-    });
+  Future<dynamic> execute(_TReference reference) async {
+    final model = await reference.readModel(ref, fromJsonOrNull);
+    return model;
   }
 }
 
@@ -176,27 +172,23 @@ class HiveUpdateOperation extends _TTransactionOperation {
   //
   //
 
-  final _TData data;
+  final Model model;
 
   //
   //
   //
 
-  const HiveUpdateOperation(
-    super.path,
-    this.data,
-  );
+  HiveUpdateOperation(
+    this.model,
+  ) : super(model.ref!);
 
   //
   //
   //
 
   @override
-  Future<_TData?> execute(Null reference) async {
-    return HiveBoxManager.scope(this.path, (box) async {
-      await box.putData(data);
-      return data;
-    });
+  Future<dynamic> execute(_TReference reference) async {
+    await reference.updateModel(model);
   }
 }
 
@@ -207,8 +199,8 @@ class HiveDeleteOperation extends _TTransactionOperation {
   //
   //
 
-  HiveDeleteOperation(
-    super.path,
+  const HiveDeleteOperation(
+    super.ref,
   );
 
   //
@@ -216,16 +208,41 @@ class HiveDeleteOperation extends _TTransactionOperation {
   //
 
   @override
-  Future<_TData?> execute(Null reference) async {
-    return HiveBoxManager.scope(this.path, (box) async {
-      await box.deleteData();
-      return null;
-    });
+  Future<void> execute(_TReference reference) async {
+    await reference.deleteModel(this.ref);
+    return null;
   }
 }
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-typedef _TData = Map<String, dynamic>;
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-typedef _TTransactionOperation = TransactionOperation<_TData, Null>;
+typedef _TReference = HiveServiceBroker;
+
+typedef _TTransactionOperation = TransactionOperation<_TReference>;
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+DataRef dataRefFromPath(List<String> path) {
+  final temp = path.join('/').split('/');
+  if (temp.isNotEmpty) {
+    final length = temp.length;
+    if (length.isEven) {
+      final collection = temp.sublist(0, length - 1);
+      final id = temp.last;
+      return DataRefModel(
+        id: id,
+        collection: collection,
+      );
+    } else {
+      final collection = temp;
+      return DataRefModel(
+        id: null,
+        collection: collection,
+      );
+    }
+  } else {
+    return DataRefModel();
+  }
+}

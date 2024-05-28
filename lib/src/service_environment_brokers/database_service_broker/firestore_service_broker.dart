@@ -184,31 +184,30 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
     final results = <TModel?>[];
 
     for (final operation in operations) {
-      final path = operation.model!.ref!.docPath;
+      final ref = operation.model!.ref!;
       // Read.
       if (operation.read) {
-        await broker.read(path);
+        await broker.read(ref, DataModel.fromJsonOrNull);
         continue;
       }
 
       // Delete.
       if (operation.delete) {
-        broker.delete(path);
+        broker.delete(ref);
         continue;
       }
 
       final model = operation.model!;
-      final data = model.toJson();
 
       // Create.
       if (operation.create) {
-        broker.create(path, data);
+        broker.create(model);
         continue;
       }
 
       // Update.
       if (operation.update) {
-        broker.update(path, data);
+        broker.update(model);
         continue;
       }
     }

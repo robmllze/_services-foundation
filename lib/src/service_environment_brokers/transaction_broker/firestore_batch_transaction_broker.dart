@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreBatchTransactionBroker extends TransactionInterface<_TData> {
+class FirestoreBatchTransactionBroker extends TransactionInterface {
   //
   //
   //
@@ -33,8 +33,10 @@ class FirestoreBatchTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  void create(String path, _TData data) {
-    final docRef = _firestore.doc(path);
+  void create(Model model) {
+    final documentPath = model.ref!.docPath;
+    final docRef = this._firestore.doc(documentPath);
+    final data = model.toJson();
     this._batch.set(
           docRef,
           data,
@@ -47,10 +49,16 @@ class FirestoreBatchTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  Future<_TData?> read(String path) async {
-    final docRef = this._firestore.doc(path);
+  Future<TModel?> read<TModel extends Model>(
+    DataRef ref,
+    TFromJsonOrNull<TModel> fromJsonOrNull,
+  ) async {
+    final documentPath = ref.docPath;
+    final docRef = this._firestore.doc(documentPath);
     final snapshot = await docRef.get();
-    return snapshot.data();
+    final data = snapshot.data();
+    final model = fromJsonOrNull(data);
+    return model;
   }
 
   //
@@ -58,9 +66,14 @@ class FirestoreBatchTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  void update(String path, _TData data) {
-    final docRef = _firestore.doc(path);
-    this._batch.update(docRef, data);
+  void update(Model model) {
+    final documentPath = model.ref!.docPath;
+    final docRef = this._firestore.doc(documentPath);
+    final data = model.toJson();
+    this._batch.update(
+          docRef,
+          data,
+        );
   }
 
   //
@@ -68,8 +81,9 @@ class FirestoreBatchTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  void delete(String path) {
-    final docRef = _firestore.doc(path);
+  void delete(DataRef ref) {
+    final documentPath = ref.docPath;
+    final docRef = this._firestore.doc(documentPath);
     this._batch.delete(docRef);
   }
 
@@ -78,9 +92,9 @@ class FirestoreBatchTransactionBroker extends TransactionInterface<_TData> {
   //
 
   @override
-  Future<Map<String, _TData?>> commit() async {
+  Future<List<Model>> commit() async {
     await this._batch.commit();
-    return {};
+    return [];
   }
 
   //
@@ -92,7 +106,3 @@ class FirestoreBatchTransactionBroker extends TransactionInterface<_TData> {
     // Do nothing.
   }
 }
-
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-typedef _TData = Map<String, dynamic>;

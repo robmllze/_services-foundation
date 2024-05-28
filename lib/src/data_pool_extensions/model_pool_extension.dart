@@ -28,7 +28,7 @@ extension ModelPoolExtension<TModel extends Model> on Iterable<TModel> {
   Iterable<TModel> queryByWhereInElements({
     required Set<String> elementKeys,
     required Iterable<String> elements,
-    required TModel? Function(Map<String, dynamic>? otherData) fromJsonOrNull,
+    required TFromJsonOrNull<TModel> fromJsonOrNull,
   }) {
     final results = this
         .where((model) {

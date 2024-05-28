@@ -317,7 +317,7 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   Future<void> runTransaction(
     Future<void> Function(TransactionInterface transaction) transactionHandler,
   ) async {
-    final broker = HiveTransactionBroker();
+    final broker = HiveTransactionBroker(hiveServiceBroker: this);
     await transactionHandler(broker);
     await broker.commit();
   }
@@ -330,35 +330,34 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   Future<Iterable<TModel?>> runBatchOperations<TModel extends Model>(
     Iterable<BatchOperation<TModel>> operations,
   ) async {
-    final broker = HiveTransactionBroker();
+    final broker = HiveTransactionBroker(hiveServiceBroker: this);
     final results = <TModel?>[];
 
     for (final operation in operations) {
-      final path = operation.model!.ref!.docPath;
+      final ref = operation.model!.ref!;
       // Read.
       if (operation.read) {
-        await broker.read(path);
+        await broker.read(ref, DataModel.fromJsonOrNull);
         continue;
       }
 
       // Delete.
       if (operation.delete) {
-        broker.delete(path);
+        broker.delete(ref);
         continue;
       }
 
       final model = operation.model!;
-      final data = model.toJson();
 
       // Create.
       if (operation.create) {
-        broker.create(path, data);
+        broker.create(model);
         continue;
       }
 
       // Update.
       if (operation.update) {
-        broker.update(path, data);
+        broker.update(model);
         continue;
       }
     }
