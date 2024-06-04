@@ -159,7 +159,7 @@ class FirestoreCreateOperation extends _TTransactionOperation {
 
   @override
   Future<dynamic> execute(_TReference reference) async {
-    await this._transaction.set(
+    this._transaction.set(
           reference,
           this.model.toJson(),
           this.options ?? SetOptions(merge: true),
@@ -225,7 +225,7 @@ class FirestoreUpdateOperation extends _TTransactionOperation {
 
   @override
   Future<dynamic> execute(_TReference reference) async {
-    await this._transaction.update(reference, model.toJson());
+    this._transaction.update(reference, model.toJson());
     return null;
   }
 }
@@ -254,7 +254,7 @@ class FirestoreDeleteOperation extends _TTransactionOperation {
 
   @override
   Future<dynamic> execute(_TReference reference) async {
-    await this._transaction.delete(reference);
+    this._transaction.delete(reference);
     return null;
   }
 }

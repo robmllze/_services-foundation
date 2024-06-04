@@ -210,7 +210,7 @@ class HiveDeleteOperation extends _TTransactionOperation {
   @override
   Future<void> execute(_TReference reference) async {
     await reference.deleteModel(this.ref);
-    return null;
+    return;
   }
 }
 

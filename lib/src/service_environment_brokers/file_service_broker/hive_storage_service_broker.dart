@@ -56,14 +56,14 @@ class HiveStorageServiceBroker extends FileServiceInterface {
       required String currentUserPid,
       List<String> definitionPath = FileSchema.FILES,
       String? title,
-      String? description}) {
+      String? description,}) {
     // TODO: implement uploadFile
     throw UnimplementedError();
   }
 
   @override
   ({ModelFileEntry pendingUploadFile, Future<ModelFileEntry> uploadedFile}) uploadPublicFile(
-      {required PlatformFile file, required DataRef pubRef, required String? fileId}) {
+      {required PlatformFile file, required DataRef pubRef, required String? fileId,}) {
     // TODO: implement uploadPublicFile
     throw UnimplementedError();
   }
