@@ -15,7 +15,7 @@
 
 // // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-// class SharedPreferencesTransactionBroker implements TransactionInterface<Model> {
+// final class SharedPreferencesTransactionBroker implements TransactionInterface<Model> {
 //   //
 //   //
 //   //

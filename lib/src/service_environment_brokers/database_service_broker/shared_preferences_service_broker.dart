@@ -14,7 +14,7 @@
 
 // // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-// class SharedPreferencesServiceBroker extends DatabaseServiceInterface {
+// final class SharedPreferencesServiceBroker extends DatabaseServiceInterface {
 //   //
 //   //
 //   //

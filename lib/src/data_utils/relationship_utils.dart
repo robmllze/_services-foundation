@@ -43,7 +43,7 @@ final class RelationshipUtils {
       def: def,
     );
 
-    await serviceEnvironment.databaseServiceBroker.setModel(relationship);
+    await serviceEnvironment.databaseServiceBroker.createModel(relationship);
   }
 
   //
@@ -194,7 +194,7 @@ final class RelationshipUtils {
     final currentUserId = serviceEnvironment.currentUser?.id;
     assert(currentUserId != null);
     if (currentUserId != null) {
-      await serviceEnvironment.databaseServiceBroker.setModel(
+      await serviceEnvironment.databaseServiceBroker.mergeModel(
         ModelRelationship(
           ref: relationshipRef,
           id: relationshipId,

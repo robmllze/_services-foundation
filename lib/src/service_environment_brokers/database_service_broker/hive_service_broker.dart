@@ -15,7 +15,7 @@ import '/_common.dart';
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 @visibleForTesting
-class HiveServiceBroker extends DatabaseServiceInterface {
+final class HiveServiceBroker extends DatabaseServiceInterface {
   //
   //
   //
@@ -185,20 +185,7 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> createModel<TModel extends Model>(TModel model) async {
-    if (await _modelExists(model)) {
-      throw Exception('Model already exists at ${model.ref!.docPath}');
-    } else {
-      await this.setModel(model);
-    }
-  }
-
-  //
-  //
-  //
-
-  @override
-  Future<void> setModel<TModel extends Model>(TModel model) async {
+  Future<void> mergeModel<TModel extends Model>(TModel model) async {
     // Set the model data.
     final ref = model.ref!;
     await HiveBoxManager.scope(
@@ -208,8 +195,32 @@ class HiveServiceBroker extends DatabaseServiceInterface {
         await box.mergeData(data);
       },
     );
+    await this._addToCollection(ref);
+  }
 
-    // Add a reference to the model to the collection document.
+  //
+  //
+  //
+
+  @override
+  Future<void> overwriteModel<TModel extends Model>(TModel model) async {
+    final ref = model.ref!;
+    await HiveBoxManager.scope(
+      ref.docPath,
+      (box) async {
+        final data = model.toJson();
+        await box.putData(data);
+      },
+    );
+    await this._addToCollection(ref);
+  }
+
+  //
+  //
+  //
+
+  /// Add a document reference to the appropriate collections document.
+  Future<void> _addToCollection(DataRefModel ref) async {
     final falseCollectionsRef = Schema.falseCollectionsRef(
       collectionPath: ref.collectionPath!,
     );
@@ -229,6 +240,19 @@ class HiveServiceBroker extends DatabaseServiceInterface {
         }
       },
     );
+  }
+
+  //
+  //
+  //
+
+  @override
+  Future<void> createModel<TModel extends Model>(TModel model) async {
+    if (await _modelExists(model)) {
+      throw Exception('Model already exists at ${model.ref!.docPath}');
+    } else {
+      await this.overwriteModel(model);
+    }
   }
 
   //
@@ -258,7 +282,7 @@ class HiveServiceBroker extends DatabaseServiceInterface {
   @override
   Future<void> updateModel<TModel extends Model>(TModel model) async {
     if (await _modelExists(model)) {
-      await this.setModel(model);
+      await this.overwriteModel(model);
     } else {
       throw Exception('Model does not exist at ${model.ref!.docPath}');
     }

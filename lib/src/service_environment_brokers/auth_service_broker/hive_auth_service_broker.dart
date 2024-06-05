@@ -13,11 +13,12 @@ import '/_common.dart';
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 @visibleForTesting
-class HiveAuthServiceBroker extends AuthServiceInterface {
+final class HiveAuthServiceBroker extends AuthServiceInterface {
   //
   //
   //
 
+  // ignore: invalid_use_of_visible_for_testing_member
   final HiveServiceBroker hiveServiceBroker;
 
   final String sessionKey;
@@ -122,7 +123,7 @@ class HiveAuthServiceBroker extends AuthServiceInterface {
     if (authUser.password != password) {
       throw Exception('Invalid password.');
     }
-    await this.hiveServiceBroker.setModel(authUser);
+    await this.hiveServiceBroker.updateModel(authUser);
     await this.pCurrentUser.set(authUser);
   }
 
@@ -194,7 +195,7 @@ class HiveAuthServiceBroker extends AuthServiceInterface {
       ),
     );
 
-    await this.hiveServiceBroker.setModel(updatedUser);
+    await this.hiveServiceBroker.updateModel(updatedUser);
     await this.pCurrentUser.set(updatedUser);
   }
 

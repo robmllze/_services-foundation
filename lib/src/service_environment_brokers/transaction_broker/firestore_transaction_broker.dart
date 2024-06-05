@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreTransactionBroker extends TransactionInterface {
+final class FirestoreTransactionBroker extends TransactionInterface {
   //
   //
   //
@@ -42,11 +42,36 @@ class FirestoreTransactionBroker extends TransactionInterface {
   //
 
   @override
+  void merge(Model model) {
+    final operation = FirestoreMergeOperation(
+      model,
+      this._transaction,
+    );
+    this._operations.add(operation);
+  }
+
+  //
+  //
+  //
+
+  @override
+  void overwrite(Model model) {
+    final operation = FirestoreCreateOperation(
+      model,
+      this._transaction,
+    );
+    this._operations.add(operation);
+  }
+
+  //
+  //
+  //
+
+  @override
   void create(Model model) {
     final operation = FirestoreCreateOperation(
       model,
       this._transaction,
-      options: SetOptions(merge: true),
     );
     this._operations.add(operation);
   }
@@ -134,24 +159,22 @@ class FirestoreTransactionBroker extends TransactionInterface {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreCreateOperation extends _TTransactionOperation {
+class FirestoreMergeOperation extends _TTransactionOperation {
   //
   //
   //
 
   final Model model;
   final Transaction _transaction;
-  final SetOptions? options;
 
   //
   //
   //
 
-  FirestoreCreateOperation(
+  FirestoreMergeOperation(
     this.model,
-    this._transaction, {
-    this.options,
-  }) : super(model.ref!);
+    this._transaction,
+  ) : super(model.ref!);
 
   //
   //
@@ -162,7 +185,40 @@ class FirestoreCreateOperation extends _TTransactionOperation {
     this._transaction.set(
           reference,
           this.model.toJson(),
-          this.options ?? SetOptions(merge: true),
+          SetOptions(merge: true),
+        );
+  }
+}
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+class FirestoreCreateOperation extends _TTransactionOperation {
+  //
+  //
+  //
+
+  final Model model;
+  final Transaction _transaction;
+
+  //
+  //
+  //
+
+  FirestoreCreateOperation(
+    this.model,
+    this._transaction,
+  ) : super(model.ref!);
+
+  //
+  //
+  //
+
+  @override
+  Future<dynamic> execute(_TReference reference) async {
+    this._transaction.set(
+          reference,
+          this.model.toJson(),
+          SetOptions(merge: false),
         );
   }
 }

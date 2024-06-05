@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreBatchTransactionBroker extends TransactionInterface {
+final class FirestoreBatchTransactionBroker extends TransactionInterface {
   //
   //
   //
@@ -33,14 +33,49 @@ class FirestoreBatchTransactionBroker extends TransactionInterface {
   //
 
   @override
+  void merge(Model model) {
+    this._set(
+      model,
+      SetOptions(merge: true),
+    );
+  }
+
+  //
+  //
+  //
+
+  @override
+  void overwrite(Model model) {
+    this._set(
+      model,
+      SetOptions(merge: false),
+    );
+  }
+
+  //
+  //
+  //
+
+  @override
   void create(Model model) {
+    this._set(
+      model,
+      SetOptions(merge: false),
+    );
+  }
+
+  //
+  //
+  //
+
+  void _set(Model model, SetOptions setOptions) {
     final documentPath = model.ref!.docPath;
     final docRef = this._firestore.doc(documentPath);
     final data = model.toJson();
     this._batch.set(
           docRef,
           data,
-          SetOptions(merge: true),
+          setOptions,
         );
   }
 

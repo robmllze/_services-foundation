@@ -12,7 +12,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirebaseFunctionsServiceBroker extends FunctionsServiceInterface {
+final class FirebaseFunctionsServiceBroker extends FunctionsServiceInterface {
   //
   //
   //

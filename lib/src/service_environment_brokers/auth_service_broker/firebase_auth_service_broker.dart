@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirebaseAuthServiceBroker extends AuthServiceInterface {
+final class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
   //
   //

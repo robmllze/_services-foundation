@@ -17,7 +17,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirebaseStorageServiceBroker extends FileServiceInterface {
+final class FirebaseStorageServiceBroker extends FileServiceInterface {
   //
   //
   //
@@ -177,7 +177,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
       definitionPath: FileSchema.PUBLIC_FILES,
     );
     final uploadedFile = () async {
-      await this.databaseServiceBroker.setModel(
+      await this.databaseServiceBroker.mergeModel(
             PublicModel(
               ref: pubRef,
               fileBook: {
@@ -188,7 +188,7 @@ class FirebaseStorageServiceBroker extends FileServiceInterface {
       final task = await storageRef.putData(file.bytes!);
       final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
       final uploadedFile = ModelFileEntry.of(pendingUploadFile)..downloadUrl = downloadUrl;
-      await this.databaseServiceBroker.setModel(
+      await this.databaseServiceBroker.mergeModel(
             PublicModel(
               ref: pubRef,
               fileBook: {

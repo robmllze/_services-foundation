@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreServiceBroker extends DatabaseServiceInterface {
+final class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
   //
   //
@@ -95,24 +95,33 @@ class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<void> createModel<TModel extends Model>(TModel model) async {
-    final documentPath = model.ref!.docPath;
-    final modelRef = this.firestore.doc(documentPath);
-    final modelData = model.toJson();
-    await modelRef.set(modelData, SetOptions(merge: false));
-  }
-
-  //
-  //
-
-  //
-
-  @override
-  Future<void> setModel<TModel extends Model>(TModel model) async {
+  Future<void> mergeModel<TModel extends Model>(TModel model) async {
     final documentPath = model.ref!.docPath;
     final modelRef = this.firestore.doc(documentPath);
     final modelData = model.toJson();
     await modelRef.set(modelData, SetOptions(merge: true));
+  }
+
+  //
+  //
+  //
+
+  @override
+  Future<void> overwriteModel<TModel extends Model>(TModel model) async {
+    final documentPath = model.ref!.docPath;
+    final modelRef = this.firestore.doc(documentPath);
+    final modelData = model.toJson();
+    await modelRef.set(modelData, SetOptions(merge: false));
+  } 
+
+  //
+  //
+  //
+
+  @override
+  Future<void> createModel<TModel extends Model>(TModel model) async {
+    // NB: Does not actually check if the model already exists.
+    await this.overwriteModel(model);
   }
 
   //

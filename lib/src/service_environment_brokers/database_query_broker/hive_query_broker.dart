@@ -12,12 +12,14 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
+@visibleForTesting
 final class HiveQueryBroker extends DatabaseQueryInterface {
   //
   //
   //
 
   const HiveQueryBroker({
+    // ignore: invalid_use_of_visible_for_testing_member
     required HiveServiceBroker databaseServiceBroker,
   }) : super(databaseServiceBroker: databaseServiceBroker);
 

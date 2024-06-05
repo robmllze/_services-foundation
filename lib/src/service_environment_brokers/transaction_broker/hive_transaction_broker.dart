@@ -12,11 +12,13 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class HiveTransactionBroker extends TransactionInterface {
+@visibleForTesting
+final class HiveTransactionBroker extends TransactionInterface {
   //
   //
   //
 
+  // ignore: invalid_use_of_visible_for_testing_member
   final HiveServiceBroker hiveServiceBroker;
 
   //
@@ -34,6 +36,25 @@ class HiveTransactionBroker extends TransactionInterface {
   final _operations = <_TTransactionOperation>[];
 
   //
+  //
+  //
+
+  @override
+  void merge(Model model) {
+    final operation = HiveMergeOperation(model);
+    this._operations.add(operation);
+  }
+
+  //
+  //
+  //
+
+  @override
+  void overwrite(Model model) {
+    final operation = HiveOverwriteOperation(model);
+    this._operations.add(operation);
+  }
+
   //
   //
   //
@@ -106,6 +127,60 @@ class HiveTransactionBroker extends TransactionInterface {
   @override
   Future<void> discard() async {
     this._operations.clear();
+  }
+}
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+class HiveMergeOperation extends _TTransactionOperation {
+  //
+  //
+  //
+
+  final Model model;
+
+  //
+  //
+  //
+
+  HiveMergeOperation(
+    this.model,
+  ) : super(model.ref!);
+
+  //
+  //
+  //
+
+  @override
+  Future<dynamic> execute(_TReference reference) async {
+    await reference.mergeModel(model);
+  }
+}
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+class HiveOverwriteOperation extends _TTransactionOperation {
+  //
+  //
+  //
+
+  final Model model;
+
+  //
+  //
+  //
+
+  HiveOverwriteOperation(
+    this.model,
+  ) : super(model.ref!);
+
+  //
+  //
+  //
+
+  @override
+  Future<dynamic> execute(_TReference reference) async {
+    await reference.overwriteModel(model);
   }
 }
 
@@ -216,8 +291,7 @@ class HiveDeleteOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
+// ignore: invalid_use_of_visible_for_testing_member
 typedef _TReference = HiveServiceBroker;
 
 typedef _TTransactionOperation = TransactionOperation<_TReference>;
