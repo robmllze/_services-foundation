@@ -10,7 +10,6 @@
 export 'app_state/app_environment.dart';
 export 'app_state/app_session.dart';
 export 'create_service_environment/create_firebase_service_environment.dart';
-export 'create_service_environment/create_hive_service_environment.dart';
 export 'data_helpers/pub_helper_base.dart';
 export 'data_helpers/relationship_helper_base.dart';
 export 'data_pool_extensions/entry_model_extension.dart';
@@ -49,6 +48,7 @@ export 'data_utils/project_utils.dart';
 export 'data_utils/relationship_utils.dart';
 export 'data_utils/user_event_utils.dart';
 export 'data_utils/user_utils.dart';
+export 'notification_topics/messaging_notification_topic.dart';
 export 'service_environment_brokers/auth_service_broker/firebase_auth_service_broker.dart';
 export 'service_environment_brokers/auth_service_broker/hive_auth_service_broker.dart';
 export 'service_environment_brokers/auth_service_broker/shared_preferences_auth_service_broker.dart';
@@ -64,7 +64,7 @@ export 'service_environment_brokers/field_value_broker/firebase_field_value_brok
 export 'service_environment_brokers/file_service_broker/firebase_storage_service_broker.dart';
 export 'service_environment_brokers/file_service_broker/hive_storage_service_broker.dart';
 export 'service_environment_brokers/functions_service_broker/firebase_functions_service_broker.dart';
-export 'service_environment_brokers/functions_service_broker/no_functions_service_broker.dart';
+export 'service_environment_brokers/notification_service_broker/firebase_messaging_service_broker.dart';
 export 'service_environment_brokers/transaction_broker/firestore_batch_transaction_broker.dart';
 export 'service_environment_brokers/transaction_broker/firestore_transaction_broker.dart';
 export 'service_environment_brokers/transaction_broker/hive_transaction_broker.dart';

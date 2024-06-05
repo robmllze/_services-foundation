@@ -12,24 +12,6 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-@visibleForTesting
-class NoFunctionsServiceBroker extends FunctionsServiceInterface {
-  //
-  //
-  //
-
-  NoFunctionsServiceBroker({
-    required super.region,
-    required super.projectId,
-    required super.authServiceBroker,
-  });
-
-  //
-  //
-  //
-
-  @override
-  Uri functionsEndpointUrl(String functionId) {
-    throw UnimplementedError();
-  }
+final class MessagingNotificationTopic extends NotificationTopic1 {
+  const MessagingNotificationTopic() : super('messaging');
 }

@@ -31,10 +31,16 @@ dependencies:
   xyz_pod: ^0.31.0
   xyz_utils: ^0.55.0
 
-  cloud_firestore: ^4.15.9
-  firebase_auth: ^4.17.9
-  firebase_storage: ^11.6.10
-  firebase_core: ^2.27.1
+  cloud_firestore: ^5.0.0
+  firebase_auth: ^5.0.0
+  firebase_core: ^3.0.0
+  firebase_messaging: ^15.0.0
+  firebase_storage: ^12.0.0
+
+  # TODO: We may be able to use these packages to test firebase services:
+  # fake_cloud_firestore: ^3.0.0
+  # firebase_auth_mocks: ^0.14.0
+
   shared_preferences: ^2.2.2
 
   async: any

@@ -11,6 +11,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import '/_common.dart';
@@ -20,6 +21,7 @@ import '/_common.dart';
 /// Creates a service environment that mainly uses Firebase services.
 Future<ServiceEnvironment> createFirebaseServiceEnvironment({
   required FirebaseOptions firebaseOptions,
+  required String cloudMessagingVapidKey,
   required String functionsRegion,
 }) async {
   final app = await Firebase.initializeApp(options: firebaseOptions);
@@ -28,9 +30,6 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
   final authServiceBroker = FirebaseAuthServiceBroker(
     firebaseAuth: firebaseAuth,
   );
-
-  //final databaseServiceBroker1 = await HiveServiceBroker.initFlutter();
-  //final databaseQueryBroker1 = HiveQueryBroker(databaseServiceBroker: databaseServiceBroker1);
 
   final databaseServiceBroker = FirestoreServiceBroker(
     firestore: firestore,
@@ -51,12 +50,21 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
     databaseServiceBroker: databaseServiceBroker,
     firebaseStorage: firebaseStorage,
   );
+
+  final firebaseMessaging = FirebaseMessaging.instance;
+
+  final notificationServiceBroker = FirebaseMessagingServiceBroker(
+    firebaseMessaging: firebaseMessaging,
+    cloudMessagingVapidKey: cloudMessagingVapidKey,
+  );
+
   final serviceEnvironment = ServiceEnvironment(
     authServiceBroker: authServiceBroker,
     databaseServiceBroker: databaseServiceBroker,
     databaseQueryBroker: databaseQueryBroker,
     functionsServiceBroker: functionsServiceBroker,
     fileServiceBroker: fileServiceBroker,
+    notificationServiceBroker: notificationServiceBroker,
   );
   return serviceEnvironment;
 }
