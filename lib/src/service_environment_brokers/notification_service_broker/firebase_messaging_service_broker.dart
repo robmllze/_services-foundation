@@ -31,7 +31,12 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     required this.firebaseMessaging,
     required this.cloudMessagingVapidKey,
     required this.databaseServiceBroker,
-  });
+  }) {
+    () async {
+      await this.firebaseMessaging.setAutoInitEnabled(true);
+      await this.firebaseMessaging.requestPermission();
+    }();
+  }
 
   //
   //
