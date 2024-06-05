@@ -29,7 +29,19 @@ class FirebaseMessagingServiceBroker extends NotificationServiceInterface {
   FirebaseMessagingServiceBroker({
     required this.firebaseMessaging,
     required this.cloudMessagingVapidKey,
-  });
+  }) {
+    this._init();
+  }
+
+  //
+  //
+  //
+
+  /// NOTE: Not sure of this is necessary.
+  Future<void> _init() async {
+    await this.firebaseMessaging.setAutoInitEnabled(true);
+    await this.firebaseMessaging.requestPermission();
+  }
 
   //
   //
