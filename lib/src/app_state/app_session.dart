@@ -8,7 +8,6 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-
 import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -30,41 +29,13 @@ abstract class AppSession {
   //
   //
 
-  //bool _didStart = false;
+  FutureOr<void> startSession(ModelAuthUser currentAuthUser);
 
   //
   //
   //
 
-  @mustCallSuper
-  FutureOr<void> startSession(ModelAuthUser currentAuthUser) async {
-    // assert(
-    //   !this._didStart,
-    //   'The session has already been started.',
-    // );
-    // assert(
-    //   !this.loggedIn,
-    //   'The user is already logged in.',
-    // );
-    //this._didStart = true;
-  }
-
-  //
-  //
-  //
-
-  @mustCallSuper
-  FutureOr<void> stopSession() async {
-    // assert(
-    //   this._didStart,
-    //   'The session has already been stopped.',
-    // );
-    // assert(
-    //   this.loggedOut,
-    //   'The user is already logged out.',
-    // );
-    //this._didStart = false;
-  }
+  FutureOr<void> stopSession();
 
   //
   //

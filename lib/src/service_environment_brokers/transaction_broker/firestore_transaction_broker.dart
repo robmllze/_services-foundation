@@ -56,7 +56,7 @@ final class FirestoreTransactionBroker extends TransactionInterface {
 
   @override
   void overwrite(Model model) {
-    final operation = FirestoreCreateOperation(
+    final operation = FirestoreOverwriteOperation(
       model,
       this._transaction,
     );
@@ -186,6 +186,39 @@ class FirestoreMergeOperation extends _TTransactionOperation {
           reference,
           this.model.toJson(),
           SetOptions(merge: true),
+        );
+  }
+}
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+class FirestoreOverwriteOperation extends _TTransactionOperation {
+  //
+  //
+  //
+
+  final Model model;
+  final Transaction _transaction;
+
+  //
+  //
+  //
+
+  FirestoreOverwriteOperation(
+    this.model,
+    this._transaction,
+  ) : super(model.ref!);
+
+  //
+  //
+  //
+
+  @override
+  Future<dynamic> execute(_TReference reference) async {
+    this._transaction.set(
+          reference,
+          this.model.toJson(),
+          SetOptions(merge: false),
         );
   }
 }
