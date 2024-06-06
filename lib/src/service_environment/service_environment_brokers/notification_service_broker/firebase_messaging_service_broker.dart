@@ -120,9 +120,10 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       update.id ??= IdUtils.newUuidV4();
       update.ipv4Address ??= ipv4Address;
       update.deviceRegisteredAt ??= now;
+      update.deviceInfo = deviceInfo;
       update.lastLoggedInAt = now;
       update.location = location;
-      update.deviceInfo = deviceInfo;
+      update.notificationToken = notificationToken;
 
       // Update the model.
       model.deviceRegistrations = [...?diffIpRegs, update].map((e) => MapEntry(e.id!, e)).toMap();
