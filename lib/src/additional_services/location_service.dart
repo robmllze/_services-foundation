@@ -117,6 +117,8 @@ class LocationService {
   ModelLocation? currentLocationSnapshot() => this.pCurrentLocation.value;
   bool enabledSnapshot() => this.pEnabled.value;
   PermissionStatus? permissionStatusSnapshot() => this.pPermissionStatus.value;
+  bool permissionStatusGrantedSnapshot() =>
+      this.permissionStatusSnapshot() == PermissionStatus.granted;
 
   //
   //

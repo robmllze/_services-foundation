@@ -40,6 +40,12 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   //
   //
 
+  StreamSubscription<dynamic>? _authorizationStatusStream;
+
+  //
+  //
+  //
+
   @override
   Future<void> send({
     required String title,
@@ -64,10 +70,20 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     required String currentUserPid,
     ModelLocation? location,
   }) async {
-    if (await _authorize() == false) {
+    // Check the authorization status and return early if not authorized.
+    final authorizationStatus = await this.checkAuthorizationStatus();
+    if (authorizationStatus != AuthorizationStatus.authorized) {
       return;
     }
 
+    // Periodically check the authorization status.
+    this._authorizationStatusStream?.cancel();
+    this._authorizationStatusStream = pollingStream(
+      this.checkAuthorizationStatus,
+      const Duration(seconds: 1),
+    ).listen((_) {});
+
+    // Collect the current device status.
     final deviceInfo = getBasicDeviceInfo();
     final now = DateTime.now();
     final [notificationToken, ipv4Address] = await Future.wait([
@@ -75,11 +91,13 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       getPublicIPV4Address(),
     ]);
 
+    // Return early if the notificationToken or ipv4Address is null.
     if (notificationToken == null || ipv4Address == null) {
       return;
     }
 
     ModelDeviceRegistration? registration;
+
     await this.databaseServiceBroker.runTransaction((transaction) async {
       // Get the current ModelUserPub.
       final ref = Schema.userPubsRef(userPid: currentUserPid);
@@ -126,12 +144,22 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   //
   //
 
-  Future<bool> _authorize() async {
-    var settings = await this.firebaseMessaging.getNotificationSettings();
-    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      settings = await this.firebaseMessaging.requestPermission();
+  @override
+  final pAuthorizationStatus = Pod<dynamic>(AuthorizationStatus.notDetermined);
+
+  @override
+  Future<dynamic> checkAuthorizationStatus() async {
+    final supported = await this.firebaseMessaging.isSupported();
+    if (supported) {
+      var settings = await this.firebaseMessaging.getNotificationSettings();
+      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+        settings = await this.firebaseMessaging.requestPermission();
+      }
+      await this.pAuthorizationStatus.set(settings.authorizationStatus);
+    } else {
+      await this.pAuthorizationStatus.set(null);
     }
-    return settings.authorizationStatus == AuthorizationStatus.authorized;
+    return this.pAuthorizationStatus.value;
   }
 
   //
@@ -150,6 +178,21 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   @override
   Future<void> unsubscribeFromTopic(String topic) async {
     await this.firebaseMessaging.unsubscribeFromTopic(topic);
+  }
+
+  //
+  //
+  //
+
+  @override
+  void dispose() async {
+    this._authorizationStatusStream?.cancel();
+    this.pAuthorizationStatus.dispose();
+  }
+
+  @override
+  bool authorizationStatusGrantedSnapshot() {
+    return this.pAuthorizationStatus.value == AuthorizationStatus.authorized;
   }
 }
 
