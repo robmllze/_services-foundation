@@ -80,7 +80,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     this._authorizationStatusStream?.cancel();
     this._authorizationStatusStream = pollingStream(
       this.checkAuthorizationStatus,
-      const Duration(seconds: 1),
+      const Duration(seconds: 3),
     ).listen((_) {});
 
     // Collect the current device status.

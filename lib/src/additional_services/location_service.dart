@@ -8,7 +8,7 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '/_common.dart';
 
@@ -28,11 +28,10 @@ class LocationService {
   final pActive = Pod<bool>(false);
   final pCurrentLocation = Pod<ModelLocation?>(null);
   final pEnabled = Pod<bool>(false);
-  final pPermissionStatus = Pod<PermissionStatus?>(null);
+  final pLocationPermission = Pod<LocationPermission?>(null);
 
-  final _location = Location();
-
-  StreamSubscription<LocationData>? _locationSubscription;
+  StreamSubscription<Position>? _positionSubscription;
+  StreamSubscription<void>? _locationPermissionSubscription;
 
   //
   //
@@ -45,27 +44,28 @@ class LocationService {
     }
 
     // Check if location services are enabled.
-    var enabled = await this._location.serviceEnabled();
+
+    var enabled = await Geolocator.isLocationServiceEnabled();
     await this.pEnabled.set(enabled);
+    // If still not enabled, return false early.
     if (!enabled) {
-      enabled = await this._location.requestService();
-      await this.pEnabled.set(enabled);
-      // If still not enabled, return false early.
-      if (!enabled) return false;
+      return false;
     }
 
     // Check for location permissions.
-    var permissionStatus = await this._location.hasPermission();
-    await this.pPermissionStatus.set(permissionStatus);
-    if (permissionStatus == PermissionStatus.denied) {
-      permissionStatus = await this._location.requestPermission();
-      await this.pPermissionStatus.set(permissionStatus);
+    var permissionStatus = await Geolocator.checkPermission();
+    await this.pLocationPermission.set(permissionStatus);
+    if (permissionStatus == LocationPermission.denied) {
+      permissionStatus = await Geolocator.requestPermission();
+      await this.pLocationPermission.set(permissionStatus);
       // If permission is denied or not granted after the request, return false.
-      if (permissionStatus != PermissionStatus.granted) return false;
+      if (permissionStatus == LocationPermission.denied ||
+          permissionStatus == LocationPermission.deniedForever) return false;
     }
 
     // Enable background mode and activate if permission is granted.
-    if (permissionStatus == PermissionStatus.granted) {
+    if (permissionStatus == LocationPermission.whileInUse ||
+        permissionStatus == LocationPermission.always) {
       await this.pActive.set(true);
       return true;
     }
@@ -80,13 +80,23 @@ class LocationService {
 
   Future<ModelLocation?> start() async {
     ModelLocation? currentLocation;
-    this._locationSubscription?.cancel();
+
     final active = await this._init();
+
+    this._locationPermissionSubscription?.cancel();
+
+    this._locationPermissionSubscription = pollingStream(
+      this._init,
+      const Duration(seconds: 3),
+    ).listen((_) {});
+
     if (active) {
-      currentLocation = (await this._location.getLocation()).toLocationModel();
+      currentLocation = (await Geolocator.getCurrentPosition()).toLocationModel();
       await this.pCurrentLocation.set(currentLocation);
-      this._locationSubscription = this._location.onLocationChanged.listen((location) async {
-        final currentLocation = location.toLocationModel();
+      this._positionSubscription?.cancel();
+
+      this._positionSubscription = Geolocator.getPositionStream().listen((position) async {
+        final currentLocation = position.toLocationModel();
         await this.pCurrentLocation.set(currentLocation);
       });
       return currentLocation;
@@ -99,7 +109,7 @@ class LocationService {
   //
 
   Future<void> stop() async {
-    this._locationSubscription?.cancel();
+    this._positionSubscription?.cancel();
   }
 
   //
@@ -110,15 +120,16 @@ class LocationService {
         this.pActive,
         this.pCurrentLocation,
         this.pEnabled,
-        this.pPermissionStatus,
+        this.pLocationPermission,
       ];
 
   bool activeSnapshot() => this.pActive.value;
   ModelLocation? currentLocationSnapshot() => this.pCurrentLocation.value;
   bool enabledSnapshot() => this.pEnabled.value;
-  PermissionStatus? permissionStatusSnapshot() => this.pPermissionStatus.value;
+  LocationPermission? locationPermissionSnapshot() => this.pLocationPermission.value;
   bool permissionStatusGrantedSnapshot() =>
-      this.permissionStatusSnapshot() == PermissionStatus.granted;
+      this.locationPermissionSnapshot() == LocationPermission.whileInUse ||
+      this.locationPermissionSnapshot() == LocationPermission.always;
 
   //
   //
@@ -129,18 +140,18 @@ class LocationService {
     this.pActive.dispose();
     this.pCurrentLocation.dispose();
     this.pEnabled.dispose();
-    this.pPermissionStatus.dispose();
+    this.pLocationPermission.dispose();
   }
 }
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-extension ToLocationModelOnLocationDataExtension on LocationData {
+extension ToLocationModelOnPositionExtension on Position {
   ModelLocation toLocationModel() {
     return ModelLocation(
-      latitude: this.latitude ?? 0.0,
-      longitude: this.longitude ?? 0.0,
-      altitude: this.altitude ?? 0.0,
+      latitude: this.latitude,
+      longitude: this.longitude,
+      altitude: this.altitude,
     );
   }
 }
