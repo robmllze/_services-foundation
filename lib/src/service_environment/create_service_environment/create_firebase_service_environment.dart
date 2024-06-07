@@ -57,6 +57,7 @@ Future<ServiceEnvironment> createFirebaseServiceEnvironment({
     firebaseMessaging: firebaseMessaging,
     cloudMessagingVapidKey: cloudMessagingVapidKey,
     databaseServiceBroker: databaseServiceBroker,
+    functionsServiceBroker: functionsServiceBroker,
   );
 
   final serviceEnvironment = ServiceEnvironment(

@@ -9,6 +9,7 @@
 //.title~
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:http/http.dart' as http;
 import 'package:xyz_device_info/xyz_device_info.dart';
 
 import '/_common.dart';
@@ -23,6 +24,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   final FirebaseMessaging firebaseMessaging;
   final String cloudMessagingVapidKey;
   final DatabaseServiceInterface databaseServiceBroker;
+  final FunctionsServiceInterface functionsServiceBroker;
 
   //
   //
@@ -32,6 +34,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     required this.firebaseMessaging,
     required this.cloudMessagingVapidKey,
     required this.databaseServiceBroker,
+    required this.functionsServiceBroker,
   }) {
     this.firebaseMessaging.setAutoInitEnabled(true);
   }
@@ -50,9 +53,14 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   Future<void> send({
     required String title,
     required String body,
-    required String topic,
-    required Map<String, dynamic> data,
-  }) async {}
+    required Set<String> destinationTokens,
+  }) async {
+    await functionsServiceBroker.sendNotifications(
+      title: title,
+      body: body,
+      destinationTokens: destinationTokens,
+    );
+  }
 
   //
   //
