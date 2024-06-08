@@ -30,12 +30,6 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   //
 
   static FirebaseMessagingServiceBroker? _instance;
-  static FirebaseMessagingServiceBroker get instance {
-    if (_instance == null) {
-      throw Exception('FirebaseMessagingServiceBroker has not been initialized.');
-    }
-    return _instance!;
-  }
 
   FirebaseMessagingServiceBroker._({
     required this.firebaseMessaging,
@@ -214,15 +208,19 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
 
   @override
   Future<dynamic> checkAuthorizationStatus() async {
-    final supported = await this.firebaseMessaging.isSupported();
-    if (supported) {
-      var settings = await this.firebaseMessaging.getNotificationSettings();
-      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-        settings = await this.firebaseMessaging.requestPermission();
+    try {
+      final supported = await this.firebaseMessaging.isSupported();
+      if (supported) {
+        var settings = await this.firebaseMessaging.getNotificationSettings();
+        if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+          settings = await this.firebaseMessaging.requestPermission();
+        }
+        await this.pAuthorizationStatus.set(settings.authorizationStatus);
+      } else {
+        await this.pAuthorizationStatus.set(AuthorizationStatus.notDetermined);
       }
-      await this.pAuthorizationStatus.set(settings.authorizationStatus);
-    } else {
-      await this.pAuthorizationStatus.set(null);
+    } catch (_) {
+      await this.pAuthorizationStatus.set(AuthorizationStatus.notDetermined);
     }
     return this.pAuthorizationStatus.value;
   }

@@ -21,13 +21,6 @@ class LocationService {
 
   static LocationService? _instance;
 
-  static LocationService get instance {
-    if (_instance == null) {
-      throw Exception('LocationService has not been initialized.');
-    }
-    return _instance!;
-  }
-
   LocationService._();
 
   /// Returns the singleton instance of [LocationService]. This service
@@ -92,15 +85,19 @@ class LocationService {
   //
 
   Future<LocationPermission> checkAuthorizationStatus() async {
-    final supported = await Geolocator.isLocationServiceEnabled();
-    if (supported) {
-      var locationPermission = await Geolocator.checkPermission();
-      if (locationPermission != LocationPermission.always &&
-          locationPermission != LocationPermission.whileInUse) {
-        locationPermission = await Geolocator.requestPermission();
+    try {
+      final supported = await Geolocator.isLocationServiceEnabled();
+      if (supported) {
+        var locationPermission = await Geolocator.checkPermission();
+        if (locationPermission != LocationPermission.always &&
+            locationPermission != LocationPermission.whileInUse) {
+          locationPermission = await Geolocator.requestPermission();
+        }
+        await this.pAuthorizationStatus.set(locationPermission);
+      } else {
+        await this.pAuthorizationStatus.set(LocationPermission.unableToDetermine);
       }
-      await this.pAuthorizationStatus.set(locationPermission);
-    } else {
+    } catch (e) {
       await this.pAuthorizationStatus.set(LocationPermission.unableToDetermine);
     }
     return this.pAuthorizationStatus.value;
