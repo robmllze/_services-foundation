@@ -9,7 +9,6 @@
 //.title~
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
 import 'package:xyz_device_info/xyz_device_info.dart';
 
 import '/_common.dart';
@@ -35,9 +34,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     required this.cloudMessagingVapidKey,
     required this.databaseServiceBroker,
     required this.functionsServiceBroker,
-  }) {
-    this.firebaseMessaging.setAutoInitEnabled(true);
-  }
+  });
 
   //
   //
@@ -204,27 +201,3 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     return this.pAuthorizationStatus.value == AuthorizationStatus.authorized;
   }
 }
-
-// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-// // TODO: Move to utils package.
-// extension UniqueOnMapEntryIterableExtension<K, V> on Iterable<MapEntry<K, V>> {
-//   List<MapEntry<K, V>> unique() => uniqueEntries(this);
-// }
-
-// // TODO: Move to utils package.
-// List<MapEntry<K, V>> uniqueEntries<K, V>(Iterable<MapEntry<K, V>> entries) {
-//   final uniqueKeys = <K>{};
-//   final uniqueValues = <V>{};
-//   final unique = <MapEntry<K, V>>[];
-
-//   for (var entry in entries) {
-//     if (!uniqueKeys.contains(entry.key) && !uniqueValues.contains(entry.value)) {
-//       uniqueKeys.add(entry.key);
-//       uniqueValues.add(entry.value);
-//       unique.add(MapEntry(entry.key, entry.value));
-//     }
-//   }
-
-//   return unique;
-// }
