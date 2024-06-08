@@ -29,18 +29,50 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   //
   //
 
-  FirebaseMessagingServiceBroker({
+  static FirebaseMessagingServiceBroker? _instance;
+  static FirebaseMessagingServiceBroker get instance {
+    if (_instance == null) {
+      throw Exception('FirebaseMessagingServiceBroker has not been initialized.');
+    }
+    return _instance!;
+  }
+
+  FirebaseMessagingServiceBroker._({
     required this.firebaseMessaging,
     required this.cloudMessagingVapidKey,
     required this.databaseServiceBroker,
     required this.functionsServiceBroker,
   });
 
+  /// Returns the singleton instance of [FirebaseMessagingServiceBroker]. This
+  /// service maintains global state nd only one instance is permitted. If an
+  /// instance already exists, it throws an exception.
+  factory FirebaseMessagingServiceBroker({
+    required FirebaseMessaging firebaseMessaging,
+    required String cloudMessagingVapidKey,
+    required DatabaseServiceInterface databaseServiceBroker,
+    required FunctionsServiceInterface functionsServiceBroker,
+  }) {
+    if (_instance != null) {
+      throw Exception('FirebaseMessagingServiceBroker has already been initialized.');
+    }
+    _instance ??= FirebaseMessagingServiceBroker._(
+      firebaseMessaging: firebaseMessaging,
+      cloudMessagingVapidKey: cloudMessagingVapidKey,
+      databaseServiceBroker: databaseServiceBroker,
+      functionsServiceBroker: functionsServiceBroker,
+    );
+    return _instance!;
+  }
+
   //
   //
   //
 
   StreamSubscription<dynamic>? _authorizationStatusStream;
+
+  @override
+  final pAuthorizationStatus = Pod<dynamic>(AuthorizationStatus.notDetermined, disposable: false);
 
   //
   //
@@ -81,7 +113,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       return;
     }
 
-    // Periodically check the authorization status.
+    // Check the authorization status every 3 seconds.
     this._authorizationStatusStream?.cancel();
     this._authorizationStatusStream = pollingStream(
       this.checkAuthorizationStatus,
@@ -91,15 +123,9 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     // Collect the current device status.
     final deviceInfo = getBasicDeviceInfo();
     final now = DateTime.now();
-    final [notificationToken, ipv4Address] = await Future.wait([
-      this.firebaseMessaging.getToken(vapidKey: this.cloudMessagingVapidKey),
-      getPublicIPV4Address(),
-    ]);
-
-    // Return early if the notificationToken or ipv4Address is null.
-    if (notificationToken == null || ipv4Address == null) {
-      return;
-    }
+    final ipv4Address = await getPublicIPV4Address();
+    final notificationToken =
+        await this.firebaseMessaging.getToken(vapidKey: this.cloudMessagingVapidKey);
 
     ModelDeviceRegistration? registration;
 
@@ -150,8 +176,41 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   //
   //
 
+  /// Unregister the current device from the notification service. This means
+  /// that the device will no longer receive notifications. This method
   @override
-  final pAuthorizationStatus = Pod<dynamic>(AuthorizationStatus.notDetermined);
+  Future<void> unregister({
+    required String currentUserPid,
+  }) async {
+    // Delete the notification token.
+    await this.firebaseMessaging.deleteToken();
+
+    // Get the current ipv4Address.
+    final ipv4Address = await getPublicIPV4Address();
+
+    // Update the public user data by removing the current device registrations.
+    await this.databaseServiceBroker.runTransaction((transaction) async {
+      // Get the current ModelUserPub.
+      final ref = Schema.userPubsRef(userPid: currentUserPid);
+      final model = (await transaction.read(ref, ModelUserPub.fromJsonOrNull))!;
+
+      // Remove the current device registrations.
+      model.deviceRegistrations = model.deviceRegistrations?.map((k, v) {
+        if (v.ipv4Address == ipv4Address) {
+          return MapEntry(k, null);
+        } else {
+          return MapEntry(k, v);
+        }
+      }).nonNullValues;
+
+      // Overwrite the model on the database.
+      transaction.overwrite(model);
+    });
+  }
+
+  //
+  //
+  //
 
   @override
   Future<dynamic> checkAuthorizationStatus() async {
@@ -166,6 +225,15 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       await this.pAuthorizationStatus.set(null);
     }
     return this.pAuthorizationStatus.value;
+  }
+
+  //
+  //
+  //
+
+  @override
+  bool authorizationStatusGrantedSnapshot() {
+    return this.pAuthorizationStatus.value == AuthorizationStatus.authorized;
   }
 
   //
@@ -194,10 +262,5 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   void dispose() async {
     this._authorizationStatusStream?.cancel();
     this.pAuthorizationStatus.dispose();
-  }
-
-  @override
-  bool authorizationStatusGrantedSnapshot() {
-    return this.pAuthorizationStatus.value == AuthorizationStatus.authorized;
   }
 }

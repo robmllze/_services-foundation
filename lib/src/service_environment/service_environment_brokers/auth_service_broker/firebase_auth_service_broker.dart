@@ -118,8 +118,11 @@ final class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
 
   @override
-  Future<void> logOut() async {
-    await super.pCurrentUser.set(null);
+  Future<void> logOut({
+    required Future<void> Function() cleanup,
+  }) async {
+    await cleanup();
+    await this.pCurrentUser.set(null);
     await this._firebaseAuth.signOut();
   }
 
@@ -170,7 +173,10 @@ final class FirebaseAuthServiceBroker extends AuthServiceInterface {
   //
 
   @override
-  Future<void> deleteUser() async {
+  Future<void> deleteUser({
+    required Future<void> Function() cleanup,
+  }) async {
+    await cleanup();
     await this._firebaseAuth.currentUser!.delete();
   }
 }

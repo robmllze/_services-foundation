@@ -86,14 +86,17 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
   //
 
   @override
-  Future<void> deleteUser() async {
+  Future<void> deleteUser({
+    required Future<void> Function() cleanup,
+  }) async {
+    await cleanup();
     final currentUser = await this._getCurrentUser();
     final ref = currentUser?.ref;
     if (ref == null) {
       throw Exception('Login required for account deletion.');
     }
     await this.hiveServiceBroker.deleteModel(ref);
-    await this.logOut();
+    await this.logOut(cleanup: () async {});
   }
 
   //
@@ -132,7 +135,10 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
   //
 
   @override
-  Future<void> logOut() async {
+  Future<void> logOut({
+    required Future<void> Function() cleanup,
+  }) async {
+    await cleanup();
     await this.hiveServiceBroker.deleteModel(
           this.sessionRef,
         );
