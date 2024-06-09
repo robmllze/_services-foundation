@@ -21,18 +21,37 @@ class LocationService {
 
   static LocationService? _instance;
 
-  final int sensitivityInMetres;
+  final double sensitivityDistance;
+  final DistanceUnitType distanceUnitType;
+  final Duration pollingInterval;
 
-  LocationService._(this.sensitivityInMetres);
+  LocationService._(
+    this.sensitivityDistance,
+    this.distanceUnitType,
+    this.pollingInterval,
+  );
 
   /// Returns the singleton instance of [LocationService]. This service
   /// maintains global state nd only one instance is permitted. If an instance
   /// already exists, it throws an exception.
-  factory LocationService({int sensitivityInMetres = 50}) {
+  ///
+  /// [pCurrentLocation] will be updated with the current location every
+  /// [pollingInterval] seconds if the location changes by more than
+  /// [sensitivityDistance]. The unit of [sensitivityDistance] is determined by
+  /// [distanceUnitType] and defaults to [DistanceUnitType.METRES].
+  factory LocationService({
+    double sensitivityDistance = 20,
+    DistanceUnitType distanceUnitType = DistanceUnitType.METRES,
+    Duration pollingInterval = const Duration(seconds: 30),
+  }) {
     if (_instance != null) {
       throw Exception('LocationService has already been initialized.');
     }
-    _instance = LocationService._(sensitivityInMetres);
+    _instance = LocationService._(
+      sensitivityDistance,
+      distanceUnitType,
+      pollingInterval,
+    );
     return _instance!;
   }
 
@@ -52,7 +71,7 @@ class LocationService {
 
   LocationPermission? locationPermissionSnapshot() => this._pAuthorizationStatus.value;
 
-  StreamSubscription<Position>? _positionSubscription;
+  StreamSubscription<ModelLocation?>? _locationSubscription;
 
   StreamSubscription<void>? _authorizationStatusStream;
 
@@ -74,17 +93,27 @@ class LocationService {
     if (this.authorizationStatusGrantedSnapshot()) {
       currentLocation = (await Geolocator.getCurrentPosition()).toLocationModel();
       await this.pCurrentLocation.podOrNull!.set(currentLocation);
-      this._positionSubscription?.cancel();
-
-      this._positionSubscription = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(
-          accuracy: LocationAccuracy.best,
-          distanceFilter: this.sensitivityInMetres,
-        ),
-      ).listen((position) async {
-        final currentLocation = position.toLocationModel();
-        await this.pCurrentLocation.podOrNull!.set(currentLocation);
-      });
+      this._locationSubscription = pollingStream(
+        () async {
+          final lastLocation = this.pCurrentLocation.value;
+          final currentLocation = (await Geolocator.getCurrentPosition()).toLocationModel();
+          if (lastLocation == null) {
+            await this.pCurrentLocation.podOrNull!.set(currentLocation);
+            return currentLocation;
+          } else {
+            final distance = calculateHavershire3DDistance(
+              location1: lastLocation,
+              location2: currentLocation,
+            );
+            if (distance > this.sensitivityDistance) {
+              await this.pCurrentLocation.podOrNull!.set(currentLocation);
+              return currentLocation;
+            }
+          }
+          return null;
+        },
+        this.pollingInterval,
+      ).where((e) => e != null).listen((_) {});
       return currentLocation;
     }
     return null;
@@ -129,7 +158,7 @@ class LocationService {
   //
 
   Future<void> stop() async {
-    this._positionSubscription?.cancel();
+    this._locationSubscription?.cancel();
   }
 }
 

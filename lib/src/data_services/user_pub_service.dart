@@ -58,20 +58,21 @@ class UserPubService extends DocumentServiceInterface<ModelUserPub> {
   //
   //
 
-  void startTransmittingLocation(LocationService locationService) {
+  void startTransmittingLocation(LocationService locationService) async {
     this._locationService = locationService;
+    await this.registerLocation();
     locationService.pCurrentLocation.addListener(this.registerLocation);
-    this._pIsTransmittingLocation.set(true);
+    await this._pIsTransmittingLocation.set(true);
   }
 
   //
   //
   //
 
-  void stopTransmittingLocation() {
+  void stopTransmittingLocation() async {
     this._locationService?.pCurrentLocation.removeListener(this.registerLocation);
     this._locationService = null;
-    this._pIsTransmittingLocation.set(false);
+    await this._pIsTransmittingLocation.set(false);
   }
 
   //
@@ -95,6 +96,21 @@ class UserPubService extends DocumentServiceInterface<ModelUserPub> {
     } catch (e) {
       Here().debugLogError(e);
     }
+  }
+
+  //
+  //
+  //
+
+  Future<void> deleteLocation() async {
+    this.serviceEnvironment.databaseServiceBroker.runTransaction((transaction) async {
+      final ref = this.databaseRef();
+      final userPub = await transaction.read(ref, ModelUserPub.fromJsonOrNull);
+      if (userPub != null) {
+        userPub.registration?.location = null;
+        transaction.overwrite(userPub);
+      }
+    });
   }
 
   //
