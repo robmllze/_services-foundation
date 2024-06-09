@@ -75,7 +75,12 @@ class LocationService {
       this._positionSubscription?.cancel();
 
       this._positionSubscription = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(distanceFilter: 1),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.best,
+          // If the location changes by 10 meters or more, the stream will emit
+          // the new location.
+          distanceFilter: 10,
+        ),
       ).listen((position) async {
         final currentLocation = position.toLocationModel();
         await this.pCurrentLocation.podOrNull!.set(currentLocation);
