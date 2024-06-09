@@ -38,14 +38,17 @@ class LocationService {
   //
   //
 
-  final pCurrentLocation = Pod<ModelLocation?>(null, disposable: false);
+  final PodListenable<ModelLocation?> pCurrentLocation =
+      Pod<ModelLocation?>(null, disposable: false);
 
   ModelLocation? currentLocationSnapshot() => this.pCurrentLocation.value;
 
-  final pAuthorizationStatus =
+  final _pAuthorizationStatus =
       Pod<LocationPermission>(LocationPermission.unableToDetermine, disposable: false);
 
-  LocationPermission? locationPermissionSnapshot() => this.pAuthorizationStatus.value;
+  PodListenable<LocationPermission> get pAuthorizationStatus => this._pAuthorizationStatus;
+
+  LocationPermission? locationPermissionSnapshot() => this._pAuthorizationStatus.value;
 
   StreamSubscription<Position>? _positionSubscription;
 
@@ -68,12 +71,14 @@ class LocationService {
 
     if (this.authorizationStatusGrantedSnapshot()) {
       currentLocation = (await Geolocator.getCurrentPosition()).toLocationModel();
-      await this.pCurrentLocation.set(currentLocation);
+      await this.pCurrentLocation.podOrNull!.set(currentLocation);
       this._positionSubscription?.cancel();
 
-      this._positionSubscription = Geolocator.getPositionStream().listen((position) async {
+      this._positionSubscription = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(distanceFilter: 1),
+      ).listen((position) async {
         final currentLocation = position.toLocationModel();
-        await this.pCurrentLocation.set(currentLocation);
+        await this.pCurrentLocation.podOrNull!.set(currentLocation);
       });
       return currentLocation;
     }
@@ -93,12 +98,12 @@ class LocationService {
             locationPermission != LocationPermission.whileInUse) {
           locationPermission = await Geolocator.requestPermission();
         }
-        await this.pAuthorizationStatus.set(locationPermission);
+        await this._pAuthorizationStatus.set(locationPermission);
       } else {
-        await this.pAuthorizationStatus.set(LocationPermission.unableToDetermine);
+        await this._pAuthorizationStatus.set(LocationPermission.unableToDetermine);
       }
     } catch (e) {
-      await this.pAuthorizationStatus.set(LocationPermission.unableToDetermine);
+      await this._pAuthorizationStatus.set(LocationPermission.unableToDetermine);
     }
     return this.pAuthorizationStatus.value;
   }

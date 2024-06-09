@@ -66,7 +66,10 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
   StreamSubscription<dynamic>? _authorizationStatusStream;
 
   @override
-  final pAuthorizationStatus = Pod<dynamic>(AuthorizationStatus.notDetermined, disposable: false);
+  PodListenable<dynamic> pAuthorizationStatus = Pod<dynamic>(
+    AuthorizationStatus.notDetermined,
+    disposable: false,
+  );
 
   //
   //
@@ -144,7 +147,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       final update = (existing ?? ModelDeviceRegistration());
       update.id ??= IdUtils.newUuidV4();
       update.ipv4Address ??= ipv4Address;
-      update.deviceRegisteredAt ??= now;
+      update.registeredAt ??= now;
       update.deviceInfo = deviceInfo;
       update.lastLoggedInAt = now;
       update.location = location;
@@ -215,12 +218,12 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
         if (settings.authorizationStatus != AuthorizationStatus.authorized) {
           settings = await this.firebaseMessaging.requestPermission();
         }
-        await this.pAuthorizationStatus.set(settings.authorizationStatus);
+        await this.pAuthorizationStatus.podOrNull!.set(settings.authorizationStatus);
       } else {
-        await this.pAuthorizationStatus.set(AuthorizationStatus.notDetermined);
+        await this.pAuthorizationStatus.podOrNull!.set(AuthorizationStatus.notDetermined);
       }
     } catch (_) {
-      await this.pAuthorizationStatus.set(AuthorizationStatus.notDetermined);
+      await this.pAuthorizationStatus.podOrNull!.set(AuthorizationStatus.notDetermined);
     }
     return this.pAuthorizationStatus.value;
   }

@@ -88,7 +88,7 @@ final class FileUtils {
           title: 'File',
           definitionPath: FileSchema.FILES,
         );
-        await fileService.pValue.update((a) => [...?a, result.pendingUploadFile]);
+        await fileService.pValue.podOrNull?.update((a) => [...?a, result.pendingUploadFile]);
       }
     }
   }
