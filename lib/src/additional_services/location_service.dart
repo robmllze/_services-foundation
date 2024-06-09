@@ -21,16 +21,18 @@ class LocationService {
 
   static LocationService? _instance;
 
-  LocationService._();
+  final int sensitivityInMetres;
+
+  LocationService._(this.sensitivityInMetres);
 
   /// Returns the singleton instance of [LocationService]. This service
   /// maintains global state nd only one instance is permitted. If an instance
   /// already exists, it throws an exception.
-  factory LocationService() {
+  factory LocationService({int sensitivityInMetres = 50}) {
     if (_instance != null) {
       throw Exception('LocationService has already been initialized.');
     }
-    _instance = LocationService._();
+    _instance = LocationService._(sensitivityInMetres);
     return _instance!;
   }
 
@@ -75,11 +77,9 @@ class LocationService {
       this._positionSubscription?.cancel();
 
       this._positionSubscription = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
+        locationSettings: LocationSettings(
           accuracy: LocationAccuracy.best,
-          // If the location changes by 10 meters or more, the stream will emit
-          // the new location.
-          distanceFilter: 10,
+          distanceFilter: this.sensitivityInMetres,
         ),
       ).listen((position) async {
         final currentLocation = position.toLocationModel();
