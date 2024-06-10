@@ -22,7 +22,7 @@ class LocationService {
   static LocationService? _instance;
 
   final double sensitivityDistance;
-  final LocationUtilsPaclageDistancUnit distanceUnit;
+  final LocationUtilsPackageDistanceUnit distanceUnit;
   final Duration pollingInterval;
 
   LocationService._(
@@ -41,7 +41,7 @@ class LocationService {
   /// [distanceUnit] and defaults to [LocationUtilsPackage.DISTANCE_METRES].
   factory LocationService({
     double sensitivityDistance = 20,
-    LocationUtilsPaclageDistancUnit distanceUnit = LocationUtilsPackage.DISTANCE_METRES,
+    LocationUtilsPackageDistanceUnit distanceUnit = LocationUtilsPackage.DISTANCE_METRES,
     Duration pollingInterval = const Duration(seconds: 30),
   }) {
     if (_instance != null) {
