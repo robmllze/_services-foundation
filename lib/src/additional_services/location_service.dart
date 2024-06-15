@@ -32,7 +32,7 @@ class LocationService {
   );
 
   /// Returns the singleton instance of [LocationService]. This service
-  /// maintains global state nd only one instance is permitted. If an instance
+  /// maintains global state and only one instance is permitted. If an instance
   /// already exists, it throws an exception.
   ///
   /// [pCurrentLocation] will be updated with the current location every

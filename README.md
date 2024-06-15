@@ -1,6 +1,6 @@
 # About
 
-The Services Layer is a component of the [foundation](https://github.com/robmllze/foundation) template used to build Flutter projects.
+This is the Services Layer that's part of the [foundation](https://github.com/robmllze/foundation) template.
 
 ## Notes
 
