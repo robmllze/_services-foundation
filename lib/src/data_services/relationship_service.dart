@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class RelationshipService extends CollectionServiceInterface<ModelRelationship> {
+final class RelationshipService extends CollectionServiceInterface<ModelRelationship> {
   //
   //
   //

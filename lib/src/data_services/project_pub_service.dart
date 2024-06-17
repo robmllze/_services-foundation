@@ -12,7 +12,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class ProjectPubService extends DocumentServiceInterface<ModelProjectPub> {
+final class ProjectPubService extends DocumentServiceInterface<ModelProjectPub> {
   //
   //
   //

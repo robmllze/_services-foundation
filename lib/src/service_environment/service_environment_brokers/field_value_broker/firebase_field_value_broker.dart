@@ -15,6 +15,7 @@ import '/_common.dart';
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 @visibleForTesting
+// ignore: invalid_use_of_visible_for_testing_member
 final class FirebaseFieldValueBroker extends FieldValueInterface {
   //
   //

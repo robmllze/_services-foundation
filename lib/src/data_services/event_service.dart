@@ -14,7 +14,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class EventService extends CollectionServiceInterface<ModelEvent> {
+final class EventService extends CollectionServiceInterface<ModelEvent> {
   //
   //
   //

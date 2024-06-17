@@ -12,7 +12,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class JobPubService extends DocumentServiceInterface<ModelJobPub> {
+final class JobPubService extends DocumentServiceInterface<ModelJobPub> {
   //
   //
   //

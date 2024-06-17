@@ -159,7 +159,7 @@ final class FirestoreTransactionBroker extends TransactionInterface {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreMergeOperation extends _TTransactionOperation {
+final class FirestoreMergeOperation extends _TTransactionOperation {
   //
   //
   //
@@ -192,7 +192,7 @@ class FirestoreMergeOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreOverwriteOperation extends _TTransactionOperation {
+final class FirestoreOverwriteOperation extends _TTransactionOperation {
   //
   //
   //
@@ -225,7 +225,7 @@ class FirestoreOverwriteOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreCreateOperation extends _TTransactionOperation {
+final class FirestoreCreateOperation extends _TTransactionOperation {
   //
   //
   //
@@ -258,7 +258,7 @@ class FirestoreCreateOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreReadOperation<TModel extends Model> extends _TTransactionOperation {
+final class FirestoreReadOperation<TModel extends Model> extends _TTransactionOperation {
   //
   //
   //
@@ -291,7 +291,7 @@ class FirestoreReadOperation<TModel extends Model> extends _TTransactionOperatio
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreUpdateOperation extends _TTransactionOperation {
+final class FirestoreUpdateOperation extends _TTransactionOperation {
   //
   //
   //
@@ -321,7 +321,7 @@ class FirestoreUpdateOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FirestoreDeleteOperation extends _TTransactionOperation {
+final class FirestoreDeleteOperation extends _TTransactionOperation {
   //
   //
   //

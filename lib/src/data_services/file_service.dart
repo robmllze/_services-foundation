@@ -12,7 +12,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class FileService extends CollectionServiceInterface<ModelFileEntry> {
+final class FileService extends CollectionServiceInterface<ModelFileEntry> {
   //
   //
   //

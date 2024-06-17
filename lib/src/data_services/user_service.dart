@@ -12,7 +12,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class UserService extends DocumentServiceInterface<ModelUser> {
+final class UserService extends DocumentServiceInterface<ModelUser> {
   //
   //
   //

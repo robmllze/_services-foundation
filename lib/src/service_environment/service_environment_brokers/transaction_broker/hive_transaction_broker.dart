@@ -132,7 +132,7 @@ final class HiveTransactionBroker extends TransactionInterface {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class HiveMergeOperation extends _TTransactionOperation {
+final class HiveMergeOperation extends _TTransactionOperation {
   //
   //
   //
@@ -159,7 +159,7 @@ class HiveMergeOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class HiveOverwriteOperation extends _TTransactionOperation {
+final class HiveOverwriteOperation extends _TTransactionOperation {
   //
   //
   //
@@ -186,7 +186,7 @@ class HiveOverwriteOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class HiveCreateOperation extends _TTransactionOperation {
+final class HiveCreateOperation extends _TTransactionOperation {
   //
   //
   //
@@ -213,7 +213,7 @@ class HiveCreateOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class HiveReadOperation<TModel extends Model> extends _TTransactionOperation {
+final class HiveReadOperation<TModel extends Model> extends _TTransactionOperation {
   //
   //
   //
@@ -242,7 +242,7 @@ class HiveReadOperation<TModel extends Model> extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class HiveUpdateOperation extends _TTransactionOperation {
+final class HiveUpdateOperation extends _TTransactionOperation {
   //
   //
   //
@@ -269,7 +269,7 @@ class HiveUpdateOperation extends _TTransactionOperation {
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class HiveDeleteOperation extends _TTransactionOperation {
+final class HiveDeleteOperation extends _TTransactionOperation {
   //
   //
   //

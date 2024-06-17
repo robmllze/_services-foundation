@@ -12,7 +12,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-class OrganizationPubService extends DocumentServiceInterface<ModelOrganizationPub> {
+final class OrganizationPubService extends DocumentServiceInterface<ModelOrganizationPub> {
   //
   //
   //
