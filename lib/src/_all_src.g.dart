@@ -7,9 +7,6 @@
 // ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 //.title~
 
-export 'additional_services/location_service.dart';
-export 'app_state/app_environment.dart';
-export 'app_state/app_session.dart';
 export 'data_helpers/pub_helper_base.dart';
 export 'data_helpers/relationship_helper_base.dart';
 export 'data_pool_extensions/entry_model_extension.dart';
@@ -48,7 +45,6 @@ export 'data_utils/project_utils.dart';
 export 'data_utils/relationship_utils.dart';
 export 'data_utils/user_event_utils.dart';
 export 'data_utils/user_utils.dart';
-export 'notification_topics/messaging_notification_topic.dart';
 export 'service_environment/create_service_environment/create_firebase_service_environment.dart';
 export 'service_environment/service_environment_brokers/auth_service_broker/firebase_auth_service_broker.dart';
 export 'service_environment/service_environment_brokers/auth_service_broker/hive_auth_service_broker.dart';
@@ -70,3 +66,4 @@ export 'service_environment/service_environment_brokers/transaction_broker/fires
 export 'service_environment/service_environment_brokers/transaction_broker/firestore_transaction_broker.dart';
 export 'service_environment/service_environment_brokers/transaction_broker/hive_transaction_broker.dart';
 export 'service_environment/service_environment_brokers/transaction_broker/shared_preferences_transaction_broker.dart';
+export 'system_services/location_service.dart';

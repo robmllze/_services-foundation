@@ -12,7 +12,7 @@ import '/_common.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-abstract class PubHelperBase<T extends PublicModel> {
+abstract base class PubHelperBase<T extends PublicModel> {
   //
   //
   //
