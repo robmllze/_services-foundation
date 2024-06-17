@@ -8,12 +8,14 @@ This is the Foundation's Services Module. It defines the app's service environme
 
 It comprises of the following:
 
+- **Create Service Environment**: A function that creates the app's service environment.
 - **Data Helpers**: Helper classes related to specific data models.
-- **Data Pool Extensions**: Filtering and sorting extensions for collections of data models.
 - **Data Services**: Services related to specific data models.
-- **Data Utils**: Utilities related to specific data models.
-- **Service Environment Brokers**: Services that broker with the chosen back-end services.
+- **Data Utils**: Utilities related to specific data models and services.
+- **Service Brokers**: Services that broker with the chosen back-end services.
 - **System Services**: Services that utilize system resources, such as location.
+
+TODO: Move filters/sorting to data package.
 
 ## Notes
 
