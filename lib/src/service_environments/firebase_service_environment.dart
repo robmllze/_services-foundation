@@ -47,10 +47,14 @@ final class FirebaseServiceEnvironment extends ServiceEnvironment {
     required FirebaseOptions firebaseOptions,
     required String cloudMessagingVapidKey,
     required String functionsRegion,
+    AuthServicePersistence persistence = AuthServicePersistence.INDEXED_DB,
   }) async {
     final firebaseApp = await Firebase.initializeApp(options: firebaseOptions);
     final firestore = FirebaseFirestore.instanceFor(app: firebaseApp);
     final firebaseAuth = FirebaseAuth.instanceFor(app: firebaseApp);
+
+    await firebaseAuth.setPersistence(persistence.toFirebasePersistence());
+
     final authServiceBroker = FirebaseAuthServiceBroker(
       firebaseAuth: firebaseAuth,
     );
@@ -93,5 +97,22 @@ final class FirebaseServiceEnvironment extends ServiceEnvironment {
       notificationServiceBroker: notificationServiceBroker,
     );
     return serviceEnvironment;
+  }
+}
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+extension _ToFirebasePersistence on AuthServicePersistence {
+  Persistence toFirebasePersistence() {
+    switch (this) {
+      case AuthServicePersistence.INDEXED_DB:
+        return Persistence.INDEXED_DB;
+      case AuthServicePersistence.LOCAL:
+        return Persistence.LOCAL;
+      case AuthServicePersistence.NONE:
+        return Persistence.NONE;
+      case AuthServicePersistence.SESSION:
+        return Persistence.SESSION;
+    }
   }
 }

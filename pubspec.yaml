@@ -28,7 +28,7 @@ dependencies:
     path: ../_service_interfaces
 
   xyz_gen_annotations: ^0.47.0
-  xyz_pod: ^0.34.0
+  xyz_pod: ^0.35.0
   xyz_utils: ^0.57.1
   xyz_device_info: ^0.4.0
 
