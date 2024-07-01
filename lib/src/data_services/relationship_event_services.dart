@@ -38,7 +38,9 @@ class RelationshipEventServices {
   //
   //
 
-  final pEventServicePool = Pod<Map<String, EventService>>({});
+  final _pEventServicePool = Pod<Map<String, EventService>>({});
+
+  PodListenable<Map<String, EventService>> get pEventServicePool => this._pEventServicePool;
 
   //
   //
@@ -54,7 +56,7 @@ class RelationshipEventServices {
         limit: this.limit,
       );
       await eventService.startService();
-      await this.pEventServicePool.update((e) => e..[relationshipId] = eventService);
+      await this._pEventServicePool.update((e) => e..[relationshipId] = eventService);
       // TODO: Think about this line:
       //eventsService.pValue.addListener(this.pEventServicePool.refresh);
       // futureServicesToAdd.add(
@@ -76,7 +78,7 @@ class RelationshipEventServices {
   Future<void> remove(
     Set<String> relationshipIdsToRemove,
   ) async {
-    await this.pEventServicePool.update(
+    await this._pEventServicePool.update(
           (e) => e
             ..removeWhere(
               (relationshipId, eventService) {

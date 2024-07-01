@@ -31,6 +31,29 @@ final class EventService extends CollectionServiceInterface<ModelEvent> {
   //
   //
 
+  Future<void> addEvent(ModelEvent event) async {
+    await this.pValue.podOrNull?.update((e) => [...?e, event]);
+  }
+
+  //
+  //
+  //
+
+  Future<void> removeEvent(String eventId) async {
+    await this.pValue.podOrNull?.update(
+      (e) {
+        if (e != null) {
+          return List.of(e)..removeWhere((e) => e.id == eventId);
+        }
+        return null;
+      },
+    );
+  }
+
+  //
+  //
+  //
+
   /// Restarts the service with a new limit. Specify [delta] to change the
   /// limit by a certain amount. This amount will be added to the current limit
   /// and the result will be clamped between [minimum] and [maximum].
