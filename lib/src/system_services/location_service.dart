@@ -22,7 +22,7 @@ class LocationService {
   static LocationService? _instance;
 
   final double sensitivityDistance;
-  final LocationUtilsPackageDistanceUnit distanceUnit;
+  final DistanceUnit distanceUnit;
   final Duration pollingInterval;
 
   LocationService._(
@@ -41,7 +41,7 @@ class LocationService {
   /// [distanceUnit] and defaults to [LocationUtilsPackage.DISTANCE_METRES].
   factory LocationService({
     double sensitivityDistance = 20,
-    LocationUtilsPackageDistanceUnit distanceUnit = LocationUtilsPackage.DISTANCE_METRES,
+    DistanceUnit distanceUnit = LocationUtils.DISTANCE_METRES,
     Duration pollingInterval = const Duration(seconds: 30),
   }) {
     if (_instance != null) {
@@ -101,7 +101,7 @@ class LocationService {
             await this.pCurrentLocation.podOrNull!.set(currentLocation);
             return currentLocation;
           } else {
-            final distance = LocationUtilsPackage().calculateHavershire3DDistance(
+            final distance = LocationUtils().calculateHavershire3DDistance(
               location1: lastLocation.components!,
               location2: currentLocation.components!,
             );
