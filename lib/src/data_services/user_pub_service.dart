@@ -92,7 +92,7 @@ final class UserPubService extends DocumentServiceInterface<ModelUserPub> {
       );
       await this.serviceEnvironment.databaseServiceBroker.mergeModel(update);
     } catch (e) {
-      Here().debugLogError(e);
+      debugLogError(e);
     }
   }
 

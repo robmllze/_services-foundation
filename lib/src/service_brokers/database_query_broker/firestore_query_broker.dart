@@ -132,7 +132,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   }) {
     var pidSet = memberPids.toSet();
     if (pidSet.length > 30) {
-      Here().debugLogError('arrayContainsAny only supports up to 30 values.');
+      debugLogError('arrayContainsAny only supports up to 30 values.');
       pidSet = pidSet.take(30).toSet();
     }
     final collectionPath = Schema.relationshipsRef().collectionPath!;
@@ -161,7 +161,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   }) {
     var pidSet = memberPids.toSet();
     if (pidSet.length > 30) {
-      Here().debugLogError('arrayContains only supports up to 30 values.');
+      debugLogError('arrayContains only supports up to 30 values.');
       pidSet = pidSet.take(30).toSet();
     }
     final collectionPath = Schema.relationshipsRef().collectionPath!;
@@ -188,7 +188,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   }) {
     var createdByAnySet = createdByAny.toSet();
     if (createdByAnySet.length > 30) {
-      Here().debugLogError('whereIn only supports up to 30 values.');
+      debugLogError('whereIn only supports up to 30 values.');
       createdByAnySet = createdByAnySet.take(30).toSet();
     }
     final collectionPath = Schema.filesRef().collectionPath!;

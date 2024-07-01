@@ -59,7 +59,7 @@ class RelationshipEventServices {
       //eventsService.pValue.addListener(this.pEventServicePool.refresh);
       // futureServicesToAdd.add(
       //   eventService.startService().then((_) {
-      //     Here().debugLogStart(
+      //     debugLogStart(
       //       'Added EventService for relationshipId: $relationshipId',
       //     );
       //     return MapEntry(relationshipId, eventService);
@@ -83,7 +83,7 @@ class RelationshipEventServices {
                 final remove = relationshipIdsToRemove.contains(relationshipId);
                 if (remove) {
                   eventService.dispose();
-                  Here().debugLogStop(
+                  debugLogStop(
                     'Removed EventService for relationshipId: $relationshipId',
                   );
                 }

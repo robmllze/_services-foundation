@@ -107,7 +107,7 @@ class RelationshipMemberService<TModel extends Model,
       updatedMemberPids,
     );
     if (memberPidsToAdd.isNotEmpty) {
-      Here().debugLog('Members to add: $memberPidsToAdd');
+      debugLog('Members to add: $memberPidsToAdd');
       await this.addMembers(memberPidsToAdd);
     }
   }
@@ -126,7 +126,7 @@ class RelationshipMemberService<TModel extends Model,
         );
         futureServicesToAdd.add(
           memberService.startService().then((_) {
-            Here().debugLogStart(
+            debugLogStart(
               'Added service for memberPid: $memberPid',
             );
             return MapEntry(memberPid, memberService);
@@ -148,7 +148,7 @@ class RelationshipMemberService<TModel extends Model,
       this._currentMemberPids,
     );
     if (memberPidsToRemove.isNotEmpty) {
-      Here().debugLog('Members to remove: $memberPidsToRemove');
+      debugLog('Members to remove: $memberPidsToRemove');
       await this.removeMembers(memberPidsToRemove);
     }
   }
@@ -166,7 +166,7 @@ class RelationshipMemberService<TModel extends Model,
                   final remove = memberPidsToRemove.contains(memberPid);
                   if (remove) {
                     eventService.dispose();
-                    Here().debugLogStop(
+                    debugLogStop(
                       'Removed service for memberPid: $memberPid',
                     );
                   }

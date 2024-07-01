@@ -96,7 +96,7 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
       updatedRelationshipIds,
     );
     if (relationshipIdsToAdd.isNotEmpty) {
-      Here().debugLog('Added relationships: $relationshipIdsToAdd');
+      debugLog('Added relationships: $relationshipIdsToAdd');
       this.eventServices.add(relationshipIdsToAdd);
       this.messageEventServices.add(relationshipIdsToAdd);
     }
@@ -112,7 +112,7 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
       this._currentRelationshipIds,
     );
     if (relationshipIdsToRemove.isNotEmpty) {
-      Here().debugLogStop('Removed relationships: $relationshipIdsToRemove');
+      debugLogStop('Removed relationships: $relationshipIdsToRemove');
       await this.eventServices.remove(relationshipIdsToRemove);
       await this.messageEventServices.remove(relationshipIdsToRemove);
     }
