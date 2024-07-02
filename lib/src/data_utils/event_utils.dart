@@ -27,7 +27,7 @@ final class EventUtils {
     required Iterable<ModelEvent>? eventPool,
     Set<String?> blacklistCreatedBy = const {},
     Set<String?> whitelistCreatedBy = const {},
-    Set<EventDefType> eventTypes = const {},
+    Set<TopicType> eventTypes = const {},
     bool includeArchived = false,
     bool includeHidden = false,
     bool includeRead = false,
@@ -47,8 +47,6 @@ final class EventUtils {
             .length ??
         0;
   }
-
- 
 
   //
   //
@@ -273,16 +271,16 @@ final class EventUtils {
     String? receiverPid,
     required String relationshipId,
     required DataRef eventsRef,
-    required Model eventDef,
-    required EventDefType eventDefType,
+    required Model body,
+    required TopicType topic,
   }) async {
     await getSendEventOperation(
       senderPid: senderPid,
       receiverPid: receiverPid,
       relationshipId: relationshipId,
       eventsRef: eventsRef,
-      eventDef: eventDef,
-      eventDefType: eventDefType,
+      body: body,
+      topic: topic,
     ).execute(serviceEnvironment);
   }
 
@@ -291,8 +289,8 @@ final class EventUtils {
     String? receiverPid,
     required String relationshipId,
     required DataRef eventsRef,
-    required Model eventDef,
-    required EventDefType eventDefType,
+    required Model body,
+    required TopicType topic,
   }) {
     final eventModel = ModelEvent(
       ref: eventsRef,
@@ -304,8 +302,8 @@ final class EventUtils {
       },
       createdAt: DateTime.now(),
       createdBy: senderPid,
-      def: DataModel(data: eventDef.toJson()),
-      defType: eventDefType,
+      def: DataModel(data: body.toJson()),
+      defType: topic,
     );
     return CreateOrUpdateOperation(model: eventModel);
   }

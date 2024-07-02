@@ -30,7 +30,7 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final relationshipId = IdUtils.newRelationshipId();
-    final eventDef = ModelConnectionRequestDef(
+    final body = ModelConnectionRequestDef(
       relationshipId: relationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
@@ -44,8 +44,8 @@ final class UserEventUtils {
       senderPid: senderPid,
       relationshipId: relationshipId,
       serviceEnvironment: serviceEnvironment,
-      eventDef: eventDef,
-      eventDefType: EventDefType.CONNECTION_REQUEST,
+      body: body,
+      topic: TopicType.CONNECTION_REQUEST,
     );
   }
 
@@ -60,7 +60,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final eventDef = ModelConnectionRequestAcceptedDef(
+    final body = ModelConnectionRequestAcceptedDef(
       relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
@@ -74,8 +74,8 @@ final class UserEventUtils {
       senderPid: senderPid,
       relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
-      eventDefType: EventDefType.CONNECTION_REQUEST_ACCEPTED,
-      eventDef: eventDef,
+      topic: TopicType.CONNECTION_REQUEST_ACCEPTED,
+      body: body,
     );
   }
 
@@ -90,7 +90,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final eventDef = ModelConnectionRequestRejectedDef(
+    final body = ModelConnectionRequestRejectedDef(
       relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
@@ -104,8 +104,8 @@ final class UserEventUtils {
       senderPid: senderPid,
       relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
-      eventDefType: EventDefType.CONNECTION_REQUEST_REJECTED,
-      eventDef: eventDef,
+      topic: TopicType.CONNECTION_REQUEST_REJECTED,
+      body: body,
     );
   }
 
@@ -120,7 +120,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final eventDef = ModelRelChangedDef(
+    final body = ModelRelChangedDef(
       relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
@@ -134,8 +134,8 @@ final class UserEventUtils {
       senderPid: senderPid,
       relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
-      eventDefType: EventDefType.RELATIONSHIP_CHANGED,
-      eventDef: eventDef,
+      topic: TopicType.RELATIONSHIP_CHANGED,
+      body: body,
     );
   }
 
@@ -150,7 +150,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final eventDef = ModelRelDisabledDef(
+    final body = ModelRelDisabledDef(
       relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
@@ -164,8 +164,8 @@ final class UserEventUtils {
       senderPid: senderPid,
       relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
-      eventDefType: EventDefType.RELATIONSHIP_DISABLED,
-      eventDef: eventDef,
+      topic: TopicType.RELATIONSHIP_DISABLED,
+      body: body,
     );
   }
 
@@ -180,7 +180,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final eventDef = ModelRelRemovedDef(
+    final body = ModelRelRemovedDef(
       relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
@@ -194,8 +194,8 @@ final class UserEventUtils {
       senderPid: senderPid,
       relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
-      eventDefType: EventDefType.RELATIONSHIP_REMOVED,
-      eventDef: eventDef,
+      topic: TopicType.RELATIONSHIP_REMOVED,
+      body: body,
     );
   }
 }
