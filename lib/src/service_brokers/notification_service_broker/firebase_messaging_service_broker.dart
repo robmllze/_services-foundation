@@ -81,7 +81,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     required String body,
     required Set<String> destinationTokens,
   }) async {
-    await functionsServiceBroker.sendNotifications(
+    await functionsServiceBroker.sendDataNotifications(
       title: title,
       body: body,
       destinationTokens: destinationTokens,
