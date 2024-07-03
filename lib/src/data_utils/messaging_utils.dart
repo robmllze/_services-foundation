@@ -24,13 +24,13 @@ final class MessagingUtils {
   //
 
   static ModelEventBody? getMessageDefFromEvent(ModelEvent e) {
-    if (e.defType == TopicType.MESSAGE) {
-      final def = e.def;
-      if (def != null) {
-        final defModel = ModelEventBody.from(def);
-        final message = defModel.message;
+    if (e.topic == TopicType.MESSAGE) {
+      final bodyData = e.body;
+      if (bodyData != null) {
+        final body = ModelEventBody.from(bodyData);
+        final message = body.message;
         if (message != null && message.isNotEmpty) {
-          return defModel;
+          return body;
         }
       }
     }

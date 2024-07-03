@@ -27,7 +27,7 @@ final class EventUtils {
     required Iterable<ModelEvent>? eventPool,
     Set<String?> blacklistCreatedBy = const {},
     Set<String?> whitelistCreatedBy = const {},
-    Set<TopicType> eventTypes = const {},
+    Set<TopicType> topics = const {},
     bool includeArchived = false,
     bool includeHidden = false,
     bool includeRead = false,
@@ -35,7 +35,7 @@ final class EventUtils {
     return eventPool?.nullIfEmpty
             ?.where(
               (e) =>
-                  (eventTypes.isEmpty || eventTypes.contains(e.defType)) &&
+                  (topics.isEmpty || topics.contains(e.topic)) &&
                   (blacklistCreatedBy.isEmpty ||
                       blacklistCreatedBy.contains(e.createdBy) == false) &&
                   (whitelistCreatedBy.isEmpty ||
@@ -302,8 +302,8 @@ final class EventUtils {
       },
       createdAt: DateTime.now(),
       createdBy: senderPid,
-      def: DataModel(data: body.toJson()),
-      defType: topic,
+      body: DataModel(data: body.toJson()),
+      topic: topic,
     );
     return CreateOrUpdateOperation(model: eventModel);
   }
