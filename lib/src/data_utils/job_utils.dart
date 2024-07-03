@@ -36,7 +36,7 @@ final class JobUtils {
     required String displayName,
     required String description,
   }) {
-    final now = DateTime.now();
+    final createdAt = DateTime.now();
     final seed = IdUtils.newUuidV4();
     final jobId = IdUtils.newUuidV4();
     final jobRef = Schema.jobsRef(jobId: jobId);
@@ -47,7 +47,7 @@ final class JobUtils {
 
     final job = ModelJob(
       ref: jobRef,
-      createdAt: now,
+      createdAt: createdAt,
       createdBy: userId,
       id: jobId,
       pid: jobPid,
@@ -56,9 +56,9 @@ final class JobUtils {
     final jobPubRef = Schema.jobPubsRef(jobPid: jobPid);
     final jobPub = ModelJobPub(
       ref: jobPubRef,
-      createdAt: now,
+      createdAt: createdAt,
       createdBy: userPid,
-      whenOpened: {userPid: now},
+      whenOpened: {userPid: createdAt},
       description: description,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
@@ -67,7 +67,7 @@ final class JobUtils {
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
       ref: Schema.relationshipsRef(relationshipId: relationshipId),
-      createdAt: now,
+      createdAt: createdAt,
       createdBy: userPid,
       defType: RelationshipDefType.JOB_AND_PROJECT,
       id: relationshipId,
