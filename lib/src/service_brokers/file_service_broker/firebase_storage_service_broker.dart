@@ -269,13 +269,14 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
     String? description,
     List<String>? definitionPath,
   }) {
-    final now = DateTime.now();
-
+    final createdAt = DateTime.now();
     final pendingUploadFile = ModelFileEntry(
       ref: fileRef,
       id: fileId,
-      createdAt: now,
-      createdBy: createdBy,
+      createdReg: ModelRegistration(
+        at: createdAt,
+        by: createdBy,
+      ),
       storagePath: storagePath,
       title: title,
       titleSearchable: title,

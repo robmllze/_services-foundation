@@ -120,7 +120,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     // Collect the current device status.
     final deviceInfo = getBasicDeviceInfo();
     final now = DateTime.now();
-    final ipv4Address = await getPublicIPV4Address();
+    final ipV4Address = await getPublicIPV4Address();
     final notificationToken =
         await this.firebaseMessaging.getToken(vapidKey: this.cloudMessagingVapidKey);
 
@@ -132,13 +132,13 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       final model = (await transaction.read(ref, ModelUserPub.fromJsonOrNull))!;
 
       // Get all unique registrations.
-      final uniqueRegs = model.deviceRegistrations?.values.toSet();
+      final uniqueRegs = model.deviceRegs?.toSet();
 
       // Get all registrations with the same ipv4Address.
-      final sameIpRegs = uniqueRegs?.where((e) => e.ipv4Address == ipv4Address);
+      final sameIpRegs = uniqueRegs?.where((e) => e.ipV4Address == ipV4Address);
 
       // Get all registrations with a different ipv4Address.
-      final diffIpRegs = uniqueRegs?.where((e) => e.ipv4Address != ipv4Address);
+      final diffIpRegs = uniqueRegs?.where((e) => e.ipV4Address != ipV4Address);
 
       // Take the first entry from the sameIpRegs if it exists.
       final existing = sameIpRegs?.firstOrNull;
@@ -146,15 +146,15 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       // Update the current registration or create a new one.
       final update = (existing ?? ModelDeviceRegistration());
       update.id ??= IdUtils.newUuidV4();
-      update.ipv4Address ??= ipv4Address;
-      update.registeredAt ??= now;
+      update.ipV4Address ??= ipV4Address;
+      update.at ??= now;
       update.deviceInfo = deviceInfo;
       update.lastLoggedInAt = now;
       update.location = location;
       update.notificationToken = notificationToken;
 
       // Update the model.
-      model.deviceRegistrations = [...?diffIpRegs, update].map((e) => MapEntry(e.id!, e)).toMap();
+      model.deviceRegs = [...?diffIpRegs, update];
 
       // Overwrite the model on the database.
       transaction.overwrite(model);
@@ -183,7 +183,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     await this.firebaseMessaging.deleteToken();
 
     // Get the current ipv4Address.
-    final ipv4Address = await getPublicIPV4Address();
+    final ipV4Address = await getPublicIPV4Address();
 
     // Update the public user data by removing the current device registrations.
     await this.databaseServiceBroker.runTransaction((transaction) async {
@@ -192,13 +192,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       final model = (await transaction.read(ref, ModelUserPub.fromJsonOrNull))!;
 
       // Remove the current device registrations.
-      model.deviceRegistrations = model.deviceRegistrations?.map((k, v) {
-        if (v.ipv4Address == ipv4Address) {
-          return MapEntry(k, null);
-        } else {
-          return MapEntry(k, v);
-        }
-      }).nonNullValues;
+      model.deviceRegs = model.deviceRegs?.where((e) => e.ipV4Address == ipV4Address).toList();
 
       // Overwrite the model on the database.
       transaction.overwrite(model);

@@ -80,7 +80,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
 
       final combinedStream = StreamZip([stream1, stream2]).map((e) {
         return e.reduce((a, b) {
-          final c = [...a, ...b].where((e) => e.deletedAt == null);
+          final c = [...a, ...b].where((e) => e.deletedReg == null);
           final d = Model.removeDuplicateIds(c);
           return d;
         }).toSet();
@@ -196,7 +196,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     final snapshots = collection
         .baseQuery(limit: limit)
         .where(
-          ModelFileEntry.K_CREATED_BY,
+          '${ModelFileEntry.K_CREATED_REG}.${ModelRegistration.K_BY}',
           whereIn: createdByAny,
         )
         .snapshots();

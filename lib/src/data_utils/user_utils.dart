@@ -33,7 +33,7 @@ final class UserUtils {
     required String email,
     required String userId,
   }) {
-    final now = DateTime.now();
+    final createdAt = DateTime.now();
     final userId = serviceEnvironment.authServiceBroker.pCurrentUser.value!.id!;
     final userRef = Schema.usersRef(userId: userId);
     final seed = IdUtils.newUuidV4();
@@ -43,14 +43,20 @@ final class UserUtils {
     final primaryEmailRef = userPubRef + Schema.emailsRef(emailId: PRIMARY_EMAIL_ID);
     final user = ModelUser(
       ref: userRef,
-      createdAt: now,
+      createdReg: ModelRegistration(
+        by: userId,
+        at: createdAt,
+      ),
       id: userId,
       pid: userPid,
       seed: seed,
     );
     final userPub = ModelUserPub(
       ref: userPubRef,
-      createdAt: now,
+      createdReg: ModelRegistration(
+        by: userPid,
+        at: createdAt,
+      ),
       id: userPid,
       displayName: displayName,
       displayNameSearchable: displayName,
@@ -60,8 +66,10 @@ final class UserUtils {
           ref: primaryEmailRef,
           id: PRIMARY_EMAIL_ID,
           email: email,
-          createdAt: now,
-          createdBy: userPid,
+          createdReg: ModelRegistration(
+            by: userPid,
+            at: createdAt,
+          ),
         ),
       },
     );
@@ -93,7 +101,7 @@ final class UserUtils {
   }) async {
     // Get all relationship IDs created by userPid within the relationshipPool.
     final createdByRelationshipIds =
-        relationshipPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
+        relationshipPool.where((e) => e.createdReg?.at == userPid).map((e) => e.id).nonNulls;
 
     // Create delete operations for all relationships created by userPid.
     final createdByRelationshipDeleteOperations = createdByRelationshipIds.map(
@@ -127,7 +135,7 @@ final class UserUtils {
 
     // Get all PIDs for organization pubs created by userPid within the organizationPubPool.
     final organizationPids =
-        organizationPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
+        organizationPubPool.where((e) => e.createdReg?.at == userPid).map((e) => e.id).nonNulls;
 
     // Fetch all organization IDs corresponding to the organizationPids.
     final organizationIds =
@@ -161,7 +169,7 @@ final class UserUtils {
 
     // Get all PIDs fpr project pubs created by userPid within the projectPubPool.
     final projectPids =
-        projectPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
+        projectPubPool.where((e) => e.createdReg?.at == userPid).map((e) => e.id).nonNulls;
 
     // Fetch all project IDs corresponding to the projectPids.
     final projectIds =
@@ -194,7 +202,7 @@ final class UserUtils {
     );
 
     // Get all PIDs for jobs created by userPid within the jobPubPool.
-    final jobPids = jobPubPool.where((e) => e.createdBy == userPid).map((e) => e.id).nonNulls;
+    final jobPids = jobPubPool.where((e) => e.createdReg?.at == userPid).map((e) => e.id).nonNulls;
 
     // Fetch all job IDs corresponding to the jobPids.
     final jobIds = (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelJob>(
@@ -266,7 +274,7 @@ final class UserUtils {
     ]);
 
     // Get IDs for all files created by userPid within the filePool.
-    final fileIds = filePool.where((e) => e.createdBy == userPid).map((e) => e.id);
+    final fileIds = filePool.where((e) => e.createdReg?.at == userPid).map((e) => e.id);
 
     // Delete all files created by userPid.
     await Future.wait(

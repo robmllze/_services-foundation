@@ -36,7 +36,7 @@ final class ProjectUtils {
     required String displayName,
     required String description,
   }) {
-    final now = DateTime.now();
+    final createdAt = DateTime.now();
     final seed = IdUtils.newUuidV4();
     final projectId = IdUtils.newUuidV4();
     final projectRef = Schema.projectsRef(projectId: projectId);
@@ -47,8 +47,10 @@ final class ProjectUtils {
 
     final project = ModelProject(
       ref: projectRef,
-      createdAt: now,
-      createdBy: userId,
+      createdReg: ModelRegistration(
+        by: userId,
+        at: createdAt,
+      ),
       id: projectId,
       pid: projectPid,
       seed: seed,
@@ -56,9 +58,10 @@ final class ProjectUtils {
     final projectPubRef = Schema.projectPubsRef(projectPid: projectPid);
     final projectPub = ModelProjectPub(
       ref: projectPubRef,
-      createdAt: now,
-      createdBy: userPid,
-      whenOpened: {userPid: now},
+      createdReg: ModelRegistration(
+        by: userPid,
+        at: createdAt,
+      ),
       id: projectPid,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
@@ -68,8 +71,10 @@ final class ProjectUtils {
     final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
     final relationship = ModelRelationship(
       ref: relationshipRef,
-      createdAt: now,
-      createdBy: userPid,
+      createdReg: ModelRegistration(
+        by: userPid,
+        at: createdAt,
+      ),
       id: relationshipId,
       defType: RelationshipDefType.PROJECT_AND_ORGANIZATION,
       memberPids: {

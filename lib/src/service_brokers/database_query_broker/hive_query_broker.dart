@@ -130,7 +130,7 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
           ModelFileEntry.fromJsonOrNull,
         );
     stream = stream.map((e) {
-      return e.where((e) => createdByAny.contains(e.createdBy));
+      return e.where((e) => createdByAny.contains(e.createdReg?.by));
     });
     if (limit != null) {
       stream = stream.map((e) => e.take(limit));

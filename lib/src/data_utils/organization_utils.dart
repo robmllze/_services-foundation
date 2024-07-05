@@ -35,7 +35,7 @@ final class OrganizationUtils {
     required String displayName,
     required String description,
   }) {
-    final now = DateTime.now();
+    final createdAt = DateTime.now();
     final seed = IdUtils.newUuidV4();
     final organizationId = IdUtils.newUuidV4();
     final organizationRef = Schema.organizationsRef(organizationId: organizationId);
@@ -46,8 +46,10 @@ final class OrganizationUtils {
 
     final organization = ModelOrganization(
       ref: organizationRef,
-      createdAt: now,
-      createdBy: userId,
+      createdReg: ModelRegistration(
+        by: userId,
+        at: createdAt,
+      ),
       id: organizationId,
       pid: organizationPid,
       seed: seed,
@@ -55,8 +57,10 @@ final class OrganizationUtils {
     final organizationPubRef = Schema.organizationPubsRef(organizationPid: organizationPid);
     final organizationPub = ModelOrganizationPub(
       ref: organizationPubRef,
-      createdAt: now,
-      createdBy: userPid,
+      createdReg: ModelRegistration(
+        by: userPid,
+        at: createdAt,
+      ),
       description: description,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
@@ -67,8 +71,10 @@ final class OrganizationUtils {
     final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
     final relationship = ModelRelationship(
       ref: relationshipRef,
-      createdAt: now,
-      createdBy: userPid,
+      createdReg: ModelRegistration(
+        by: userPid,
+        at: createdAt,
+      ),
       defType: RelationshipDefType.USER_AND_ORGANIZATION,
       id: relationshipId,
       memberPids: {

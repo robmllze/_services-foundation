@@ -87,7 +87,7 @@ final class UserPubService extends DocumentServiceInterface<ModelUserPub> {
         ref: this.databaseRef(),
         registration: ModelRegistration(
           location: location,
-          registeredAt: DateTime.now(),
+          at: DateTime.now(),
         ),
       );
       await this.serviceEnvironment.databaseServiceBroker.mergeModel(update);

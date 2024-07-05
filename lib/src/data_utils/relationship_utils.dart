@@ -86,8 +86,10 @@ final class RelationshipUtils {
     return ModelRelationship(
       ref: relationshipRef,
       id: relationshipId,
-      createdAt: createdAt ?? DateTime.now(),
-      createdBy: createdBy,
+      createdReg: ModelRegistration(
+        by: createdBy,
+        at: createdAt ?? DateTime.now(),
+      ),
       memberPids: {...?memberPids, createdBy},
       defType: defType,
       def: def,
@@ -198,9 +200,12 @@ final class RelationshipUtils {
         ModelRelationship(
           ref: relationshipRef,
           id: relationshipId,
-          whenDisabled: {
-            currentUserId: DateTime.now(),
-          },
+          disabledRegs: [
+            ModelRegistration(
+              by: currentUserId,
+              at: DateTime.now(),
+            ),
+          ],
         ),
       );
     }

@@ -44,11 +44,12 @@ final class JobUtils {
       seed: seed,
       jobId: jobId,
     );
-
     final job = ModelJob(
       ref: jobRef,
-      createdAt: createdAt,
-      createdBy: userId,
+      createdReg: ModelRegistration(
+        by: userId,
+        at: createdAt,
+      ),
       id: jobId,
       pid: jobPid,
       seed: seed,
@@ -56,9 +57,10 @@ final class JobUtils {
     final jobPubRef = Schema.jobPubsRef(jobPid: jobPid);
     final jobPub = ModelJobPub(
       ref: jobPubRef,
-      createdAt: createdAt,
-      createdBy: userPid,
-      whenOpened: {userPid: createdAt},
+      createdReg: ModelRegistration(
+        by: userPid,
+        at: createdAt,
+      ),
       description: description,
       displayName: displayName,
       displayNameSearchable: displayName.toLowerCase(),
@@ -67,8 +69,10 @@ final class JobUtils {
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
       ref: Schema.relationshipsRef(relationshipId: relationshipId),
-      createdAt: createdAt,
-      createdBy: userPid,
+      createdReg: ModelRegistration(
+        by: userPid,
+        at: createdAt,
+      ),
       defType: RelationshipDefType.JOB_AND_PROJECT,
       id: relationshipId,
       memberPids: {

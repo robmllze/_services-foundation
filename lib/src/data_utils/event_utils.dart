@@ -25,26 +25,20 @@ final class EventUtils {
 
   static int getUnreadEventCount({
     required Iterable<ModelEvent>? eventPool,
-    Set<String?> blacklistCreatedBy = const {},
-    Set<String?> whitelistCreatedBy = const {},
+    required String? targetPid,
     Set<TopicType> topics = const {},
     bool includeArchived = false,
     bool includeHidden = false,
     bool includeRead = false,
   }) {
-    return eventPool?.nullIfEmpty
-            ?.where(
-              (e) =>
-                  (topics.isEmpty || topics.contains(e.topic)) &&
-                  (blacklistCreatedBy.isEmpty ||
-                      blacklistCreatedBy.contains(e.createdBy) == false) &&
-                  (whitelistCreatedBy.isEmpty ||
-                      whitelistCreatedBy.contains(e.createdBy) == true) &&
-                  (!includeHidden && !e.isHidden) &&
-                  (!includeArchived && !e.isArchived) &&
-                  (!includeRead && !e.isRead),
-            )
-            .length ??
+    return eventPool?.nullIfEmpty?.where(
+          (e) {
+            return (topics.isEmpty || topics.contains(e.topic)) &&
+                (!includeHidden && !e.isHiddenBy(targetPid)) &&
+                (!includeArchived && !e.isArchivedBy(targetPid)) &&
+                (!includeRead && !e.isReadBy(targetPid));
+          },
+        ).length ??
         0;
   }
 
@@ -54,29 +48,16 @@ final class EventUtils {
 
   static Future<void> archiveEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPid,
+    required String by,
     required DataRef eventsRef,
-    bool archive = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_ARCHIVED,
+      by: by,
+      regsKey: ModelEvent.K_ARCHIVED_REGS,
       eventsRef: eventsRef,
-      value: archive,
-    );
-  }
-
-  static CreateOrUpdateOperation getArchiveEventOperation({
-    required String userPid,
-    required DataRef eventsRef,
-    bool archive = true,
-  }) {
-    return getTagEventOperation(
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_ARCHIVED,
-      eventsRef: eventsRef,
-      value: archive,
+      enabled: enabled,
     );
   }
 
@@ -86,29 +67,16 @@ final class EventUtils {
 
   static Future<void> hideEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPid,
+    required String by,
     required DataRef eventsRef,
-    bool hide = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_HIDDEN,
+      by: by,
+      regsKey: ModelEvent.K_HIDDEN_REGS,
       eventsRef: eventsRef,
-      value: hide,
-    );
-  }
-
-  static CreateOrUpdateOperation getHideEventOperation({
-    required String userPid,
-    required DataRef eventsRef,
-    bool hide = true,
-  }) {
-    return getTagEventOperation(
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_HIDDEN,
-      eventsRef: eventsRef,
-      value: hide,
+      enabled: enabled,
     );
   }
 
@@ -118,30 +86,16 @@ final class EventUtils {
 
   static Future<void> likeEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPid,
+    required String by,
     required DataRef eventsRef,
-    bool like = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_LIKED,
+      by: by,
+      regsKey: ModelEvent.K_LIKED_REGS,
       eventsRef: eventsRef,
-      value: like,
-    );
-  }
-
-  static CreateOrUpdateOperation getLikeEventOperation({
-    required String userPid,
-    required String eventId,
-    required DataRef eventsRef,
-    bool like = true,
-  }) {
-    return getTagEventOperation(
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_LIKED,
-      eventsRef: eventsRef,
-      value: like,
+      enabled: enabled,
     );
   }
 
@@ -151,29 +105,16 @@ final class EventUtils {
 
   static Future<void> readEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPid,
+    required String by,
     required DataRef eventsRef,
-    bool read = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_READ,
+      by: by,
+      regsKey: ModelEvent.K_READ_REGS,
       eventsRef: eventsRef,
-      value: read,
-    );
-  }
-
-  static CreateOrUpdateOperation getReadEventOperation({
-    required String userPid,
-    required DataRef eventsRef,
-    bool read = true,
-  }) {
-    return getTagEventOperation(
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_READ,
-      eventsRef: eventsRef,
-      value: read,
+      enabled: enabled,
     );
   }
 
@@ -183,29 +124,16 @@ final class EventUtils {
 
   static Future<void> receiveEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPid,
+    required String by,
     required DataRef eventsRef,
-    bool receive = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_RECEIVED,
+      by: by,
+      regsKey: ModelEvent.K_RECEIVED_REGS,
       eventsRef: eventsRef,
-      value: receive,
-    );
-  }
-
-  static CreateOrUpdateOperation getReceiveEventOperation({
-    required String userPid,
-    required DataRef eventsRef,
-    bool receive = true,
-  }) {
-    return getTagEventOperation(
-      userPid: userPid,
-      eventTag: ModelEvent.K_WHEN_RECEIVED,
-      eventsRef: eventsRef,
-      value: receive,
+      enabled: enabled,
     );
   }
 
@@ -215,39 +143,54 @@ final class EventUtils {
 
   static Future<void> tagEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String userPid,
-    required String eventTag,
+    required String by,
+    required String regsKey,
     required DataRef eventsRef,
-    required bool value,
+    required bool enabled,
   }) async {
-    await serviceEnvironment.databaseServiceBroker.updateModel(
-      DataModel(
-        data: {
-          ModelEvent.K_REF: eventsRef.toJson(),
-          eventTag: {
-            userPid: value ? DateTime.now().toUtc().toIso8601String() : '',
-          },
-        },
-      ),
-    );
+    serviceEnvironment.databaseServiceBroker.runTransaction((tr) async {
+      final event = await tr.read(eventsRef, ModelEvent.fromJsonOrNull);
+      if (event != null) {
+        tagEventTrUpdate(
+          enabled: enabled,
+          event: event,
+          regsKey: regsKey,
+          tr: tr,
+          by: by,
+        );
+      }
+    });
   }
 
-  static CreateOrUpdateOperation getTagEventOperation({
-    required String userPid,
-    required String eventTag,
-    required DataRef eventsRef,
-    required bool value,
+  static void tagEventTrUpdate({
+    required TransactionInterface tr,
+    required ModelEvent event,
+    required String by,
+    required String regsKey,
+    required bool enabled,
   }) {
-    return CreateOrUpdateOperation(
-      model: DataModel(
-        data: {
-          ModelEvent.K_REF: eventsRef.toJson(),
-          eventTag: {
-            userPid: value ? DateTime.now().toUtc().toIso8601String() : '',
-          },
-        },
-      ),
-    );
+    final eventData = event.toJson();
+    final registrations = letAs<List>(eventData[regsKey])
+        ?.map((e) => letAsJMapOrNull(e))
+        .map((e) => ModelRegistration.fromJsonOrNull(e))
+        .nonNulls
+        .toList();
+    if (registrations != null && registrations.isNotEmpty) {
+      final index = registrations.indexWhere((e) => e.id == by);
+      if (index != -1) {
+        registrations[index]
+          ..at = DateTime.now()
+          ..enabled = enabled;
+        tr.overwrite(
+          DataModel(
+            data: {
+              ...eventData,
+              regsKey: registrations.map((e) => e.toJson()).toList(),
+            },
+          ),
+        );
+      }
+    }
   }
 
   //
@@ -300,8 +243,10 @@ final class EventUtils {
         senderPid,
         if (receiverPid != null) receiverPid,
       },
-      createdAt: DateTime.now(),
-      createdBy: senderPid,
+      createdReg: ModelRegistration(
+        by: senderPid,
+        at: DateTime.now(),
+      ),
       body: DataModel(data: body.toJson()),
       topic: topic,
     );
