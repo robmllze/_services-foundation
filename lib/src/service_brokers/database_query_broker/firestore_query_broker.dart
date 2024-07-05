@@ -127,7 +127,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelRelationship>> streamRelationshipsForAnyMember({
     required Iterable<String> memberPids,
-    Iterable<RelationshipDefType> defTypes = const {},
+    Iterable<RelationshipType> types = const {},
     int? limit,
   }) {
     var pidSet = memberPids.toSet();
@@ -143,8 +143,8 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
 
-    if (defTypes.isNotEmpty) {
-      relationships = relationships.map((e) => e.where((e) => defTypes.contains(e.defType)));
+    if (types.isNotEmpty) {
+      relationships = relationships.map((e) => e.where((e) => types.contains(e.type)));
     }
     return relationships;
   }
@@ -156,7 +156,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelRelationship>> streamRelationshipsForEveryMember({
     required Iterable<String> memberPids,
-    Iterable<RelationshipDefType> defTypes = const {},
+    Iterable<RelationshipType> types = const {},
     int? limit,
   }) {
     var pidSet = memberPids.toSet();
@@ -171,8 +171,8 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
         .where(ModelRelationship.K_MEMBER_PIDS, arrayContains: pidSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
-    if (defTypes.isNotEmpty) {
-      relationships = relationships.map((e) => e.where((e) => defTypes.contains(e.defType)));
+    if (types.isNotEmpty) {
+      relationships = relationships.map((e) => e.where((e) => types.contains(e.type)));
     }
     return relationships;
   }

@@ -29,9 +29,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final relationshipId = IdUtils.newRelationshipId();
     final body = ModelEventBody(
-      relationshipId: relationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -42,7 +40,6 @@ final class UserEventUtils {
       ),
       receiverPid: receiverPid,
       senderPid: senderPid,
-      relationshipId: relationshipId,
       serviceEnvironment: serviceEnvironment,
       body: body,
       topic: TopicType.CONNECTION_REQUEST,
@@ -55,13 +52,11 @@ final class UserEventUtils {
 
   static Future<void> sendConnectionRequestAcceptedEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String newRelationshipId,
     required String senderPid,
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
     final body = ModelEventBody(
-      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -72,7 +67,6 @@ final class UserEventUtils {
       ),
       receiverPid: receiverPid,
       senderPid: senderPid,
-      relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.CONNECTION_REQUEST_ACCEPTED,
       body: body,
@@ -91,7 +85,6 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final body = ModelEventBody(
-      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -102,7 +95,6 @@ final class UserEventUtils {
       ),
       receiverPid: receiverPid,
       senderPid: senderPid,
-      relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.CONNECTION_REQUEST_REJECTED,
       body: body,
@@ -121,7 +113,6 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final body = ModelEventBody(
-      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -132,7 +123,6 @@ final class UserEventUtils {
       ),
       receiverPid: receiverPid,
       senderPid: senderPid,
-      relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.RELATIONSHIP_CHANGED,
       body: body,
@@ -151,7 +141,6 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final body = ModelEventBody(
-      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -162,7 +151,6 @@ final class UserEventUtils {
       ),
       receiverPid: receiverPid,
       senderPid: senderPid,
-      relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.RELATIONSHIP_DISABLED,
       body: body,
@@ -181,7 +169,6 @@ final class UserEventUtils {
   }) async {
     final eventId = IdUtils.newEventId();
     final body = ModelEventBody(
-      relationshipId: newRelationshipId,
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -192,7 +179,6 @@ final class UserEventUtils {
       ),
       receiverPid: receiverPid,
       senderPid: senderPid,
-      relationshipId: newRelationshipId,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.RELATIONSHIP_REMOVED,
       body: body,

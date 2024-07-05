@@ -19,7 +19,7 @@ class JobMemberService extends RelationshipMemberService<ModelJobPub, JobPubServ
 
   JobMemberService({
     required super.relationshipService,
-    required super.defTypes,
+    required super.types,
   }) : super(
           memberPidPrefixes: {IdUtils.JOB_PID_PREFIX},
           serviceInstantiator: (serviceEnvironment, memberPid) {

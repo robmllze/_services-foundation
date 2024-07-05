@@ -30,7 +30,7 @@ final class RelationshipUtils {
     required String createdBy,
     DateTime? createdAt,
     DataModel? def,
-    RelationshipDefType? defType,
+    RelationshipType? defType,
     String? newRelationshipId,
     Set<String>? memberPids,
   }) async {
@@ -39,8 +39,8 @@ final class RelationshipUtils {
       createdBy: createdBy,
       createdAt: createdAt,
       memberPids: memberPids,
-      defType: defType,
-      def: def,
+      type: defType,
+      body: def,
     );
 
     await serviceEnvironment.databaseServiceBroker.createModel(relationship);
@@ -54,7 +54,7 @@ final class RelationshipUtils {
     required String createdBy,
     DateTime? createdAt,
     DataModel? def,
-    RelationshipDefType? defType,
+    RelationshipType? defType,
     String? newRelationshipId,
     Set<String>? memberPids,
   }) {
@@ -63,8 +63,8 @@ final class RelationshipUtils {
       createdBy: createdBy,
       createdAt: createdAt,
       memberPids: memberPids,
-      defType: defType,
-      def: def,
+      type: defType,
+      body: def,
     );
     return CreateOperation(model: relationship);
   }
@@ -76,8 +76,8 @@ final class RelationshipUtils {
   static ModelRelationship newRelationship({
     required String createdBy,
     DateTime? createdAt,
-    DataModel? def,
-    RelationshipDefType? defType,
+    DataModel? body,
+    RelationshipType? type,
     String? newRelationshipId,
     Set<String>? memberPids,
   }) {
@@ -91,8 +91,8 @@ final class RelationshipUtils {
         at: createdAt ?? DateTime.now(),
       ),
       memberPids: {...?memberPids, createdBy},
-      defType: defType,
-      def: def,
+      type: type,
+      body: body,
     );
   }
 

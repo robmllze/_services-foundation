@@ -77,7 +77,7 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelRelationship>> streamRelationshipsForAnyMember({
     required Iterable<String> memberPids,
-    Iterable<RelationshipDefType> defTypes = const {},
+    Iterable<RelationshipType> types = const {},
     int? limit,
   }) {
     var stream = this.databaseServiceBroker.streamModelCollection(
@@ -85,7 +85,7 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
           ModelRelationship.fromJsonOrNull,
         );
     stream = stream.map((e) {
-      return e.filterByAnyMember(memberPids: memberPids).filterByDefType(defTypes: defTypes);
+      return e.filterByAnyMember(memberPids: memberPids).filterByDefType(types: types);
     });
     if (limit != null) {
       stream = stream.map((e) => e.take(limit));
@@ -100,7 +100,7 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
   @override
   Stream<Iterable<ModelRelationship>> streamRelationshipsForEveryMember({
     required Iterable<String> memberPids,
-    Iterable<RelationshipDefType> defTypes = const {},
+    Iterable<RelationshipType> types = const {},
     int? limit,
   }) {
     var stream = this.databaseServiceBroker.streamModelCollection(
@@ -108,7 +108,7 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
           ModelRelationship.fromJsonOrNull,
         );
     stream = stream.map((e) {
-      return e.filterByEveryMember(memberPids: memberPids).filterByDefType(defTypes: defTypes);
+      return e.filterByEveryMember(memberPids: memberPids).filterByDefType(types: types);
     });
     if (limit != null) {
       stream = stream.map((e) => e.take(limit));

@@ -21,7 +21,7 @@ class RelationshipMemberService<TModel extends Model,
   //
 
   final RelationshipService relationshipService;
-  final Iterable<RelationshipDefType> defTypes;
+  final Iterable<RelationshipType> types;
   final Iterable<String> memberPidPrefixes;
   final TDocumentService Function(
     ServiceEnvironment serviceEnvironment,
@@ -34,7 +34,7 @@ class RelationshipMemberService<TModel extends Model,
 
   RelationshipMemberService({
     required this.relationshipService,
-    required this.defTypes,
+    required this.types,
     required this.memberPidPrefixes,
     required this.serviceInstantiator,
   }) {
@@ -69,8 +69,8 @@ class RelationshipMemberService<TModel extends Model,
   @protected
   Future<void> refresh() async {
     final relationshipPool = this.relationshipService.pValue.value?.where((e) {
-          final defType = e.defType;
-          return this.defTypes.contains(defType);
+          final type = e.type;
+          return this.types.contains(type);
         }) ??
         {};
     final memberPids = RelationshipUtils.extractMemberPids(

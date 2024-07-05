@@ -50,14 +50,14 @@ final class EventUtils {
     required ServiceEnvironment serviceEnvironment,
     required String by,
     required DataRef eventsRef,
-    bool enabled = true,
+    bool value = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       by: by,
       regsKey: ModelEvent.K_ARCHIVED_REGS,
       eventsRef: eventsRef,
-      enabled: enabled,
+      value: value,
     );
   }
 
@@ -69,14 +69,14 @@ final class EventUtils {
     required ServiceEnvironment serviceEnvironment,
     required String by,
     required DataRef eventsRef,
-    bool enabled = true,
+    bool value = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       by: by,
       regsKey: ModelEvent.K_HIDDEN_REGS,
       eventsRef: eventsRef,
-      enabled: enabled,
+      value: value,
     );
   }
 
@@ -88,14 +88,14 @@ final class EventUtils {
     required ServiceEnvironment serviceEnvironment,
     required String by,
     required DataRef eventsRef,
-    bool enabled = true,
+    bool value = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       by: by,
       regsKey: ModelEvent.K_LIKED_REGS,
       eventsRef: eventsRef,
-      enabled: enabled,
+      value: value,
     );
   }
 
@@ -107,14 +107,14 @@ final class EventUtils {
     required ServiceEnvironment serviceEnvironment,
     required String by,
     required DataRef eventsRef,
-    bool enabled = true,
+    bool value = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       by: by,
       regsKey: ModelEvent.K_READ_REGS,
       eventsRef: eventsRef,
-      enabled: enabled,
+      value: value,
     );
   }
 
@@ -126,14 +126,14 @@ final class EventUtils {
     required ServiceEnvironment serviceEnvironment,
     required String by,
     required DataRef eventsRef,
-    bool enabled = true,
+    bool value = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       by: by,
       regsKey: ModelEvent.K_RECEIVED_REGS,
       eventsRef: eventsRef,
-      enabled: enabled,
+      value: value,
     );
   }
 
@@ -146,13 +146,13 @@ final class EventUtils {
     required String by,
     required String regsKey,
     required DataRef eventsRef,
-    required bool enabled,
+    required bool value,
   }) async {
     serviceEnvironment.databaseServiceBroker.runTransaction((tr) async {
       final event = await tr.read(eventsRef, ModelEvent.fromJsonOrNull);
       if (event != null) {
         tagEventTrUpdate(
-          enabled: enabled,
+          value: value,
           event: event,
           regsKey: regsKey,
           tr: tr,
@@ -167,7 +167,7 @@ final class EventUtils {
     required ModelEvent event,
     required String by,
     required String regsKey,
-    required bool enabled,
+    required bool value,
   }) {
     final eventData = event.toJson();
     final registrations = letAs<List>(eventData[regsKey])
@@ -176,11 +176,11 @@ final class EventUtils {
         .nonNulls
         .toList();
     if (registrations != null && registrations.isNotEmpty) {
-      final index = registrations.indexWhere((e) => e.id == by);
+      final index = registrations.indexWhere((e) => e.by == by);
       if (index != -1) {
         registrations[index]
           ..at = DateTime.now()
-          ..enabled = enabled;
+          ..value = value;
         tr.overwrite(
           DataModel(
             data: {
@@ -190,6 +190,20 @@ final class EventUtils {
           ),
         );
       }
+    } else {
+      final update = DataModel(
+        data: {
+          ...eventData,
+          regsKey: [
+            ModelRegistration(
+              by: by,
+              at: DateTime.now(),
+              value: value,
+            ).toJson(),
+          ],
+        },
+      );
+      tr.overwrite(update);
     }
   }
 
@@ -212,7 +226,6 @@ final class EventUtils {
     required ServiceEnvironment serviceEnvironment,
     required String senderPid,
     String? receiverPid,
-    required String relationshipId,
     required DataRef eventsRef,
     required Model body,
     required TopicType topic,
@@ -220,7 +233,6 @@ final class EventUtils {
     await getSendEventOperation(
       senderPid: senderPid,
       receiverPid: receiverPid,
-      relationshipId: relationshipId,
       eventsRef: eventsRef,
       body: body,
       topic: topic,
@@ -230,7 +242,6 @@ final class EventUtils {
   static CreateOrUpdateOperation getSendEventOperation({
     required String senderPid,
     String? receiverPid,
-    required String relationshipId,
     required DataRef eventsRef,
     required Model body,
     required TopicType topic,
@@ -238,7 +249,6 @@ final class EventUtils {
     final eventModel = ModelEvent(
       ref: eventsRef,
       id: eventsRef.id!,
-      relationshipId: relationshipId,
       memberPids: {
         senderPid,
         if (receiverPid != null) receiverPid,

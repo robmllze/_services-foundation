@@ -73,7 +73,7 @@ final class JobUtils {
         by: userPid,
         at: createdAt,
       ),
-      defType: RelationshipDefType.JOB_AND_PROJECT,
+      type: RelationshipType.JOB_AND_PROJECT,
       id: relationshipId,
       memberPids: {
         userPid,

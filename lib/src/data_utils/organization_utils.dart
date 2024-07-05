@@ -75,7 +75,7 @@ final class OrganizationUtils {
         by: userPid,
         at: createdAt,
       ),
-      defType: RelationshipDefType.USER_AND_ORGANIZATION,
+      type: RelationshipType.USER_AND_ORGANIZATION,
       id: relationshipId,
       memberPids: {
         userPid,

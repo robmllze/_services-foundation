@@ -20,7 +20,7 @@ class OrganizationMemberService
 
   OrganizationMemberService({
     required super.relationshipService,
-    required super.defTypes,
+    required super.types,
   }) : super(
           memberPidPrefixes: {IdUtils.ORGANIZATION_PID_PREFIX},
           serviceInstantiator: (serviceEnvironment, memberPid) {

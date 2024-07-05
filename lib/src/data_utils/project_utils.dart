@@ -76,7 +76,7 @@ final class ProjectUtils {
         at: createdAt,
       ),
       id: relationshipId,
-      defType: RelationshipDefType.PROJECT_AND_ORGANIZATION,
+      type: RelationshipType.PROJECT_AND_ORGANIZATION,
       memberPids: {
         userPid,
         projectPid,
