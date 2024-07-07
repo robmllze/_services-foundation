@@ -274,8 +274,8 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
       ref: fileRef,
       id: fileId,
       createdReg: ModelRegistration(
-        at: createdAt,
-        by: createdBy,
+        registeredAt: createdAt,
+        registeredBy: createdBy,
       ),
       storagePath: storagePath,
       title: title,

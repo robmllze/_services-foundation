@@ -147,7 +147,7 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       final update = (existing ?? ModelDeviceRegistration());
       update.id ??= IdUtils.newUuidV4();
       update.ipV4Address ??= ipV4Address;
-      update.at ??= now;
+      update.registeredAt ??= now;
       update.deviceInfo = deviceInfo;
       update.lastLoggedInAt = now;
       update.location = location;

@@ -27,16 +27,18 @@ final class EventUtils {
     required Iterable<ModelEvent>? eventPool,
     required String? targetPid,
     Set<TopicType> topics = const {},
-    bool includeArchived = false,
-    bool includeHidden = false,
-    bool includeRead = false,
   }) {
     return eventPool?.nullIfEmpty?.where(
           (e) {
-            return (topics.isEmpty || topics.contains(e.topic)) &&
-                (!includeHidden && !e.isHiddenBy(targetPid)) &&
-                (!includeArchived && !e.isArchivedBy(targetPid)) &&
-                (!includeRead && !e.isReadBy(targetPid));
+            final tests = [
+              if (topics.isNotEmpty) topics.contains(e.topic),
+              if (targetPid != null) ...[
+                e.isHiddenBy(targetPid),
+                e.isArchivedBy(targetPid),
+                e.isReadBy(targetPid),
+              ],
+            ];
+            return tests.isEmpty || !tests.contains(false);
           },
         ).length ??
         0;
@@ -48,16 +50,16 @@ final class EventUtils {
 
   static Future<void> archiveEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String by,
+    required String registeredBy,
     required DataRef eventsRef,
-    bool value = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      by: by,
+      registeredBy: registeredBy,
       regsKey: ModelEvent.K_ARCHIVED_REGS,
       eventsRef: eventsRef,
-      value: value,
+      enabled: enabled,
     );
   }
 
@@ -67,16 +69,16 @@ final class EventUtils {
 
   static Future<void> hideEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String by,
+    required String registeredBy,
     required DataRef eventsRef,
-    bool value = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      by: by,
+      registeredBy: registeredBy,
       regsKey: ModelEvent.K_HIDDEN_REGS,
       eventsRef: eventsRef,
-      value: value,
+      enabled: enabled,
     );
   }
 
@@ -86,16 +88,16 @@ final class EventUtils {
 
   static Future<void> likeEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String by,
+    required String registeredBy,
     required DataRef eventsRef,
-    bool value = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      by: by,
+      registeredBy: registeredBy,
       regsKey: ModelEvent.K_LIKED_REGS,
       eventsRef: eventsRef,
-      value: value,
+      enabled: enabled,
     );
   }
 
@@ -105,16 +107,16 @@ final class EventUtils {
 
   static Future<void> readEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String by,
+    required String registeredBy,
     required DataRef eventsRef,
-    bool value = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      by: by,
+      registeredBy: registeredBy,
       regsKey: ModelEvent.K_READ_REGS,
       eventsRef: eventsRef,
-      value: value,
+      enabled: enabled,
     );
   }
 
@@ -124,16 +126,16 @@ final class EventUtils {
 
   static Future<void> receiveEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String by,
+    required String registeredBy,
     required DataRef eventsRef,
-    bool value = true,
+    bool enabled = true,
   }) async {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
-      by: by,
+      registeredBy: registeredBy,
       regsKey: ModelEvent.K_RECEIVED_REGS,
       eventsRef: eventsRef,
-      value: value,
+      enabled: enabled,
     );
   }
 
@@ -143,20 +145,20 @@ final class EventUtils {
 
   static Future<void> tagEvent({
     required ServiceEnvironment serviceEnvironment,
-    required String by,
+    required String registeredBy,
     required String regsKey,
     required DataRef eventsRef,
-    required bool value,
+    required bool enabled,
   }) async {
     serviceEnvironment.databaseServiceBroker.runTransaction((tr) async {
       final event = await tr.read(eventsRef, ModelEvent.fromJsonOrNull);
       if (event != null) {
         tagEventTrUpdate(
-          value: value,
+          enabled: enabled,
           event: event,
           regsKey: regsKey,
           tr: tr,
-          by: by,
+          registeredBy: registeredBy,
         );
       }
     });
@@ -165,9 +167,9 @@ final class EventUtils {
   static void tagEventTrUpdate({
     required TransactionInterface tr,
     required ModelEvent event,
-    required String by,
+    required String registeredBy,
     required String regsKey,
-    required bool value,
+    required bool enabled,
   }) {
     final eventData = event.toJson();
     final registrations = letAs<List>(eventData[regsKey])
@@ -176,11 +178,11 @@ final class EventUtils {
         .nonNulls
         .toList();
     if (registrations != null && registrations.isNotEmpty) {
-      final index = registrations.indexWhere((e) => e.by == by);
+      final index = registrations.indexWhere((e) => e.registeredBy == registeredBy);
       if (index != -1) {
         registrations[index]
-          ..at = DateTime.now()
-          ..value = value;
+          ..registeredAt = DateTime.now()
+          ..enabled = enabled;
         tr.overwrite(
           DataModel(
             data: {
@@ -196,9 +198,9 @@ final class EventUtils {
           ...eventData,
           regsKey: [
             ModelRegistration(
-              by: by,
-              at: DateTime.now(),
-              value: value,
+              registeredBy: registeredBy,
+              registeredAt: DateTime.now(),
+              enabled: enabled,
             ).toJson(),
           ],
         },
@@ -254,8 +256,8 @@ final class EventUtils {
         if (receiverPid != null) receiverPid,
       },
       createdReg: ModelRegistration(
-        by: senderPid,
-        at: DateTime.now(),
+        registeredBy: senderPid,
+        registeredAt: DateTime.now(),
       ),
       body: DataModel(data: body.toJson()),
       topic: topic,

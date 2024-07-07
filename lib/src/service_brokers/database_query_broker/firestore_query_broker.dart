@@ -196,7 +196,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     final snapshots = collection
         .baseQuery(limit: limit)
         .where(
-          '${ModelFileEntry.K_CREATED_REG}.${ModelRegistration.K_BY}',
+          '${ModelFileEntry.K_CREATED_REG}.${ModelRegistration.K_REGISTERED_BY}',
           whereIn: createdByAny,
         )
         .snapshots();

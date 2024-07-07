@@ -47,8 +47,8 @@ final class OrganizationUtils {
     final organization = ModelOrganization(
       ref: organizationRef,
       createdReg: ModelRegistration(
-        by: userId,
-        at: createdAt,
+        registeredBy: userId,
+        registeredAt: createdAt,
       ),
       id: organizationId,
       pid: organizationPid,
@@ -58,8 +58,8 @@ final class OrganizationUtils {
     final organizationPub = ModelOrganizationPub(
       ref: organizationPubRef,
       createdReg: ModelRegistration(
-        by: userPid,
-        at: createdAt,
+        registeredBy: userPid,
+        registeredAt: createdAt,
       ),
       description: description,
       displayName: displayName,
@@ -72,8 +72,8 @@ final class OrganizationUtils {
     final relationship = ModelRelationship(
       ref: relationshipRef,
       createdReg: ModelRegistration(
-        by: userPid,
-        at: createdAt,
+        registeredBy: userPid,
+        registeredAt: createdAt,
       ),
       type: RelationshipType.USER_AND_ORGANIZATION,
       id: relationshipId,

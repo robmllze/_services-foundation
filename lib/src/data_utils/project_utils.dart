@@ -48,8 +48,8 @@ final class ProjectUtils {
     final project = ModelProject(
       ref: projectRef,
       createdReg: ModelRegistration(
-        by: userId,
-        at: createdAt,
+        registeredBy: userId,
+        registeredAt: createdAt,
       ),
       id: projectId,
       pid: projectPid,
@@ -59,8 +59,8 @@ final class ProjectUtils {
     final projectPub = ModelProjectPub(
       ref: projectPubRef,
       createdReg: ModelRegistration(
-        by: userPid,
-        at: createdAt,
+        registeredBy: userPid,
+        registeredAt: createdAt,
       ),
       id: projectPid,
       displayName: displayName,
@@ -72,8 +72,8 @@ final class ProjectUtils {
     final relationship = ModelRelationship(
       ref: relationshipRef,
       createdReg: ModelRegistration(
-        by: userPid,
-        at: createdAt,
+        registeredBy: userPid,
+        registeredAt: createdAt,
       ),
       id: relationshipId,
       type: RelationshipType.PROJECT_AND_ORGANIZATION,
