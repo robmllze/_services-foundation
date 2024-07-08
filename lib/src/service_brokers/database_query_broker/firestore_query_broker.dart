@@ -54,11 +54,11 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
           .baseQuery(limit: limit)
           // Where the email contains the query.
           .where(
-            ModelUserPub.K_EMAIL,
+            ModelUserPub.K_EMAIL_SEARCHABLE,
             isGreaterThanOrEqualTo: searchableQuery,
           )
           .where(
-            ModelUserPub.K_EMAIL,
+            ModelUserPub.K_EMAIL_SEARCHABLE,
             isLessThan: b,
           )
           .snapshots()
@@ -80,7 +80,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
 
       final combinedStream = StreamZip([stream1, stream2]).map((e) {
         return e.reduce((a, b) {
-          final c = [...a, ...b].where((e) => e.deletedReg == null);
+          final c = [...a, ...b].where((e) => e.deletedGReg == null);
           final d = Model.removeDuplicateIds(c);
           return d;
         }).toSet();
@@ -196,7 +196,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     final snapshots = collection
         .baseQuery(limit: limit)
         .where(
-          '${ModelFileEntry.K_CREATED_REG}.${ModelRegistration.K_REGISTERED_BY}',
+          '${ModelFileEntry.K_CREATED_G_REG}.${ModelRegistration.K_REGISTERED_BY}',
           whereIn: createdByAny,
         )
         .snapshots();

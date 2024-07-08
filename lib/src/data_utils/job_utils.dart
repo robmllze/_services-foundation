@@ -46,7 +46,7 @@ final class JobUtils {
     );
     final job = ModelJob(
       ref: jobRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userId,
         registeredAt: createdAt,
       ),
@@ -57,7 +57,7 @@ final class JobUtils {
     final jobPubRef = Schema.jobPubsRef(jobPid: jobPid);
     final jobPub = ModelJobPub(
       ref: jobPubRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userPid,
         registeredAt: createdAt,
       ),
@@ -69,7 +69,7 @@ final class JobUtils {
     final relationshipId = IdUtils.newRelationshipId();
     final relationship = ModelRelationship(
       ref: Schema.relationshipsRef(relationshipId: relationshipId),
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userPid,
         registeredAt: createdAt,
       ),

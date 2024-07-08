@@ -85,7 +85,7 @@ final class UserPubService extends DocumentServiceInterface<ModelUserPub> {
       }
       final update = ModelUserPub(
         ref: this.databaseRef(),
-        registration: ModelRegistration(
+        updateGReg: ModelRegistration(
           location: location,
           registeredAt: DateTime.now(),
         ),
@@ -105,7 +105,7 @@ final class UserPubService extends DocumentServiceInterface<ModelUserPub> {
       final ref = this.databaseRef();
       final userPub = await transaction.read(ref, ModelUserPub.fromJsonOrNull);
       if (userPub != null) {
-        userPub.registration?.location = null;
+        userPub.updateGReg?.location = null;
         transaction.overwrite(userPub);
       }
     });

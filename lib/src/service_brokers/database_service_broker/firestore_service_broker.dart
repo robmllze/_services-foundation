@@ -186,11 +186,11 @@ final class FirestoreServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<Iterable<TModel?>> runBatchOperations<TModel extends Model>(
-    Iterable<BatchOperation<TModel>> operations,
+  Future<Iterable<Model?>> runBatchOperations(
+    Iterable<BatchOperation<Model>> operations,
   ) async {
     final broker = FirestoreBatchTransactionBroker(this.firestore);
-    final results = <TModel?>[];
+    final results = <Model?>[];
 
     for (final operation in operations) {
       final ref = operation.model!.ref!;

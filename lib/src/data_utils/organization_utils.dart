@@ -46,7 +46,7 @@ final class OrganizationUtils {
 
     final organization = ModelOrganization(
       ref: organizationRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userId,
         registeredAt: createdAt,
       ),
@@ -57,7 +57,7 @@ final class OrganizationUtils {
     final organizationPubRef = Schema.organizationPubsRef(organizationPid: organizationPid);
     final organizationPub = ModelOrganizationPub(
       ref: organizationPubRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userPid,
         registeredAt: createdAt,
       ),
@@ -71,7 +71,7 @@ final class OrganizationUtils {
     final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
     final relationship = ModelRelationship(
       ref: relationshipRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userPid,
         registeredAt: createdAt,
       ),

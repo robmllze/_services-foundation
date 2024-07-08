@@ -267,7 +267,7 @@ final class EventUtils {
         senderPid,
         if (receiverPid != null) receiverPid,
       },
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: senderPid,
         registeredAt: DateTime.now(),
       ),

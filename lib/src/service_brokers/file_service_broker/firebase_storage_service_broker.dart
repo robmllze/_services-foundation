@@ -123,7 +123,7 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
       fileRef: fileRef,
       fileId: fileId,
       createdBy: currentUserPid,
-      title: title,
+      displayName: title,
       description: description,
       definitionPath: definitionPath,
     );
@@ -172,7 +172,7 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
       fileRef: DataRef(),
       fileId: fileId,
       createdBy: createdBy,
-      title: null,
+      displayName: null,
       description: null,
       definitionPath: FileSchema.PUBLIC_FILES,
     );
@@ -265,7 +265,7 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
     required String fileId,
     required DataRef fileRef,
     String? createdBy,
-    String? title,
+    String? displayName,
     String? description,
     List<String>? definitionPath,
   }) {
@@ -273,13 +273,13 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
     final pendingUploadFile = ModelFileEntry(
       ref: fileRef,
       id: fileId,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredAt: createdAt,
         registeredBy: createdBy,
       ),
       storagePath: storagePath,
-      title: title,
-      titleSearchable: title,
+      displayName: displayName,
+      displayNameSearchable: displayName?.toLowerCase(),
       extension: file.extension,
       description: description,
       size: file.size,

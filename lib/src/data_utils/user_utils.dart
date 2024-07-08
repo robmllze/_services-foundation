@@ -41,9 +41,10 @@ final class UserUtils {
     final userPubRef = Schema.userPubsRef(userPid: userPid);
     const PRIMARY_EMAIL_ID = 'primary';
     final primaryEmailRef = userPubRef + Schema.emailsRef(emailId: PRIMARY_EMAIL_ID);
+    final emailSearchable = email.trim().toLowerCase();
     final user = ModelUser(
       ref: userRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userId,
         registeredAt: createdAt,
       ),
@@ -53,20 +54,20 @@ final class UserUtils {
     );
     final userPub = ModelUserPub(
       ref: userPubRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userPid,
         registeredAt: createdAt,
       ),
       id: userPid,
       displayName: displayName,
       displayNameSearchable: displayName,
-      email: email,
+      emailSearchable: emailSearchable,
       emailEntries: {
         PRIMARY_EMAIL_ID: ModelEmailEntry(
           ref: primaryEmailRef,
           id: PRIMARY_EMAIL_ID,
-          email: email,
-          createdReg: ModelRegistration(
+          emailSearchable: emailSearchable,
+          createdGReg: ModelRegistration(
             registeredBy: userPid,
             registeredAt: createdAt,
           ),
@@ -101,7 +102,7 @@ final class UserUtils {
   }) async {
     // Get all relationship IDs created by userPid within the relationshipPool.
     final createdByRelationshipIds = relationshipPool
-        .where((e) => e.createdReg?.registeredAt == userPid)
+        .where((e) => e.createdGReg?.registeredAt == userPid)
         .map((e) => e.id)
         .nonNulls;
 
@@ -137,7 +138,7 @@ final class UserUtils {
 
     // Get all PIDs for organization pubs created by userPid within the organizationPubPool.
     final organizationPids = organizationPubPool
-        .where((e) => e.createdReg?.registeredAt == userPid)
+        .where((e) => e.createdGReg?.registeredAt == userPid)
         .map((e) => e.id)
         .nonNulls;
 
@@ -173,7 +174,7 @@ final class UserUtils {
 
     // Get all PIDs fpr project pubs created by userPid within the projectPubPool.
     final projectPids = projectPubPool
-        .where((e) => e.createdReg?.registeredAt == userPid)
+        .where((e) => e.createdGReg?.registeredAt == userPid)
         .map((e) => e.id)
         .nonNulls;
 
@@ -209,7 +210,7 @@ final class UserUtils {
 
     // Get all PIDs for jobs created by userPid within the jobPubPool.
     final jobPids =
-        jobPubPool.where((e) => e.createdReg?.registeredAt == userPid).map((e) => e.id).nonNulls;
+        jobPubPool.where((e) => e.createdGReg?.registeredAt == userPid).map((e) => e.id).nonNulls;
 
     // Fetch all job IDs corresponding to the jobPids.
     final jobIds = (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelJob>(
@@ -281,7 +282,7 @@ final class UserUtils {
     ]);
 
     // Get IDs for all files created by userPid within the filePool.
-    final fileIds = filePool.where((e) => e.createdReg?.registeredAt == userPid).map((e) => e.id);
+    final fileIds = filePool.where((e) => e.createdGReg?.registeredAt == userPid).map((e) => e.id);
 
     // Delete all files created by userPid.
     await Future.wait(

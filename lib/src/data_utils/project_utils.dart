@@ -47,7 +47,7 @@ final class ProjectUtils {
 
     final project = ModelProject(
       ref: projectRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userId,
         registeredAt: createdAt,
       ),
@@ -58,7 +58,7 @@ final class ProjectUtils {
     final projectPubRef = Schema.projectPubsRef(projectPid: projectPid);
     final projectPub = ModelProjectPub(
       ref: projectPubRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userPid,
         registeredAt: createdAt,
       ),
@@ -71,7 +71,7 @@ final class ProjectUtils {
     final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
     final relationship = ModelRelationship(
       ref: relationshipRef,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: userPid,
         registeredAt: createdAt,
       ),

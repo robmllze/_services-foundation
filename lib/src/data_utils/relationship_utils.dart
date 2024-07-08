@@ -86,7 +86,7 @@ final class RelationshipUtils {
     return ModelRelationship(
       ref: relationshipRef,
       id: relationshipId,
-      createdReg: ModelRegistration(
+      createdGReg: ModelRegistration(
         registeredBy: createdBy,
         registeredAt: createdAt ?? DateTime.now(),
       ),

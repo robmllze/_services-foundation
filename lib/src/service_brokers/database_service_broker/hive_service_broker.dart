@@ -352,11 +352,11 @@ final class HiveServiceBroker extends DatabaseServiceInterface {
   //
 
   @override
-  Future<Iterable<TModel?>> runBatchOperations<TModel extends Model>(
-    Iterable<BatchOperation<TModel>> operations,
+  Future<Iterable<Model?>> runBatchOperations(
+    Iterable<BatchOperation<Model>> operations,
   ) async {
     final broker = HiveTransactionBroker(hiveServiceBroker: this);
-    final results = <TModel?>[];
+    final results = <Model?>[];
 
     for (final operation in operations) {
       final ref = operation.model!.ref!;
