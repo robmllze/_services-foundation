@@ -158,4 +158,18 @@ final class JobUtils {
         ),
     };
   }
+
+  //
+  //
+  //
+
+  static Future<void> dbSetJobStatus({
+    required ServiceEnvironment serviceEnvironment,
+    required String jobPid,
+    required JobStatusType newStatus,
+  }) async {
+    final jobPubRef = Schema.jobPubsRef(jobPid: jobPid);
+    final update = ModelJobPub(ref: jobPubRef, status: newStatus);
+    await serviceEnvironment.databaseServiceBroker.mergeModel(update);
+  }
 }
