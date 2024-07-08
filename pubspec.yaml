@@ -30,7 +30,7 @@ dependencies:
   xyz_gen_annotations: ^0.48.3
   xyz_pod: ^0.36.0
   xyz_utils: ^0.62.0
-  xyz_device_info: ^0.5.0
+  xyz_device_info: ^0.6.0
 
   cloud_firestore: ^5.0.0
   firebase_auth: ^5.0.0

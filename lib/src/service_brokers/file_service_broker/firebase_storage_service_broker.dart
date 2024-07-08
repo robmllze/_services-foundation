@@ -180,7 +180,7 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
       await this.databaseServiceBroker.mergeModel(
             PublicModel(
               ref: pubRef,
-              fileBook: {
+              fileEntries: {
                 fileId!: pendingUploadFile,
               },
             ),
@@ -191,7 +191,7 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
       await this.databaseServiceBroker.mergeModel(
             PublicModel(
               ref: pubRef,
-              fileBook: {
+              fileEntries: {
                 fileId: uploadedFile,
               },
             ),
@@ -229,7 +229,7 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
   }) async {
     final userPub =
         (await this.databaseServiceBroker.readModel(pubRef, PublicModel.fromJsonOrNull))!;
-    final file = userPub.fileBook?[fileId];
+    final file = userPub.fileEntries?[fileId];
     if (file != null) {
       final storagePath = file.storagePath!;
       final storageRef = this.firebaseStorage.ref(storagePath);
@@ -248,7 +248,7 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
   ) async {
     this.databaseServiceBroker.runTransaction((handler) async {
       final model = (await handler.read(pubRef, PublicModel.fromJsonOrNull))!;
-      final fileBook = model.fileBook;
+      final fileBook = model.fileEntries;
       if (fileBook == null) return;
       fileBook.remove(fileId);
       handler.update(model);

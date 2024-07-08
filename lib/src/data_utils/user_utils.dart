@@ -61,7 +61,7 @@ final class UserUtils {
       displayName: displayName,
       displayNameSearchable: displayName,
       email: email,
-      emailBook: {
+      emailEntries: {
         PRIMARY_EMAIL_ID: ModelEmailEntry(
           ref: primaryEmailRef,
           id: PRIMARY_EMAIL_ID,
