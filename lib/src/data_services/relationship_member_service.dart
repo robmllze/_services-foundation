@@ -69,11 +69,10 @@ class RelationshipMemberService<TModel extends Model,
   @protected
   Future<void> refresh() async {
     final relationshipPool = this.relationshipService.pValue.value?.where((e) {
-          final type = e.type;
-          return this.types.contains(type);
+          return this.types.contains(e.type);
         }) ??
         {};
-    final memberPids = RelationshipUtils.extractMemberPids(
+    final memberPids = RelationshipUtils.extractMemberPidsByPrefixes(
       relationshipPool: relationshipPool,
       memberPidPrefixes: this.memberPidPrefixes,
     );

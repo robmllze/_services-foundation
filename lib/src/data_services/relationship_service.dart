@@ -24,7 +24,11 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
     required super.limit,
     required Set<String> initialPids,
   })  : this._memberPids = initialPids,
-        super(ref: Schema.relationshipsRef());
+        super(ref: Schema.relationshipsRef()) {
+    this.pValue
+      ..addListener(() => this._removeObsoleteRelationships(eventServices))
+      ..addListener(() => this._removeObsoleteRelationships(messageEventServices));
+  }
 
   //
   //
@@ -36,16 +40,50 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
   Set<String> _memberPids;
 
   late final eventServices = RelationshipEventServices(
+    associatedRelationshipService: this,
     limit: 100,
     serviceEnvironment: this.serviceEnvironment,
     getRef: Schema.relationshipEventsRef,
   );
 
   late final messageEventServices = RelationshipEventServices(
+    associatedRelationshipService: this,
     limit: 20,
     serviceEnvironment: this.serviceEnvironment,
     getRef: Schema.relationshipMessageEventsRef,
   );
+
+  //
+  //
+  //
+
+  Future<void> _removeObsoleteRelationships(RelationshipEventServices eventServices) async {
+    final pEventServicePool = eventServices.pEventServicePool;
+    final relationships = this.pValue.value;
+    final relationshipIds = pEventServicePool.value.keys;
+    if (relationships != null) {
+      final activeRelationships = relationships.where((e) => relationshipIds.contains(e.id));
+      final obsoleteRelationships = activeRelationships.where((e) {
+        return e.isObsolete(); // || e.isArchivedBy();
+      });
+      if (obsoleteRelationships.isNotEmpty) {
+        final obsoleteRelationshipIds = obsoleteRelationships.map((e) => e.id);
+        await pEventServicePool.podOrNull!.update(
+          (e) => e
+            ..removeWhere((relationshipId, eventService) {
+              final isObsolete = obsoleteRelationshipIds.contains(relationshipId);
+              if (isObsolete) {
+                debugLog('Removed obsolete relationship: $relationshipId');
+                eventService.dispose();
+                return true;
+              } else {
+                return false;
+              }
+            }),
+        );
+      }
+    }
+  }
 
   //
   //

@@ -30,10 +30,10 @@ final class EventUtils {
   }) {
     return eventPool?.nullIfEmpty?.where(
           (e) {
-            if (topics.isNotEmpty && !topics.contains(e.topic)) {
+            if (topics.isNotEmpty &&
+                !topics.contains(TopicType.values.valueOf(e.contentType?.name))) {
               return false;
             }
-
             if (targetPid != null) {
               try {
                 if (e.isReadBy(targetPid)) {
@@ -241,23 +241,27 @@ final class EventUtils {
     required String senderPid,
     String? receiverPid,
     required DataRef eventsRef,
-    required Model body,
+    required ModelMessageContent message,
     required TopicType topic,
   }) async {
     await getSendEventOperation(
       senderPid: senderPid,
       receiverPid: receiverPid,
       eventsRef: eventsRef,
-      body: body,
+      content: message,
       topic: topic,
     ).execute(serviceEnvironment);
   }
+
+  //
+  //
+  //
 
   static CreateOrUpdateOperation getSendEventOperation({
     required String senderPid,
     String? receiverPid,
     required DataRef eventsRef,
-    required Model body,
+    required Model content,
     required TopicType topic,
   }) {
     final eventModel = ModelEvent(
@@ -271,8 +275,8 @@ final class EventUtils {
         registeredBy: senderPid,
         registeredAt: DateTime.now(),
       ),
-      body: DataModel(data: body.toJson()),
-      topic: topic,
+      content: DataModel(data: content.toJson()),
+      contentType: topic.toEnumModel(),
     );
     return CreateOrUpdateOperation(model: eventModel);
   }

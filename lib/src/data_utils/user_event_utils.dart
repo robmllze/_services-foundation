@@ -29,7 +29,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final body = ModelEventBody(
+    final message = ModelMessageContent(
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -41,7 +41,7 @@ final class UserEventUtils {
       receiverPid: receiverPid,
       senderPid: senderPid,
       serviceEnvironment: serviceEnvironment,
-      body: body,
+      message: message,
       topic: TopicType.CONNECTION_REQUEST,
     );
   }
@@ -56,7 +56,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final body = ModelEventBody(
+    final message = ModelMessageContent(
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -69,7 +69,7 @@ final class UserEventUtils {
       senderPid: senderPid,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.CONNECTION_REQUEST_ACCEPTED,
-      body: body,
+      message: message,
     );
   }
 
@@ -84,7 +84,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final body = ModelEventBody(
+    final message = ModelMessageContent(
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -97,7 +97,7 @@ final class UserEventUtils {
       senderPid: senderPid,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.CONNECTION_REQUEST_REJECTED,
-      body: body,
+      message: message,
     );
   }
 
@@ -112,7 +112,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final body = ModelEventBody(
+    final message = ModelMessageContent(
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -125,7 +125,7 @@ final class UserEventUtils {
       senderPid: senderPid,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.RELATIONSHIP_CHANGED,
-      body: body,
+      message: message,
     );
   }
 
@@ -140,7 +140,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final body = ModelEventBody(
+    final message = ModelMessageContent(
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -153,7 +153,7 @@ final class UserEventUtils {
       senderPid: senderPid,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.RELATIONSHIP_DISABLED,
-      body: body,
+      message: message,
     );
   }
 
@@ -168,7 +168,7 @@ final class UserEventUtils {
     required String receiverPid,
   }) async {
     final eventId = IdUtils.newEventId();
-    final body = ModelEventBody(
+    final message = ModelMessageContent(
       senderPid: senderPid,
       receiverPid: receiverPid,
     );
@@ -181,7 +181,7 @@ final class UserEventUtils {
       senderPid: senderPid,
       serviceEnvironment: serviceEnvironment,
       topic: TopicType.RELATIONSHIP_REMOVED,
-      body: body,
+      message: message,
     );
   }
 }

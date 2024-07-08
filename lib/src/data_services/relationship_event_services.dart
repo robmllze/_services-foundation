@@ -17,6 +17,7 @@ class RelationshipEventServices {
   //
   //
 
+  final RelationshipService associatedRelationshipService;
   final int? limit;
   final ServiceEnvironment serviceEnvironment;
   final DataRef Function({
@@ -29,6 +30,7 @@ class RelationshipEventServices {
   //
 
   RelationshipEventServices({
+    required this.associatedRelationshipService,
     required this.limit,
     required this.serviceEnvironment,
     required this.getRef,
@@ -49,6 +51,18 @@ class RelationshipEventServices {
   Future<void> add(Set<String> relationshipIdsToAdd) async {
     //final futureServicesToAdd = <Future<MapEntry<String, EventService>>>[];
     for (final relationshipId in relationshipIdsToAdd) {
+      // Skip obsolete relationships.
+      final relationship = this
+          .associatedRelationshipService
+          .pValue
+          .value!
+          .firstWhere((e) => e.id == relationshipId);
+      if (relationship.isObsolete()) {
+        debugLogStart(
+          'Skipped adding EventService. Relationship obsolete: $relationshipId ',
+        );
+        continue;
+      }
       final ref = this.getRef(relationshipId: relationshipId);
       final eventService = EventService(
         serviceEnvironment: serviceEnvironment,
@@ -57,6 +71,9 @@ class RelationshipEventServices {
       );
       await eventService.startService();
       await this._pEventServicePool.update((e) => e..[relationshipId] = eventService);
+      debugLogStart(
+        'Added EventService for relationship: $relationshipId',
+      );
       // TODO: Think about this line:
       //eventsService.pValue.addListener(this.pEventServicePool.refresh);
       // futureServicesToAdd.add(
@@ -67,8 +84,9 @@ class RelationshipEventServices {
       //     return MapEntry(relationshipId, eventService);
       //   }),
       // );
+
+      //final servicesToAdd = await Future.wait(futureServicesToAdd);
     }
-    //final servicesToAdd = await Future.wait(futureServicesToAdd);
   }
 
   //
@@ -86,7 +104,7 @@ class RelationshipEventServices {
                 if (remove) {
                   eventService.dispose();
                   debugLogStop(
-                    'Removed EventService for relationshipId: $relationshipId',
+                    'Removed EventService for relationship: $relationshipId',
                   );
                 }
                 return remove;

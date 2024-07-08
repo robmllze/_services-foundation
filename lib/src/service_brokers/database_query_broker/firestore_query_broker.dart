@@ -147,7 +147,11 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
 
     if (types.isNotEmpty) {
-      relationships = relationships.map((e) => e.where((e) => types.contains(e.type)));
+      relationships = relationships.map(
+        (e) => e.where(
+          (e) => types.contains(e.type),
+        ),
+      );
     }
     return relationships;
   }

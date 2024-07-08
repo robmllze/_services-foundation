@@ -40,7 +40,7 @@ final class RelationshipUtils {
       createdAt: createdAt,
       memberPids: memberPids,
       type: defType,
-      body: def,
+      content: def,
     );
 
     await serviceEnvironment.databaseServiceBroker.createModel(relationship);
@@ -64,7 +64,7 @@ final class RelationshipUtils {
       createdAt: createdAt,
       memberPids: memberPids,
       type: defType,
-      body: def,
+      content: def,
     );
     return CreateOperation(model: relationship);
   }
@@ -76,7 +76,7 @@ final class RelationshipUtils {
   static ModelRelationship newRelationship({
     required String createdBy,
     DateTime? createdAt,
-    DataModel? body,
+    DataModel? content,
     RelationshipType? type,
     String? newRelationshipId,
     Set<String>? memberPids,
@@ -92,7 +92,7 @@ final class RelationshipUtils {
       ),
       memberPids: {...?memberPids, createdBy},
       type: type,
-      body: body,
+      content: content,
     );
   }
 
@@ -103,8 +103,8 @@ final class RelationshipUtils {
   static Set<String> extractUserMemberPids({
     required ModelRelationship relationship,
   }) {
-    return relationship.extractMemberPids(
-      memberPidPrefixes: {
+    return relationship.extractMemberPidsByPrefixes(
+      {
         IdUtils.USER_PID_PREFIX,
       },
     );
@@ -117,8 +117,8 @@ final class RelationshipUtils {
   static Set<String> extractOrganizationMemberPids({
     required ModelRelationship relationship,
   }) {
-    return relationship.extractMemberPids(
-      memberPidPrefixes: {
+    return relationship.extractMemberPidsByPrefixes(
+      {
         IdUtils.ORGANIZATION_PID_PREFIX,
       },
     );
@@ -131,8 +131,8 @@ final class RelationshipUtils {
   static Set<String> extractProjectMemberPids({
     required ModelRelationship relationship,
   }) {
-    return relationship.extractMemberPids(
-      memberPidPrefixes: {
+    return relationship.extractMemberPidsByPrefixes(
+      {
         IdUtils.PROJECT_PID_PREFIX,
       },
     );
@@ -145,8 +145,8 @@ final class RelationshipUtils {
   static Set<String> extractJobMemberPids({
     required ModelRelationship relationship,
   }) {
-    return relationship.extractMemberPids(
-      memberPidPrefixes: {
+    return relationship.extractMemberPidsByPrefixes(
+      {
         IdUtils.JOB_PID_PREFIX,
       },
     );
@@ -156,14 +156,14 @@ final class RelationshipUtils {
   //
   //
 
-  static Set<String> extractMemberPids({
+  static Set<String> extractMemberPidsByPrefixes({
     required Iterable<ModelRelationship> relationshipPool,
     required Iterable<String> memberPidPrefixes,
   }) {
     final result = <String>{};
     for (final relationship in relationshipPool) {
-      final chunk = relationship.extractMemberPids(
-        memberPidPrefixes: memberPidPrefixes,
+      final chunk = relationship.extractMemberPidsByPrefixes(
+        memberPidPrefixes,
       );
       result.addAll(chunk);
     }
@@ -182,33 +182,6 @@ final class RelationshipUtils {
     );
     final result = Map.fromEntries(entries);
     return result;
-  }
-
-  //
-  //
-  //
-
-  static Future<void> dbDisableRelationship({
-    required ServiceEnvironment serviceEnvironment,
-    required String relationshipId,
-  }) async {
-    final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
-    final currentUserId = serviceEnvironment.currentUser?.id;
-    assert(currentUserId != null);
-    if (currentUserId != null) {
-      await serviceEnvironment.databaseServiceBroker.mergeModel(
-        ModelRelationship(
-          ref: relationshipRef,
-          id: relationshipId,
-          disabledRegs: [
-            ModelRegistration(
-              registeredBy: currentUserId,
-              registeredAt: DateTime.now(),
-            ),
-          ],
-        ),
-      );
-    }
   }
 
   //

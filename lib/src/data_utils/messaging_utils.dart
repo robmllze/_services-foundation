@@ -23,14 +23,13 @@ final class MessagingUtils {
   //
   //
 
-  static ModelEventBody? getMessageDefFromEvent(ModelEvent e) {
-    if (e.topic == TopicType.MESSAGE) {
-      final bodyData = e.body;
-      if (bodyData != null) {
-        final body = ModelEventBody.from(bodyData);
-        final message = body.message;
+  static ModelMessageContent? getMessageContentFromEvent(ModelEvent e) {
+    if (e.contentType == TopicType.MESSAGE.toEnumModel()) {
+      if (e.content != null) {
+        final content = ModelMessageContent.from(e.content);
+        final message = content.message;
         if (message != null && message.isNotEmpty) {
-          return body;
+          return content;
         }
       }
     }
