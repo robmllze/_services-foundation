@@ -30,15 +30,27 @@ final class EventUtils {
   }) {
     return eventPool?.nullIfEmpty?.where(
           (e) {
-            final tests = [
-              if (topics.isNotEmpty) topics.contains(e.topic),
-              if (targetPid != null) ...[
-                e.isHiddenBy(targetPid),
-                e.isArchivedBy(targetPid),
-                e.isReadBy(targetPid),
-              ],
-            ];
-            return tests.isEmpty || !tests.contains(false);
+            if (topics.isNotEmpty && !topics.contains(e.topic)) {
+              return false;
+            }
+
+            if (targetPid != null) {
+              try {
+                if (e.isReadBy(targetPid)) {
+                  return false;
+                }
+                if (e.isArchivedBy(targetPid)) {
+                  return false;
+                }
+                if (e.isHiddenBy(targetPid)) {
+                  return false;
+                }
+              } catch (_) {
+                return false;
+              }
+            }
+
+            return true;
           },
         ).length ??
         0;
