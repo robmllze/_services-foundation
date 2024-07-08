@@ -43,7 +43,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     final collectionPath = Schema.userPubsRef().collectionPath!;
     final collection = this._firestore.collection(collectionPath);
     // NB: Emails and searchable names must be lowercase for this function to work.
-    final searchableQuery = partialNameOrEmail.toLowerCase();
+    final searchableQuery = partialNameOrEmail.toQueryable().queryableValueField;
     // Text length must be at least 2 to start the query.
     if (searchableQuery.length > 2) {
       // Get the text with the last character incremented.
@@ -196,10 +196,11 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     }
     final collectionPath = Schema.filesRef().collectionPath!;
     final collection = this._firestore.collection(collectionPath);
+    const FIELD = '${ModelFileEntry.K_CREATED_G_REG}.${ModelRegistration.K_REGISTERED_BY}';
     final snapshots = collection
         .baseQuery(limit: limit)
         .where(
-          '${ModelFileEntry.K_CREATED_G_REG}.${ModelRegistration.K_REGISTERED_BY}',
+          FIELD,
           whereIn: createdByAny,
         )
         .snapshots();
