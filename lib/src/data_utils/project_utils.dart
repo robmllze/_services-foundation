@@ -63,8 +63,7 @@ final class ProjectUtils {
         registeredAt: createdAt,
       ),
       id: projectPid,
-      displayName: displayName,
-      displayNameSearchable: displayName.toLowerCase(),
+      displayName: displayName.toQueryable(),
       description: description,
     );
     final relationshipId = IdUtils.newRelationshipId();

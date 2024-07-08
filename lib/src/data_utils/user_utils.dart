@@ -41,7 +41,7 @@ final class UserUtils {
     final userPubRef = Schema.userPubsRef(userPid: userPid);
     const PRIMARY_EMAIL_ID = 'primary';
     final primaryEmailRef = userPubRef + Schema.emailsRef(emailId: PRIMARY_EMAIL_ID);
-    final emailSearchable = email.trim().toLowerCase();
+    final queryableEmail = email.toQueryable();
     final user = ModelUser(
       ref: userRef,
       createdGReg: ModelRegistration(
@@ -59,14 +59,13 @@ final class UserUtils {
         registeredAt: createdAt,
       ),
       id: userPid,
-      displayName: displayName,
-      displayNameSearchable: displayName,
-      emailSearchable: emailSearchable,
+      displayName: displayName.toQueryable(),
+      email: queryableEmail,
       emailEntries: {
         PRIMARY_EMAIL_ID: ModelEmailEntry(
           ref: primaryEmailRef,
           id: PRIMARY_EMAIL_ID,
-          emailSearchable: emailSearchable,
+          email: queryableEmail,
           createdGReg: ModelRegistration(
             registeredBy: userPid,
             registeredAt: createdAt,

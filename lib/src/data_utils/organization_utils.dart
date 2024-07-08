@@ -62,8 +62,7 @@ final class OrganizationUtils {
         registeredAt: createdAt,
       ),
       description: description,
-      displayName: displayName,
-      displayNameSearchable: displayName.toLowerCase(),
+      displayName: displayName.toQueryable(),
       id: organizationPid,
     );
 

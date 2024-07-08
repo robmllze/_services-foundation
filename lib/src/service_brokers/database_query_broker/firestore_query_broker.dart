@@ -50,29 +50,32 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
       final b = searchableQuery.substring(0, searchableQuery.length - 1) +
           String.fromCharCode(searchableQuery.characters.last.codeUnits[0] + 1);
       // Get all user models whose emails start with the inputted text [a].
+      const EMAIL_FIELD = '${ModelUserPub.K_EMAIL}.${ModelQueryable.K_QUERYABLE_VALUE}';
       final stream1 = collection
           .baseQuery(limit: limit)
           // Where the email contains the query.
           .where(
-            ModelUserPub.K_EMAIL_SEARCHABLE,
+            EMAIL_FIELD,
             isGreaterThanOrEqualTo: searchableQuery,
           )
           .where(
-            ModelUserPub.K_EMAIL_SEARCHABLE,
+            EMAIL_FIELD,
             isLessThan: b,
           )
           .snapshots()
           .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
       // Get all user models whose searchable names start with the inputted text [a].
+      const K_DISPLAY_NAME_FIELD =
+          '${ModelUserPub.K_DISPLAY_NAME}.${ModelQueryable.K_QUERYABLE_VALUE}';
       final stream2 = collection
           .baseQuery(limit: limit)
           // Where the searchable name contains the query.
           .where(
-            ModelUserPub.K_DISPLAY_NAME_SEARCHABLE,
+            K_DISPLAY_NAME_FIELD,
             isGreaterThanOrEqualTo: searchableQuery,
           )
           .where(
-            ModelUserPub.K_DISPLAY_NAME_SEARCHABLE,
+            K_DISPLAY_NAME_FIELD,
             isLessThan: b,
           )
           .snapshots()

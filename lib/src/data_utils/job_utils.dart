@@ -62,8 +62,7 @@ final class JobUtils {
         registeredAt: createdAt,
       ),
       description: description,
-      displayName: displayName,
-      displayNameSearchable: displayName.toLowerCase(),
+      displayName: displayName.toQueryable(),
       id: jobPid,
     );
     final relationshipId = IdUtils.newRelationshipId();
