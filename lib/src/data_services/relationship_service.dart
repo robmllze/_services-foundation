@@ -19,11 +19,17 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
   //
   //
 
+  Set<String> _memberPids;
+
+  //
+  //
+  //
+
   RelationshipService({
     required super.serviceEnvironment,
     required super.limit,
-    required Set<String> initialPids,
-  })  : this._memberPids = initialPids,
+    required Set<String> memberPids,
+  })  : this._memberPids = memberPids,
         super(ref: Schema.relationshipsRef()) {}
 
   //
@@ -33,9 +39,6 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
   var _currentRelationshipIds = <String>{};
 
   final PodListenable<Iterable<ModelRelationship>> pObsolete = Pod<Iterable<ModelRelationship>>([]);
-
-  Set<String> get memberPids => this._memberPids;
-  Set<String> _memberPids;
 
   late final eventServices = RelationshipEventServices(
     associatedRelationshipService: this,

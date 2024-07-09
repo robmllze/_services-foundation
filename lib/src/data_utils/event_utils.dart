@@ -60,6 +60,58 @@ final class EventUtils {
   //
   //
 
+  static Future<void> sendMessage({
+    required String message,
+    required String senderPid,
+    required String relationshipId,
+    required FunctionsServiceInterface functionsServiceBroker,
+    required RelationshipService relationshipService,
+  }) async {
+    if (message.trim().isNotEmpty) {
+      final newEventId = IdUtils.newEventId();
+      final eventService =
+          relationshipService.messageEventServices.pEventServicePool.value[relationshipId]!;
+      final eventsRef = Schema.relationshipMessageEventsRef(
+        relationshipId: relationshipId,
+        eventId: newEventId,
+      );
+      final eventModel = ModelEvent(
+        ref: eventsRef,
+        id: eventsRef.id!,
+        memberPids: {
+          senderPid,
+        },
+        createdGReg: ModelRegistration(
+          registeredBy: senderPid,
+          registeredAt: DateTime.now(),
+        ),
+        content: DataModel.from(
+          ModelMessageContent(
+            senderPid: senderPid,
+            relationshipId: relationshipId,
+            message: message,
+          ),
+        ),
+        contentType: TopicType.MESSAGE.toEnumModel(),
+      );
+      await Future.wait(
+        [
+          eventService.addEvent(eventModel),
+          functionsServiceBroker.sendMessage(
+            senderPid: senderPid,
+            relationshipId: relationshipId,
+            message: message,
+            newEventId: newEventId,
+          ),
+        ],
+      );
+    }
+  }
+
+  //
+  //
+  //
+
   static Future<void> archiveEvent({
     required ServiceEnvironment serviceEnvironment,
     required String registeredBy,
