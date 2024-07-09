@@ -32,7 +32,7 @@ final class EventService extends CollectionServiceInterface<ModelEvent> {
   //
 
   Future<void> addEvent(ModelEvent event) async {
-    await this.pValue.podOrNull?.update((e) => [...?e, event]);
+    return Pod.cast(this.pValue).update((e) => [...?e, event]);
   }
 
   //
@@ -40,7 +40,7 @@ final class EventService extends CollectionServiceInterface<ModelEvent> {
   //
 
   Future<void> removeEvent(String eventId) async {
-    await this.pValue.podOrNull?.update(
+    await Pod.cast(this.pValue).update(
       (e) {
         if (e != null) {
           return List.of(e)..removeWhere((e) => e.id == eventId);

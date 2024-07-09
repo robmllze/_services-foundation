@@ -64,10 +64,10 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
         .streamModel(this.sessionRef, ModelAuthUser.fromJsonOrNull)
         .listen((authUser) async {
       if (authUser != null) {
-        await super.pCurrentUser.podOrNull!.set(authUser);
+        await  Pod.cast(this.pCurrentUser).set(authUser);
         super.onLogin?.call(authUser);
       } else {
-        await super.pCurrentUser.podOrNull!.set(null);
+        await  Pod.cast(this.pCurrentUser).set(null);
         super.onLogout?.call();
       }
     });
@@ -127,7 +127,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
       throw Exception('Invalid password.');
     }
     await this.hiveServiceBroker.updateModel(authUser);
-    await this.pCurrentUser.podOrNull!.set(authUser);
+    await  Pod.cast(this.pCurrentUser).set(authUser);
   }
 
   //
@@ -142,7 +142,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
     await this.hiveServiceBroker.deleteModel(
           this.sessionRef,
         );
-    await this.pCurrentUser.podOrNull!.set(null);
+    await  Pod.cast(this.pCurrentUser).set(null);
   }
 
   //
@@ -176,7 +176,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
       password: password,
     );
     await this.hiveServiceBroker.createModel(authUser);
-    await this.pCurrentUser.podOrNull!.set(authUser);
+    await  Pod.cast(this.pCurrentUser).set(authUser);
   }
 
   //
@@ -202,7 +202,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
     );
 
     await this.hiveServiceBroker.updateModel(updatedUser);
-    await this.pCurrentUser.podOrNull!.set(updatedUser);
+    await  Pod.cast(this.pCurrentUser).set(updatedUser);
   }
 
   //

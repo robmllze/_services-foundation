@@ -92,13 +92,13 @@ class LocationService {
 
     if (this.authorizationStatusGrantedSnapshot()) {
       currentLocation = (await Geolocator.getCurrentPosition()).toLocationModel();
-      await this.pCurrentLocation.podOrNull!.set(currentLocation);
+      await Pod.cast(this.pCurrentLocation).set(currentLocation);
       this._locationSubscription = pollingStream(
         () async {
           final lastLocation = this.pCurrentLocation.value;
           final currentLocation = (await Geolocator.getCurrentPosition()).toLocationModel();
           if (lastLocation == null) {
-            await this.pCurrentLocation.podOrNull!.set(currentLocation);
+            await Pod.cast(this.pCurrentLocation).set(currentLocation);
             return currentLocation;
           } else {
             final distance = LocationUtils().calculateHavershire3DDistance(
@@ -106,7 +106,7 @@ class LocationService {
               location2: currentLocation.components!,
             );
             if (distance > this.sensitivityDistance) {
-              await this.pCurrentLocation.podOrNull!.set(currentLocation);
+              await Pod.cast(this.pCurrentLocation).set(currentLocation);
               return currentLocation;
             }
           }

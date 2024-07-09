@@ -49,44 +49,21 @@ class RelationshipEventServices {
   //
 
   Future<void> add(Set<String> relationshipIdsToAdd) async {
-    //final futureServicesToAdd = <Future<MapEntry<String, EventService>>>[];
+    final temp = <Future<MapEntry<String, EventService>>>[];
     for (final relationshipId in relationshipIdsToAdd) {
-      // Skip obsolete relationships.
-      final relationship = this
-          .associatedRelationshipService
-          .pValue
-          .value!
-          .firstWhere((e) => e.id == relationshipId);
-      if (relationship.isObsolete()) {
-        debugLogStart(
-          'Skipped adding EventService. Relationship obsolete: $relationshipId ',
-        );
-        continue;
-      }
       final ref = this.getRef(relationshipId: relationshipId);
       final eventService = EventService(
         serviceEnvironment: serviceEnvironment,
         ref: ref,
         limit: this.limit,
       );
-      await eventService.startService();
-      await this._pEventServicePool.update((e) => e..[relationshipId] = eventService);
+      temp.add(eventService.startService().then((_) => MapEntry(relationshipId, eventService)));
       debugLogStart(
         'Added EventService for relationship: $relationshipId',
       );
-      // TODO: Think about this line:
-      //eventsService.pValue.addListener(this.pEventServicePool.refresh);
-      // futureServicesToAdd.add(
-      //   eventService.startService().then((_) {
-      //     debugLogStart(
-      //       'Added EventService for relationshipId: $relationshipId',
-      //     );
-      //     return MapEntry(relationshipId, eventService);
-      //   }),
-      // );
-
-      //final servicesToAdd = await Future.wait(futureServicesToAdd);
     }
+    final entries = await Future.wait(temp);
+    await this._pEventServicePool.update((e) => e..addEntries(entries));
   }
 
   //

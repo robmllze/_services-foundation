@@ -48,10 +48,10 @@ final class FirebaseAuthServiceBroker extends AuthServiceInterface {
     this._authStateChangesSubscription =
         this._firebaseAuth.authStateChanges().map((e) => e?.toAuthUser()).listen((authUser) async {
       if (authUser != null) {
-        await super.pCurrentUser.podOrNull!.set(authUser);
+        await Pod.cast(this.pCurrentUser).set(authUser);
         super.onLogin?.call(authUser);
       } else {
-        await super.pCurrentUser.podOrNull!.set(null);
+        await Pod.cast(this.pCurrentUser).set(null);
         super.onLogout?.call();
       }
     });
@@ -122,7 +122,7 @@ final class FirebaseAuthServiceBroker extends AuthServiceInterface {
     required Future<void> Function() cleanup,
   }) async {
     await cleanup();
-    await this.pCurrentUser.podOrNull!.set(null);
+    await  Pod.cast(this.pCurrentUser).set(null);
     await this._firebaseAuth.signOut();
   }
 

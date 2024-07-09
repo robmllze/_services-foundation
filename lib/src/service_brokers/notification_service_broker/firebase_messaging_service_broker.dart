@@ -212,12 +212,12 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
         if (settings.authorizationStatus != AuthorizationStatus.authorized) {
           settings = await this.firebaseMessaging.requestPermission();
         }
-        await this.pAuthorizationStatus.podOrNull!.set(settings.authorizationStatus);
+        await Pod.cast(this.pAuthorizationStatus).set(settings.authorizationStatus);
       } else {
-        await this.pAuthorizationStatus.podOrNull!.set(AuthorizationStatus.notDetermined);
+        await Pod.cast(this.pAuthorizationStatus).set(AuthorizationStatus.notDetermined);
       }
     } catch (_) {
-      await this.pAuthorizationStatus.podOrNull!.set(AuthorizationStatus.notDetermined);
+      await Pod.cast(this.pAuthorizationStatus).set(AuthorizationStatus.notDetermined);
     }
     return this.pAuthorizationStatus.value;
   }

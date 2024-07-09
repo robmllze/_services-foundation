@@ -24,17 +24,15 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
     required super.limit,
     required Set<String> initialPids,
   })  : this._memberPids = initialPids,
-        super(ref: Schema.relationshipsRef()) {
-    this.pValue
-      ..addListener(() => this._removeObsoleteRelationships(eventServices))
-      ..addListener(() => this._removeObsoleteRelationships(messageEventServices));
-  }
+        super(ref: Schema.relationshipsRef()) {}
 
   //
   //
   //
 
   var _currentRelationshipIds = <String>{};
+
+  final PodListenable<Iterable<ModelRelationship>> pObsolete = Pod<Iterable<ModelRelationship>>([]);
 
   Set<String> get memberPids => this._memberPids;
   Set<String> _memberPids;
@@ -52,38 +50,6 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
     serviceEnvironment: this.serviceEnvironment,
     getRef: Schema.relationshipMessageEventsRef,
   );
-
-  //
-  //
-  //
-
-  Future<void> _removeObsoleteRelationships(RelationshipEventServices eventServices) async {
-    final pEventServicePool = eventServices.pEventServicePool;
-    final relationships = this.pValue.value;
-    final relationshipIds = pEventServicePool.value.keys;
-    if (relationships != null) {
-      final activeRelationships = relationships.where((e) => relationshipIds.contains(e.id));
-      final obsoleteRelationships = activeRelationships.where((e) {
-        return e.isObsolete(); // || e.isArchivedBy();
-      });
-      if (obsoleteRelationships.isNotEmpty) {
-        final obsoleteRelationshipIds = obsoleteRelationships.map((e) => e.id);
-        await pEventServicePool.podOrNull!.update(
-          (e) => e
-            ..removeWhere((relationshipId, eventService) {
-              final isObsolete = obsoleteRelationshipIds.contains(relationshipId);
-              if (isObsolete) {
-                debugLog('Removed obsolete relationship: $relationshipId');
-                eventService.dispose();
-                return true;
-              } else {
-                return false;
-              }
-            }),
-        );
-      }
-    }
-  }
 
   //
   //
@@ -112,7 +78,8 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
 
   @override
   void onData(Iterable<ModelRelationship> data) async {
-    final updatedRelationshipIds = data.map((rel) => rel.id).nonNulls.toSet();
+    final updatedRelationshipIds =
+        data.where((e) => !e.isObsolete()).map((rel) => rel.id).nonNulls.toSet();
     final equals = listEquals(
       updatedRelationshipIds.toList()..sort(),
       this._currentRelationshipIds.toList()..sort(),
@@ -162,10 +129,19 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
 
   @override
   Stream<Iterable<ModelRelationship>> stream([int? limit]) {
-    return this.serviceEnvironment.databaseQueryBroker.streamRelationshipsForAnyMember(
+    return this
+        .serviceEnvironment
+        .databaseQueryBroker
+        .streamRelationshipsForAnyMember(
           memberPids: this._memberPids,
           limit: limit,
-        );
+        )
+        .asyncMap((e) async {
+      final obsolete = e.where((e) => e.isObsolete());
+      await Pod.cast(this.pObsolete).set(obsolete);
+      final notObsolete = e.where((e) => !e.isObsolete());
+      return notObsolete;
+    });
   }
 
   //
