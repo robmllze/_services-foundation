@@ -111,7 +111,7 @@ final class JobUtils {
     pids = temp.toSet();
 
     // Get all relationships associated with jobPids (JOB_AND_PROJECT, JOB_AND_USER).
-    final associatedRelationshipPool = relationshipPool.filterByAnyMember(memberPids: pids).toSet();
+    final associatedRelationshipPool = relationshipPool.filterInAnyMember(memberPids: pids).toSet();
 
     // Fetch all associated PIDS.
     final jobIds = (await serviceEnvironment.databaseQueryBroker.streamByWhereInElements<ModelJob>(

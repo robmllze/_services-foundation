@@ -28,32 +28,39 @@ final class EventUtils {
     required String? targetPid,
     Set<TopicType> topics = const {},
   }) {
-    return eventPool?.nullIfEmpty?.where(
-          (e) {
-            if (topics.isNotEmpty &&
-                !topics.contains(TopicType.values.valueOf(e.contentType?.name))) {
-              return false;
-            }
-            if (targetPid != null) {
-              try {
-                if (e.isReadBy(targetPid)) {
-                  return false;
-                }
-                if (e.isArchivedBy(targetPid)) {
-                  return false;
-                }
-                if (e.isHiddenBy(targetPid)) {
-                  return false;
-                }
-              } catch (_) {
-                return false;
-              }
-            }
+    if (targetPid == null || targetPid.isEmpty) return 0;
+    if (eventPool == null || eventPool.isEmpty) return 0;
+    return eventPool.where(
+      (e) {
+        // 1. Don't count events created by the target user.
+        if (e.createdGReg?.registeredBy == targetPid) {
+          return false;
+        }
 
-            return true;
-          },
-        ).length ??
-        0;
+        // 2. Don't count  events that are not of the specified topics.
+        if (topics.isNotEmpty && !topics.contains(TopicType.values.valueOf(e.contentType?.name))) {
+          return false;
+        }
+
+        // 3. Don't count  events that are read, archived, or hidden by the target user.
+        try {
+          if (e.isReadBy(targetPid)) {
+            return false;
+          }
+          if (e.isArchivedBy(targetPid)) {
+            return false;
+          }
+          if (e.isHiddenBy(targetPid)) {
+            return false;
+          }
+        } catch (_) {
+          return false;
+        }
+
+        // 4. Count any other events.
+        return true;
+      },
+    ).length;
   }
 
   //

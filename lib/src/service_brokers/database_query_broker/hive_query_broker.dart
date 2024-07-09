@@ -37,7 +37,7 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
           ModelUserPub.fromJsonOrNull,
         );
     stream = stream.map((e) {
-      return e.filterByPartialNameOrEmail(partialNameOrEmail: partialNameOrEmail);
+      return e.filterInPartialNameOrEmail(partialNameOrEmail: partialNameOrEmail);
     });
     if (limit != null) {
       stream = stream.map((e) => e.take(limit));
@@ -85,7 +85,7 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
           ModelRelationship.fromJsonOrNull,
         );
     stream = stream.map((e) {
-      return e.filterByAnyMember(memberPids: memberPids).filterByDefType(types: types);
+      return e.filterInAnyMember(memberPids: memberPids).filterInTypes(types: types);
     });
     if (limit != null) {
       stream = stream.map((e) => e.take(limit));
@@ -108,7 +108,7 @@ final class HiveQueryBroker extends DatabaseQueryInterface {
           ModelRelationship.fromJsonOrNull,
         );
     stream = stream.map((e) {
-      return e.filterByEveryMember(memberPids: memberPids).filterByDefType(types: types);
+      return e.filterInEveryMember(memberPids: memberPids).filterInTypes(types: types);
     });
     if (limit != null) {
       stream = stream.map((e) => e.take(limit));

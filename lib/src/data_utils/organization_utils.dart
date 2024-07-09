@@ -112,7 +112,7 @@ final class OrganizationUtils {
     pids = temp;
 
     // Get all relationships associated with organizationPids (ORGANIZATION_AND_USER, ORGANIZATION_AND_PROJECT).
-    final associatedRelationshipPool = relationshipPool.filterByAnyMember(memberPids: pids).toSet();
+    final associatedRelationshipPool = relationshipPool.filterInAnyMember(memberPids: pids).toSet();
 
     // Get all member pids associated with organizationPids, including user an project pids.
     final organizationAssociatedMemberPids = associatedRelationshipPool.allMemberPids();
