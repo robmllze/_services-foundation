@@ -128,7 +128,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEventFields.archivedRegs.name,
+      regsKey: ModelEventFieldNames.archivedRegs,
       eventsRef: eventsRef,
       enabled: enabled,
     );
@@ -147,7 +147,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEventFields.hiddenRegs.name,
+      regsKey: ModelEventFieldNames.hiddenRegs,
       eventsRef: eventsRef,
       enabled: enabled,
     );
@@ -166,7 +166,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEventFields.likedRegs.name,
+      regsKey: ModelEventFieldNames.likedRegs,
       eventsRef: eventsRef,
       enabled: enabled,
     );
@@ -185,7 +185,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEventFields.readRegs.name,
+      regsKey: ModelEventFieldNames.readRegs,
       eventsRef: eventsRef,
       enabled: enabled,
     );
@@ -204,7 +204,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEventFields.receivedRegs.name,
+      regsKey: ModelEventFieldNames.receivedRegs,
       eventsRef: eventsRef,
       enabled: enabled,
     );

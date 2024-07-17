@@ -118,7 +118,7 @@ final class JobUtils {
           elements: pids,
           collectionRef: Schema.jobsRef(),
           fromJsonOrNull: ModelJob.fromJsonOrNull,
-          elementKeys: {ModelJobFields.pid.name},
+          elementKeys: {ModelJobFieldNames.pid},
         ).firstOrNull)
             ?.map((e) => e.id)
             .nonNulls

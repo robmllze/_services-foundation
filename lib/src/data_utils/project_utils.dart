@@ -127,7 +127,7 @@ final class ProjectUtils {
               elements: pids,
               collectionRef: Schema.projectsRef(),
               fromJsonOrNull: ModelProject.fromJsonOrNull,
-              elementKeys: {ModelProjectFields.pid.name},
+              elementKeys: {ModelProjectFieldNames.pid},
             ).firstOrNull)
                 ?.map((e) => e.id)
                 .nonNulls

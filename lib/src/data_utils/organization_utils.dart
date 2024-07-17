@@ -126,7 +126,7 @@ final class OrganizationUtils {
               elements: pids,
               collectionRef: Schema.organizationsRef(),
               fromJsonOrNull: ModelOrganization.fromJsonOrNull,
-              elementKeys: {ModelOrganizationFields.pid.name},
+              elementKeys: {ModelOrganizationFieldNames.pid},
             ).firstOrNull)
                 ?.map((e) => e.id)
                 .nonNulls

@@ -50,33 +50,33 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
       final b = searchableQuery.substring(0, searchableQuery.length - 1) +
           String.fromCharCode(searchableQuery.characters.last.codeUnits[0] + 1);
       // Get all user models whose emails start with the inputted text [a].
-      final emailField =
-          '${ModelUserPubFields.email.name}.${ModelQueryableFields.queryableValue.name}';
+      const EMAIL_FIELD =
+          '${ModelUserPubFieldNames.email}.${ModelQueryableFieldNames.queryableValue}';
       final stream1 = collection
           .baseQuery(limit: limit)
           // Where the email contains the query.
           .where(
-            emailField,
+            EMAIL_FIELD,
             isGreaterThanOrEqualTo: searchableQuery,
           )
           .where(
-            emailField,
+            EMAIL_FIELD,
             isLessThan: b,
           )
           .snapshots()
           .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
       // Get all user models whose searchable names start with the inputted text [a].
-      final displayNameField =
-          '${ModelUserPubFields.displayName.name}.${ModelQueryableFields.queryableValue.name}';
+      const DISPLAY_NAME_FIELDS =
+          '${ModelUserPubFieldNames.displayName}.${ModelQueryableFieldNames.queryableValue}';
       final stream2 = collection
           .baseQuery(limit: limit)
           // Where the searchable name contains the query.
           .where(
-            displayNameField,
+            DISPLAY_NAME_FIELDS,
             isGreaterThanOrEqualTo: searchableQuery,
           )
           .where(
-            displayNameField,
+            DISPLAY_NAME_FIELDS,
             isLessThan: b,
           )
           .snapshots()
@@ -143,7 +143,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = this._firestore.collection(collectionPath);
     var relationships = collection
         .baseQuery(limit: limit)
-        .where(ModelRelationshipFields.memberPids.name, arrayContainsAny: pidSet)
+        .where(ModelRelationshipFieldNames.memberPids, arrayContainsAny: pidSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
 
@@ -176,7 +176,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = this._firestore.collection(collectionPath);
     var relationships = collection
         .baseQuery(limit: limit)
-        .where(ModelRelationshipFields.memberPids.name, arrayContains: pidSet)
+        .where(ModelRelationshipFieldNames.memberPids, arrayContains: pidSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
     if (types.isNotEmpty) {
@@ -201,12 +201,12 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     }
     final collectionPath = Schema.filesRef().collectionPath!;
     final collection = this._firestore.collection(collectionPath);
-    final field =
-        '${ModelFileEntryFields.createdGReg.name}.${ModelRegistrationFields.registeredBy.name}';
+    final FIELD =
+        '${ModelFileEntryFieldNames.createdGReg}.${ModelRegistrationFieldNames.registeredBy}';
     final snapshots = collection
         .baseQuery(limit: limit)
         .where(
-          field,
+          FIELD,
           whereIn: createdByAny,
         )
         .snapshots();

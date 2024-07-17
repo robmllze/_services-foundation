@@ -268,9 +268,9 @@ final class RelationshipUtils {
     final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
     final update = Model(
       {
-        ModelRelationshipFields.ref.name: relationshipRef.toJson(),
+        ModelRelationshipFieldNames.ref: relationshipRef.toJson(),
         // TODO: DO NOT USE FIREBASE FIELD VALUES!!!
-        ModelRelationshipFields.memberPids.name: FieldValue.arrayRemove(memberPids.toList()),
+        ModelRelationshipFieldNames.memberPids: FieldValue.arrayRemove(memberPids.toList()),
       },
     );
     return UpdateOperation(model: update);
