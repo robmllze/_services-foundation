@@ -77,7 +77,7 @@
 //   Future<void> createModel<TModel extends Model>(TModel model) async {
 //     final ref = model.ref!;
 //     final documentPath = ref.docPath;
-//     final existingModel = await this.readModel(ref, DataModel.fromJsonOrNull);
+//     final existingModel = await this.readModel(ref, Model.fromJsonOrNull);
 //     if (existingModel == null) {
 //       final modelString = model.toJsonString();
 //       await this.sharedPreferences.setString(documentPath, modelString);

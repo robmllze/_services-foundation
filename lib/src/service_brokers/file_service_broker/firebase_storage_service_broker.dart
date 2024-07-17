@@ -131,7 +131,11 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
       await this.databaseServiceBroker.createModel(pendingUploadFile);
       final task = await storageRef.putData(file.bytes!);
       final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
-      final uploadedFile = ModelFileEntry.of(pendingUploadFile)..downloadUrl = downloadUrl;
+      final uploadedFile = ModelFileEntry.of(pendingUploadFile).copyWith(
+        ModelFileEntry(
+          downloadUrl: downloadUrl,
+        ),
+      );
       await this.databaseServiceBroker.updateModel(uploadedFile);
       return uploadedFile;
     }();
@@ -187,7 +191,8 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
           );
       final task = await storageRef.putData(file.bytes!);
       final downloadUrl = Uri.tryParse(await task.ref.getDownloadURL());
-      final uploadedFile = ModelFileEntry.of(pendingUploadFile)..downloadUrl = downloadUrl;
+      final uploadedFile =
+          ModelFileEntry.of(pendingUploadFile).copyWith(ModelFileEntry(downloadUrl: downloadUrl));
       await this.databaseServiceBroker.mergeModel(
             PublicModel(
               ref: pubRef,

@@ -233,9 +233,11 @@ final class HiveServiceBroker extends DatabaseServiceInterface {
         if (model != null) {
           if (!documents.contains(ref)) {
             documents.add(ref);
-            model.documents = documents;
-            final data = model.toJson();
-            await box.putData(data);
+            final newModel = model.copyWith(
+              ModelDataCollection.c3(documents: documents),
+            );
+            final newData = newModel.toJson();
+            await box.putData(newData);
           }
         }
       },
@@ -295,7 +297,7 @@ final class HiveServiceBroker extends DatabaseServiceInterface {
   Future<bool> _modelExists<TModel extends Model>(TModel model) async {
     final readModel = await this.readModel(
       model.ref!,
-      DataModel.fromJsonOrNull,
+      Model.fromJson,
     );
     final readModelData = readModel?.toJson();
     return readModelData != null && readModelData.isNotEmpty;
@@ -320,9 +322,11 @@ final class HiveServiceBroker extends DatabaseServiceInterface {
         if (model != null) {
           if (documents.contains(ref)) {
             documents.remove(ref);
-            model.documents = documents;
-            final data = model.toJson();
-            await box.putData(data);
+            final newModel = model.copyWith(
+              ModelDataCollection.c3(documents: documents),
+            );
+            final newData = newModel.toJson();
+            await box.putData(newData);
           }
         }
       },
@@ -362,7 +366,7 @@ final class HiveServiceBroker extends DatabaseServiceInterface {
       final ref = operation.model!.ref!;
       // Read.
       if (operation.read) {
-        await broker.read(ref, DataModel.fromJsonOrNull);
+        await broker.read(ref, Model.fromJson);
         continue;
       }
 

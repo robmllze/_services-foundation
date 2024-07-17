@@ -112,7 +112,7 @@ final class FirestoreServiceBroker extends DatabaseServiceInterface {
     final modelRef = this.firestore.doc(documentPath);
     final modelData = model.toJson();
     await modelRef.set(modelData, SetOptions(merge: false));
-  } 
+  }
 
   //
   //
@@ -196,7 +196,7 @@ final class FirestoreServiceBroker extends DatabaseServiceInterface {
       final ref = operation.model!.ref!;
       // Read.
       if (operation.read) {
-        await broker.read(ref, DataModel.fromJsonOrNull);
+        await broker.read(ref, Model.fromJson);
         continue;
       }
 

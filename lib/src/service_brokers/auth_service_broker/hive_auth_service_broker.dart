@@ -61,13 +61,13 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
 
     this
         .hiveServiceBroker
-        .streamModel(this.sessionRef, ModelAuthUser.fromJsonOrNull)
+        .streamModel<ModelAuthUser>(this.sessionRef, ModelAuthUser.fromJsonOrNull)
         .listen((authUser) async {
       if (authUser != null) {
-        await  Pod.cast(this.pCurrentUser).set(authUser);
+        await Pod.cast(this.pCurrentUser).set(authUser);
         super.onLogin?.call(authUser);
       } else {
-        await  Pod.cast(this.pCurrentUser).set(null);
+        await Pod.cast(this.pCurrentUser).set(null);
         super.onLogout?.call();
       }
     });
@@ -127,7 +127,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
       throw Exception('Invalid password.');
     }
     await this.hiveServiceBroker.updateModel(authUser);
-    await  Pod.cast(this.pCurrentUser).set(authUser);
+    await Pod.cast(this.pCurrentUser).set(authUser);
   }
 
   //
@@ -142,7 +142,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
     await this.hiveServiceBroker.deleteModel(
           this.sessionRef,
         );
-    await  Pod.cast(this.pCurrentUser).set(null);
+    await Pod.cast(this.pCurrentUser).set(null);
   }
 
   //
@@ -176,7 +176,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
       password: password,
     );
     await this.hiveServiceBroker.createModel(authUser);
-    await  Pod.cast(this.pCurrentUser).set(authUser);
+    await Pod.cast(this.pCurrentUser).set(authUser);
   }
 
   //
@@ -193,7 +193,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
     if (currentUser == null) {
       throw Exception('User not found.');
     }
-    final updatedUser = currentUser.copyWith<ModelAuthUser>(
+    final updatedUser = currentUser.copyWith(
       ModelAuthUser(
         displayName: displayName,
         photoUrl: photoURL,
@@ -202,7 +202,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
     );
 
     await this.hiveServiceBroker.updateModel(updatedUser);
-    await  Pod.cast(this.pCurrentUser).set(updatedUser);
+    await Pod.cast(this.pCurrentUser).set(updatedUser);
   }
 
   //

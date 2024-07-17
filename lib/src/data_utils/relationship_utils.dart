@@ -29,7 +29,7 @@ final class RelationshipUtils {
     required ServiceEnvironment serviceEnvironment,
     required String createdBy,
     DateTime? createdAt,
-    DataModel? def,
+    Model? def,
     RelationshipType? defType,
     String? newRelationshipId,
     Set<String>? memberPids,
@@ -53,7 +53,7 @@ final class RelationshipUtils {
   static CreateOperation getCreateRelationshipOperation({
     required String createdBy,
     DateTime? createdAt,
-    DataModel? def,
+    Model? def,
     RelationshipType? defType,
     String? newRelationshipId,
     Set<String>? memberPids,
@@ -76,7 +76,7 @@ final class RelationshipUtils {
   static ModelRelationship newRelationship({
     required String createdBy,
     DateTime? createdAt,
-    DataModel? content,
+    Model? content,
     RelationshipType? type,
     String? newRelationshipId,
     Set<String>? memberPids,
@@ -221,8 +221,15 @@ final class RelationshipUtils {
     required ModelRelationship relationship,
     required Set<String> memberPids,
   }) async {
-    (relationship.memberPids ??= {}).addAll(memberPids);
-    await serviceEnvironment.databaseServiceBroker.updateModel(relationship);
+    final update = relationship.copyWith(
+      ModelRelationship(
+        memberPids: {
+          ...?relationship.memberPids,
+          ...memberPids,
+        },
+      ),
+    );
+    await serviceEnvironment.databaseServiceBroker.updateModel(update);
   }
 
   //
@@ -236,8 +243,15 @@ final class RelationshipUtils {
   }) async {
     final relationshipId = relationship.id;
     if (relationshipId != null) {
-      (relationship.memberPids ??= {}).removeAll(memberPids);
-      await serviceEnvironment.databaseServiceBroker.updateModel(relationship);
+      final update = relationship.copyWith(
+        ModelRelationship(
+          memberPids: {
+            ...?relationship.memberPids?.where((e) => !memberPids.contains(e)),
+          },
+        ),
+      );
+
+      await serviceEnvironment.databaseServiceBroker.updateModel(update);
     }
   }
 
@@ -252,11 +266,11 @@ final class RelationshipUtils {
     required Set<String> memberPids,
   }) {
     final relationshipRef = Schema.relationshipsRef(relationshipId: relationshipId);
-    final update = DataModel(
-      data: {
-        ModelRelationship.K_REF: relationshipRef.toJson(),
+    final update = Model(
+      {
+        ModelRelationshipFields.ref.name: relationshipRef.toJson(),
         // TODO: DO NOT USE FIREBASE FIELD VALUES!!!
-        ModelRelationship.K_MEMBER_PIDS: FieldValue.arrayRemove(memberPids.toList()),
+        ModelRelationshipFields.memberPids.name: FieldValue.arrayRemove(memberPids.toList()),
       },
     );
     return UpdateOperation(model: update);

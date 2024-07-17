@@ -127,7 +127,7 @@ final class ProjectUtils {
               elements: pids,
               collectionRef: Schema.projectsRef(),
               fromJsonOrNull: ModelProject.fromJsonOrNull,
-              elementKeys: {ModelProject.K_PID},
+              elementKeys: {ModelProjectFields.pid.name},
             ).firstOrNull)
                 ?.map((e) => e.id)
                 .nonNulls
@@ -143,10 +143,10 @@ final class ProjectUtils {
 
     // Return operations to delete everything associated with projectPids.
     return {
-      for (final relationshipId in associatedRelationshipPool.allIds())
+      for (final relationshipRef in associatedRelationshipPool.allDataRefs())
         ...await RelationshipUtils.getLazyDeleteRelationshipOperations(
           serviceEnvironment: serviceEnvironment,
-          relationshipId: relationshipId,
+          relationshipId: relationshipRef.id!,
         ),
       for (final projectId in projectIds)
         DeleteOperation(

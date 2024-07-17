@@ -105,8 +105,16 @@ final class UserPubService extends DocumentServiceInterface<ModelUserPub> {
       final ref = this.databaseRef();
       final userPub = await transaction.read(ref, ModelUserPub.fromJsonOrNull);
       if (userPub != null) {
-        userPub.updatedGReg?.location = null;
-        transaction.overwrite(userPub);
+        final update = userPub.copyWith(
+          ModelUserPub(
+            updatedGReg: userPub.updatedGReg?.copyWith(
+              const ModelRegistration(
+                location: null,
+              ),
+            ),
+          ),
+        );
+        transaction.overwrite(update);
       }
     });
   }

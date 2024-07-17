@@ -24,7 +24,7 @@ final class EventService extends CollectionServiceInterface<ModelEvent> {
     required super.ref,
     required super.limit,
   }) : super(
-          descendByField: '${ModelFileEntry.K_CREATED_G_REG}.${ModelRegistration.K_REGISTERED_BY}',
+          descendByField: '${ModelFileEntryFields.createdGReg.name}.${ModelRegistrationFields.registeredBy.name}',
         );
 
   //

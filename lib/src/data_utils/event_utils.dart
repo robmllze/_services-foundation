@@ -92,7 +92,7 @@ final class EventUtils {
           registeredBy: senderPid,
           registeredAt: DateTime.now(),
         ),
-        content: DataModel.from(
+        content: Model.of(
           ModelMessageContent(
             senderPid: senderPid,
             relationshipId: relationshipId,
@@ -128,7 +128,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEvent.K_ARCHIVED_REGS,
+      regsKey: ModelEventFields.archivedRegs.name,
       eventsRef: eventsRef,
       enabled: enabled,
     );
@@ -147,7 +147,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEvent.K_HIDDEN_REGS,
+      regsKey: ModelEventFields.hiddenRegs.name,
       eventsRef: eventsRef,
       enabled: enabled,
     );
@@ -166,7 +166,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEvent.K_LIKED_REGS,
+      regsKey: ModelEventFields.likedRegs.name,
       eventsRef: eventsRef,
       enabled: enabled,
     );
@@ -185,7 +185,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEvent.K_READ_REGS,
+      regsKey: ModelEventFields.readRegs.name,
       eventsRef: eventsRef,
       enabled: enabled,
     );
@@ -204,7 +204,7 @@ final class EventUtils {
     await tagEvent(
       serviceEnvironment: serviceEnvironment,
       registeredBy: registeredBy,
-      regsKey: ModelEvent.K_RECEIVED_REGS,
+      regsKey: ModelEventFields.receivedRegs.name,
       eventsRef: eventsRef,
       enabled: enabled,
     );
@@ -251,12 +251,16 @@ final class EventUtils {
     if (registrations != null && registrations.isNotEmpty) {
       final index = registrations.indexWhere((e) => e.registeredBy == registeredBy);
       if (index != -1) {
-        registrations[index]
-          ..registeredAt = DateTime.now()
-          ..enabled = enabled;
+        final temp = registrations[index];
+        registrations[index] = temp.copyWith(
+          ModelRegistration(
+            registeredAt: DateTime.now(),
+            enabled: enabled,
+          ),
+        );
         tr.overwrite(
-          DataModel(
-            data: {
+          Model(
+            {
               ...eventData,
               regsKey: registrations.map((e) => e.toJson()).toList(),
             },
@@ -264,8 +268,8 @@ final class EventUtils {
         );
       }
     } else {
-      final update = DataModel(
-        data: {
+      final update = Model(
+        {
           ...eventData,
           regsKey: [
             ModelRegistration(
@@ -334,7 +338,7 @@ final class EventUtils {
         registeredBy: senderPid,
         registeredAt: DateTime.now(),
       ),
-      content: DataModel(data: content.toJson()),
+      content: Model(content.toJson()),
       contentType: topic.toEnumModel(),
     );
     return CreateOrUpdateOperation(model: eventModel);

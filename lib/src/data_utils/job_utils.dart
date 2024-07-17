@@ -118,7 +118,7 @@ final class JobUtils {
           elements: pids,
           collectionRef: Schema.jobsRef(),
           fromJsonOrNull: ModelJob.fromJsonOrNull,
-          elementKeys: {ModelJob.K_PID},
+          elementKeys: {ModelJobFields.pid.name},
         ).firstOrNull)
             ?.map((e) => e.id)
             .nonNulls
@@ -134,10 +134,10 @@ final class JobUtils {
 
     // Return operations to delete everything associated with jobPids.
     return {
-      for (final relationshipId in associatedRelationshipPool.allIds())
+      for (final relationshipRef in associatedRelationshipPool.allDataRefs())
         ...await RelationshipUtils.getLazyDeleteRelationshipOperations(
           serviceEnvironment: serviceEnvironment,
-          relationshipId: relationshipId,
+          relationshipId: relationshipRef.id!,
         ),
       for (final jobId in jobIds)
         DeleteOperation(

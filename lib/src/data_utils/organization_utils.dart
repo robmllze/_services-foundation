@@ -126,7 +126,7 @@ final class OrganizationUtils {
               elements: pids,
               collectionRef: Schema.organizationsRef(),
               fromJsonOrNull: ModelOrganization.fromJsonOrNull,
-              elementKeys: {ModelOrganization.K_PID},
+              elementKeys: {ModelOrganizationFields.pid.name},
             ).firstOrNull)
                 ?.map((e) => e.id)
                 .nonNulls
@@ -142,10 +142,10 @@ final class OrganizationUtils {
 
     // Return operations to delete everything associated with organizationPids.
     return {
-      for (final relationshipId in associatedRelationshipPool.allIds())
+      for (final relationshipRef in associatedRelationshipPool.allDataRefs())
         ...await RelationshipUtils.getLazyDeleteRelationshipOperations(
           serviceEnvironment: serviceEnvironment,
-          relationshipId: relationshipId,
+          relationshipId: relationshipRef.id!,
         ),
       for (final organizationId in organizationIds)
         DeleteOperation(

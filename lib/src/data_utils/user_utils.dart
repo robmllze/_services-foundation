@@ -147,7 +147,7 @@ final class UserUtils {
               elements: organizationPids,
               collectionRef: Schema.organizationsRef(),
               fromJsonOrNull: ModelOrganization.fromJsonOrNull,
-              elementKeys: {ModelOrganization.K_PID},
+              elementKeys: {ModelOrganizationFields.pid.name},
             ).firstOrNull)
                 ?.map((e) => e.id)
                 .nonNulls ??
@@ -183,7 +183,7 @@ final class UserUtils {
               elements: projectPids,
               collectionRef: Schema.projectsRef(),
               fromJsonOrNull: ModelProject.fromJsonOrNull,
-              elementKeys: {ModelProject.K_PID},
+              elementKeys: {ModelProjectFields.pid.name},
             ).firstOrNull)
                 ?.map((e) => e.id)
                 .nonNulls ??
@@ -216,7 +216,7 @@ final class UserUtils {
           elements: jobPids,
           collectionRef: Schema.jobsRef(),
           fromJsonOrNull: ModelJob.fromJsonOrNull,
-          elementKeys: {ModelJob.K_PID},
+          elementKeys: {ModelJobFields.pid.name},
         ).firstOrNull)
             ?.map((e) => e.id)
             .nonNulls ??

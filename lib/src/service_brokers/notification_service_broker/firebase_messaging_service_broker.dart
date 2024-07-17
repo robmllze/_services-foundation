@@ -141,26 +141,28 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       final diffIpRegs = uniqueRegs?.where((e) => e.ipV4Address != ipV4Address);
 
       // Take the first entry from the sameIpRegs if it exists.
-      final existing = sameIpRegs?.firstOrNull;
+      final r0 = sameIpRegs?.firstOrNull;
 
       // Update the current registration or create a new one.
-      final update = (existing ?? ModelDeviceRegistration());
-      update.id ??= IdUtils.newUuidV4();
-      update.ipV4Address ??= ipV4Address;
-      update.registeredAt ??= now;
-      update.deviceInfo = deviceInfo;
-      update.lastLoggedInAt = now;
-      update.location = location;
-      update.notificationToken = notificationToken;
+      final r1 = ModelDeviceRegistration(
+        id: r0?.id ?? IdUtils.newUuidV4(),
+        ipV4Address: r0?.ipV4Address ?? ipV4Address,
+        registeredAt: r0?.registeredAt ?? now,
+        deviceInfo: deviceInfo,
+        lastLoggedInAt: now,
+        location: location,
+        notificationToken: notificationToken,
+      );
+      final r2 = r0?.copyWith(r1) ?? r1;
 
       // Update the model.
-      model.deviceRegs = [...?diffIpRegs, update];
+      final update = model.copyWith(ModelUserPub(deviceRegs: [...?diffIpRegs, r2]));
 
       // Overwrite the model on the database.
-      transaction.overwrite(model);
+      transaction.overwrite(update);
 
       // Set the registration to the update.
-      registration = update;
+      registration = r2;
     });
 
     // Call the onRegistered method if the registration was successful.
@@ -192,10 +194,14 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
       final model = (await transaction.read(ref, ModelUserPub.fromJsonOrNull))!;
 
       // Remove the current device registrations.
-      model.deviceRegs = model.deviceRegs?.where((e) => e.ipV4Address == ipV4Address).toList();
+      final update = model.copyWith(
+        ModelUserPub(
+          deviceRegs: model.deviceRegs?.where((e) => e.ipV4Address == ipV4Address).toList(),
+        ),
+      );
 
       // Overwrite the model on the database.
-      transaction.overwrite(model);
+      transaction.overwrite(update);
     });
   }
 

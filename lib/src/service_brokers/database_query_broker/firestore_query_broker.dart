@@ -50,32 +50,33 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
       final b = searchableQuery.substring(0, searchableQuery.length - 1) +
           String.fromCharCode(searchableQuery.characters.last.codeUnits[0] + 1);
       // Get all user models whose emails start with the inputted text [a].
-      const EMAIL_FIELD = '${ModelUserPub.K_EMAIL}.${ModelQueryable.K_QUERYABLE_VALUE}';
+      final emailField =
+          '${ModelUserPubFields.email.name}.${ModelQueryableFields.queryableValue.name}';
       final stream1 = collection
           .baseQuery(limit: limit)
           // Where the email contains the query.
           .where(
-            EMAIL_FIELD,
+            emailField,
             isGreaterThanOrEqualTo: searchableQuery,
           )
           .where(
-            EMAIL_FIELD,
+            emailField,
             isLessThan: b,
           )
           .snapshots()
           .map((e) => e.docs.map((e) => ModelUserPub.fromJson(e.data())));
       // Get all user models whose searchable names start with the inputted text [a].
-      const K_DISPLAY_NAME_FIELD =
-          '${ModelUserPub.K_DISPLAY_NAME}.${ModelQueryable.K_QUERYABLE_VALUE}';
+      final displayNameField =
+          '${ModelUserPubFields.displayName.name}.${ModelQueryableFields.queryableValue.name}';
       final stream2 = collection
           .baseQuery(limit: limit)
           // Where the searchable name contains the query.
           .where(
-            K_DISPLAY_NAME_FIELD,
+            displayNameField,
             isGreaterThanOrEqualTo: searchableQuery,
           )
           .where(
-            K_DISPLAY_NAME_FIELD,
+            displayNameField,
             isLessThan: b,
           )
           .snapshots()
@@ -84,7 +85,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
       final combinedStream = StreamZip([stream1, stream2]).map((e) {
         return e.reduce((a, b) {
           final c = [...a, ...b].where((e) => e.deletedGReg == null);
-          final d = Model.removeDuplicateIds(c);
+          final d = Model.removeDuplicateRefs(c);
           return d;
         }).toSet();
       });
@@ -142,7 +143,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = this._firestore.collection(collectionPath);
     var relationships = collection
         .baseQuery(limit: limit)
-        .where(ModelRelationship.K_MEMBER_PIDS, arrayContainsAny: pidSet)
+        .where(ModelRelationshipFields.memberPids.name, arrayContainsAny: pidSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
 
@@ -175,7 +176,7 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = this._firestore.collection(collectionPath);
     var relationships = collection
         .baseQuery(limit: limit)
-        .where(ModelRelationship.K_MEMBER_PIDS, arrayContains: pidSet)
+        .where(ModelRelationshipFields.memberPids.name, arrayContains: pidSet)
         .snapshots()
         .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
     if (types.isNotEmpty) {
@@ -200,11 +201,12 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     }
     final collectionPath = Schema.filesRef().collectionPath!;
     final collection = this._firestore.collection(collectionPath);
-    const FIELD = '${ModelFileEntry.K_CREATED_G_REG}.${ModelRegistration.K_REGISTERED_BY}';
+    final field =
+        '${ModelFileEntryFields.createdGReg.name}.${ModelRegistrationFields.registeredBy.name}';
     final snapshots = collection
         .baseQuery(limit: limit)
         .where(
-          FIELD,
+          field,
           whereIn: createdByAny,
         )
         .snapshots();
@@ -226,11 +228,11 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     final collection = this._firestore.collection(collectionPath);
     final stream = collection.baseQuery().snapshots().asyncMap((e) async {
       for (final doc in e.docs) {
-        final ref = (collectionRef..id = doc.id);
+        final ref = collectionRef.copyWith(DataRefModel(id: doc.id));
         final operation = DeleteOperation(
-          model: DataModel(
-            data: {
-              Model.K_REF: ref.toJson(),
+          model: Model(
+            {
+              'ref': ref.toJson(),
             },
           ),
         );
