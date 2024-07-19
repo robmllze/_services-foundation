@@ -32,6 +32,8 @@ final class FileUtils {
     int compressionQuality = 30,
     String? fileId,
   }) async {
+    printBlue(pubRef);
+    printRed(fileId);
     final allowMultiple = fileId == null;
     final fileResults = await FilePicker.platform.pickFiles(
       allowMultiple: allowMultiple,
@@ -88,7 +90,7 @@ final class FileUtils {
           title: 'File',
           definitionPath: FileSchema.FILES,
         );
-        await  Pod.cast(fileService.pValue).update((a) => [...?a, result.pendingUploadFile]);
+        await Pod.cast(fileService.pValue).update((a) => [...?a, result.pendingUploadFile]);
       }
     }
   }
