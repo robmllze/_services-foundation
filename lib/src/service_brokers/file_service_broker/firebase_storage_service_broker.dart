@@ -173,7 +173,7 @@ final class FirebaseStorageServiceBroker extends FileServiceInterface {
     final pendingUploadFile = _createPendingUploadFile(
       file: file,
       storagePath: storagePath,
-      fileRef: DataRef(),
+      fileRef: const DataRef(),
       fileId: fileId,
       createdBy: createdBy,
       displayName: null,

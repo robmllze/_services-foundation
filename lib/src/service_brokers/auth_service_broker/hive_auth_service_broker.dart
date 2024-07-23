@@ -29,7 +29,7 @@ final class HiveAuthServiceBroker extends AuthServiceInterface {
   );
 
   late final authUsersRef = sessionRef +
-      DataRef(
+      const DataRef(
         collection: ['auth_users'],
       );
 

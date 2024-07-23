@@ -317,6 +317,6 @@ DataRef dataRefFromPath(List<String> path) {
       );
     }
   } else {
-    return DataRefModel();
+    return const DataRefModel();
   }
 }
