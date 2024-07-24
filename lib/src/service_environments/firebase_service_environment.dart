@@ -23,7 +23,14 @@ final class FirebaseServiceEnvironment extends ServiceEnvironment {
   //
   //
 
+  final FirebaseOptions firebaseOptions;
+
+  //
+  //
+  //
+
   FirebaseServiceEnvironment._({
+    required this.firebaseOptions,
     required FirebaseAuthServiceBroker authServiceBroker,
     required FirestoreServiceBroker databaseServiceBroker,
     required FirestoreQueryBroker databaseQueryBroker,
@@ -89,6 +96,7 @@ final class FirebaseServiceEnvironment extends ServiceEnvironment {
     );
 
     final serviceEnvironment = FirebaseServiceEnvironment._(
+      firebaseOptions: firebaseOptions,
       authServiceBroker: authServiceBroker,
       databaseServiceBroker: databaseServiceBroker,
       databaseQueryBroker: databaseQueryBroker,
