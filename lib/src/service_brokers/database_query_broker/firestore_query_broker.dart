@@ -133,28 +133,29 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     required Iterable<String> memberPids,
     Iterable<RelationshipType> types = const {},
     int? limit,
-  }) {
-    var pidSet = memberPids.toSet();
-    if (pidSet.length > 30) {
-      debugLogError('arrayContainsAny only supports up to 30 values.');
-      pidSet = pidSet.take(30).toSet();
-    }
+  }) async* {
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = this._firestore.collection(collectionPath);
-    var relationships = collection
-        .baseQuery(limit: limit)
-        .where(ModelRelationshipFieldNames.memberPids, arrayContainsAny: pidSet)
-        .snapshots()
-        .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
+    // arrayContainsAny only supports 30 at a time.
+    for (final batch in _createBatches(memberPids, 30)) {
+      var relationships = collection
+          .baseQuery(limit: limit)
+          .where(ModelRelationshipFieldNames.memberPids, arrayContainsAny: batch.toSet())
+          .snapshots()
+          .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
 
-    if (types.isNotEmpty) {
-      relationships = relationships.map(
-        (e) => e.where(
-          (e) => types.contains(e.type),
-        ),
-      );
+      if (types.isNotEmpty) {
+        relationships = relationships.map(
+          (e) => e.where(
+            (e) => types.contains(e.type),
+          ),
+        );
+      }
+
+      await for (var rel in relationships) {
+        yield rel;
+      }
     }
-    return relationships;
   }
 
   //
@@ -166,23 +167,26 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     required Iterable<String> memberPids,
     Iterable<RelationshipType> types = const {},
     int? limit,
-  }) {
-    var pidSet = memberPids.toSet();
-    if (pidSet.length > 30) {
-      debugLogError('arrayContains only supports up to 30 values.');
-      pidSet = pidSet.take(30).toSet();
-    }
+  }) async* {
     final collectionPath = Schema.relationshipsRef().collectionPath!;
     final collection = this._firestore.collection(collectionPath);
-    var relationships = collection
-        .baseQuery(limit: limit)
-        .where(ModelRelationshipFieldNames.memberPids, arrayContains: pidSet)
-        .snapshots()
-        .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
-    if (types.isNotEmpty) {
-      relationships = relationships.map((e) => e.where((e) => types.contains(e.type)));
+
+    // arrayContains only supports 30 at a time.
+    for (final batch in _createBatches(memberPids, 30)) {
+      var relationships = collection
+          .baseQuery(limit: limit)
+          .where(ModelRelationshipFieldNames.memberPids, arrayContains: batch.toSet())
+          .snapshots()
+          .map((e) => e.docs.map((e) => ModelRelationship.fromJson(e.data())));
+
+      if (types.isNotEmpty) {
+        relationships = relationships.map((e) => e.where((e) => types.contains(e.type)));
+      }
+
+      await for (var rel in relationships) {
+        yield rel;
+      }
     }
-    return relationships;
   }
 
   //
@@ -193,25 +197,27 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
   Stream<Iterable<ModelFileEntry>> streamFilesByCreatorId({
     required Iterable<String> createdByAny,
     int? limit,
-  }) {
-    var createdByAnySet = createdByAny.toSet();
-    if (createdByAnySet.length > 30) {
-      debugLogError('whereIn only supports up to 30 values.');
-      createdByAnySet = createdByAnySet.take(30).toSet();
-    }
+  }) async* {
     final collectionPath = Schema.filesRef().collectionPath!;
     final collection = this._firestore.collection(collectionPath);
     final FIELD =
         '${ModelFileEntryFieldNames.createdGReg}.${ModelRegistrationFieldNames.registeredBy}';
-    final snapshots = collection
-        .baseQuery(limit: limit)
-        .where(
-          FIELD,
-          whereIn: createdByAny,
-        )
-        .snapshots();
-    final results = snapshots.map((e) => e.docs.map((e) => ModelFileEntry.fromJson(e.data())));
-    return results;
+
+    // whereIn only supports 30 at a time.
+    for (final batch in _createBatches(createdByAny, 30)) {
+      final snapshots = collection
+          .baseQuery(limit: limit)
+          .where(
+            FIELD,
+            whereIn: batch.toSet(),
+          )
+          .snapshots();
+
+      final results = snapshots.map((e) => e.docs.map((e) => ModelFileEntry.fromJson(e.data())));
+      await for (var result in results) {
+        yield result;
+      }
+    }
   }
 
   //
@@ -241,5 +247,21 @@ final class FirestoreQueryBroker extends DatabaseQueryInterface {
     });
     await streamToFuture(stream);
     return result;
+  }
+}
+
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+Iterable<Iterable<T>> _createBatches<T>(Iterable<T> source, int batchSize) sync* {
+  var batch = <T>[];
+  for (final item in source) {
+    batch.add(item);
+    if (batch.length == batchSize) {
+      yield batch;
+      batch = <T>[];
+    }
+  }
+  if (batch.isNotEmpty) {
+    yield batch;
   }
 }

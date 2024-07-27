@@ -30,7 +30,7 @@ final class RelationshipService extends CollectionServiceInterface<ModelRelation
     required super.limit,
     required Set<String> memberPids,
   })  : this._memberPids = memberPids,
-        super(ref: Schema.relationshipsRef()) {}
+        super(ref: Schema.relationshipsRef());
 
   //
   //
