@@ -80,11 +80,13 @@ final class FirebaseMessagingServiceBroker extends NotificationServiceInterface 
     required String title,
     required String body,
     required Set<String> destinationTokens,
+    required FilteringInfo? filteringInfo,
   }) async {
     await functionsServiceBroker.sendDataNotifications(
       title: title,
       body: body,
       destinationTokens: destinationTokens,
+      filteringInfo: filteringInfo,
     );
   }
 
