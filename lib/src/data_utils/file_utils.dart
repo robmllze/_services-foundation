@@ -32,8 +32,6 @@ final class FileUtils {
     int compressionQuality = 30,
     String? fileId,
   }) async {
-    printBlue(pubRef);
-    printRed(fileId);
     final allowMultiple = fileId == null;
     final fileResults = await FilePicker.platform.pickFiles(
       allowMultiple: allowMultiple,
