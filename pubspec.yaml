@@ -49,20 +49,5 @@ dependencies:
 
 ## -----------------------------------------------------------------------------
 
-dependency_overrides:
-  # TODO: Comment out these lines if you don't have these packages at their
-  # respective paths. They are included for development purposes to allow
-  # simultaneous work on this package and its dependencies.
-  # xyz_gen_annotations:
-  #   path: ../../xyz_gen/xyz_gen_annotations
-  # xyz_pod:
-  #   path: ../../xyz_pod
-  # xyz_utils:
-  #   path: ../../xyz_utils
-  # xyz_device_info:
-  #   path: ../../xyz_device_info
-
-## -----------------------------------------------------------------------------
-
 dev_dependencies:
   flutter_lints: any

@@ -21,4 +21,4 @@ export 'package:xyz_utils/xyz_utils.dart';
 export 'package:_data/_data.dart';
 export 'package:_service_interfaces/_service_interfaces.dart';
 
-export 'src/_all_src.g.dart';
+export 'src/_index.g.dart';
